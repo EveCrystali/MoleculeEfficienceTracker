@@ -3,34 +3,70 @@ using MoleculeEfficienceTracker.Core.Services;
 using System.Collections.ObjectModel;
 using Syncfusion.Maui.Charts;
 using Microsoft.Maui.Graphics;
-using CommunityToolkit.Mvvm.Collections;
-using MoleculeEfficienceTracker.Core.Extensions;
+using System.Text.Json;
 
 namespace MoleculeEfficienceTracker
 {
     public partial class MainPage : ContentPage
     {
         private readonly BromazepamCalculator calculator;
+        private readonly DataPersistenceService persistenceService; // ✅ Nouveau service
+
         public ObservableCollection<DoseEntry> Doses { get; set; }
-        public ObservableRangeCollection<ChartDataPoint> ChartData { get; set; }
+        public ObservableCollection<ChartDataPoint> ChartData { get; set; }
+
+        private readonly IAlertService alertService;
 
         public MainPage()
         {
             InitializeComponent();
             calculator = new BromazepamCalculator();
-            Doses = new ObservableCollection<DoseEntry>();
-            ChartData = new ObservableRangeCollection<ChartDataPoint>();
+            persistenceService = new DataPersistenceService();
+            alertService = new AlertService();
 
+            Doses = new ObservableCollection<DoseEntry>();
+            ChartData = new ObservableCollection<ChartDataPoint>();
             BindingContext = this;
 
-            // Initialiser les contrôles
             DatePicker.Date = DateTime.Today;
             TimePicker.Time = DateTime.Now.TimeOfDay;
 
-            // Mise à jour automatique toutes les minutes
+            // ✅ Charger les données au démarrage
+            LoadDataAsync();
+
             StartConcentrationTimer();
             UpdateConcentrationDisplay();
             UpdateChart();
+        }
+
+        // ✅ Nouvelle méthode pour charger les données
+        private async void LoadDataAsync()
+        {
+            var savedDoses = await persistenceService.LoadDosesAsync();
+
+            // Vider et recharger la collection
+            Doses.Clear();
+            foreach (var dose in savedDoses.OrderByDescending(d => d.TimeTaken))
+            {
+                Doses.Add(dose);
+            }
+
+            // Mettre à jour l'affichage
+            UpdateConcentrationDisplay();
+            UpdateChart();
+        }
+
+        // ✅ Nouvelle méthode pour sauvegarder
+        private async Task SaveDataAsync()
+        {
+            try
+            {
+                await persistenceService.SaveDosesAsync(Doses.ToList());
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("❌", $"Erreur lors de la sauvegarde: {ex.Message}", "OK");
+            }
         }
 
         private async void OnAddDoseClicked(object sender, EventArgs e)
@@ -47,13 +83,16 @@ namespace MoleculeEfficienceTracker
                 DoseEntry.Text = "";
 
                 UpdateConcentrationDisplay();
-                UpdateChart(); // Mise à jour du graphique
+                UpdateChart();
 
-                await DisplayAlert("✅", $"Dose de {doseMg}mg ajoutée pour {dateTime:dd/MM HH:mm}", "OK");
+                // ✅ Sauvegarder automatiquement après ajout
+                await SaveDataAsync();
+
+                await alertService.ShowAlertAsync("✅", $"Dose de {doseMg}mg ajoutée pour {dateTime:dd/MM HH:mm}");
             }
             else
             {
-                await DisplayAlert("❌", "Veuillez entrer une dose valide (nombre positif)", "OK");
+                await alertService.ShowAlertAsync("❌", "Veuillez entrer une dose valide");
             }
         }
 
@@ -72,12 +111,16 @@ namespace MoleculeEfficienceTracker
                     {
                         Doses.Remove(dose);
                         UpdateConcentrationDisplay();
-                        UpdateChart(); // Mise à jour du graphique
+                        UpdateChart();
+
+                        // ✅ Sauvegarder automatiquement après suppression
+                        await SaveDataAsync();
                     }
                 }
             }
         }
 
+        // Tes autres méthodes restent identiques...
         private void UpdateConcentrationDisplay()
         {
             var currentTime = DateTime.Now;
@@ -89,9 +132,10 @@ namespace MoleculeEfficienceTracker
 
         private void UpdateChart()
         {
+            ChartData.Clear();
+
             if (!Doses.Any())
             {
-                ChartData.Clear();
                 return;
             }
 
@@ -101,38 +145,11 @@ namespace MoleculeEfficienceTracker
 
             var graphPoints = calculator.GenerateGraph(Doses.ToList(), startTime, endTime, 200);
 
-            var newData = graphPoints.Select(p => new ChartDataPoint(p.Time, p.Concentration)).ToList();
-
-
-            ChartData.ReplaceRange(newData);
-
-            AddCurrentTimeAnnotation(currentTime);
-        }
-
-        private void AddCurrentTimeAnnotation(DateTime currentTime)
-        {
-            // Effacer les annotations existantes
-            ConcentrationChart.Annotations.Clear();
-
-            // Ajouter une ligne verticale pour "maintenant"
-            var annotation = new VerticalLineAnnotation // ✅ Pas de "chart:" en C#
+            foreach (var point in graphPoints)
             {
-                X1 = currentTime,
-                Stroke = Brush.Red,
-                StrokeWidth = 2,
-                StrokeDashArray = new DoubleCollection { 5, 3 },
-                Text = "Maintenant",
-                LabelStyle = new ChartAnnotationLabelStyle
-                {
-                    FontSize = 12,
-                    TextColor = Colors.Red,
-                    Background = Brush.White
-                }
-            };
-
-            ConcentrationChart.Annotations.Add(annotation);
+                ChartData.Add(new ChartDataPoint(point.Time, point.Concentration));
+            }
         }
-
 
         private void StartConcentrationTimer()
         {
@@ -141,9 +158,52 @@ namespace MoleculeEfficienceTracker
             timer.Tick += (s, e) =>
             {
                 UpdateConcentrationDisplay();
-                UpdateChart(); // Mise à jour du graphique aussi
+                UpdateChart();
             };
             timer.Start();
         }
+
+        private async void OnExportDataClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                var doses = Doses.ToList();
+                if (!doses.Any())
+                {
+                    await DisplayAlert("📂", "Aucune donnée à exporter", "OK");
+                    return;
+                }
+
+                var json = JsonSerializer.Serialize(doses, new JsonSerializerOptions { WriteIndented = true });
+                var fileName = $"bromazepam_export_{DateTime.Now:yyyyMMdd_HHmm}.json";
+                var filePath = Path.Combine(FileSystem.AppDataDirectory, fileName);
+
+                await File.WriteAllTextAsync(filePath, json);
+
+                await DisplayAlert("✅", $"Données exportées vers:\n{fileName}", "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("❌", $"Erreur d'export: {ex.Message}", "OK");
+            }
+        }
+
+        private async void OnClearAllDataClicked(object sender, EventArgs e)
+        {
+            bool confirm = await DisplayAlert("⚠️ Attention",
+                "Supprimer toutes les données ?\nCette action est irréversible.",
+                "Oui", "Annuler");
+
+            if (confirm)
+            {
+                Doses.Clear();
+                await persistenceService.DeleteAllDataAsync();
+                UpdateConcentrationDisplay();
+                UpdateChart();
+
+                await DisplayAlert("✅", "Toutes les données ont été supprimées", "OK");
+            }
+        }
+
     }
 }
