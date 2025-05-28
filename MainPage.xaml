@@ -1,38 +1,57 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="BromazepamTracker.MainPage"
+<ContentPage x:Class="MoleculeEfficienceTracker.MainPage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
              Title="Bromazépam Tracker">
 
     <ScrollView>
-        <VerticalStackLayout Spacing="25" Padding="30,0" VerticalOptions="Center">
+        <VerticalStackLayout Spacing="20"
+                             Padding="20">
 
             <!-- En-tête -->
-            <Label x:Name="WelcomeLabel" 
-                   Text="📊 Calculateur de Bromazépam"
-                   FontSize="24" 
-                   HorizontalOptions="Center" />
+            <Label Text="📊 Calculateur de Bromazépam"
+                   FontSize="24"
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold"/>
 
             <!-- Ajouter une dose -->
-            <Frame BackgroundColor="LightBlue" Padding="15">
-                <VerticalStackLayout>
-                    <Label Text="Ajouter une dose" FontSize="18" FontAttributes="Bold"/>
+            <Frame BackgroundColor="LightBlue"
+                   Padding="15"
+                   CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Ajouter une dose"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
 
-                    <HorizontalStackLayout Spacing="10">
-                        <Label Text="Dose (mg):" VerticalOptions="Center"/>
-                        <Entry x:Name="DoseEntry" 
-                               Placeholder="3.0" 
-                               Keyboard="Numeric"
-                               WidthRequest="100"/>
-                    </HorizontalStackLayout>
+                    <Grid ColumnDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto"
+                          ColumnSpacing="10"
+                          RowSpacing="10">
+                        <Label Grid.Row="0"
+                               Grid.Column="0"
+                               Text="Dose (mg):"
+                               VerticalOptions="Center"/>
+                        <Entry Grid.Row="0"
+                               Grid.Column="1"
+                               x:Name="DoseEntry"
+                               Placeholder="3.0"
+                               Keyboard="Numeric"/>
 
-                    <HorizontalStackLayout Spacing="10">
-                        <Label Text="Date/Heure:" VerticalOptions="Center"/>
-                        <DatePicker x:Name="DatePicker" Date="{x:Static x:Static}"/>
-                        <TimePicker x:Name="TimePicker" Time="{x:Static x:Static}"/>
-                    </HorizontalStackLayout>
+                        <Label Grid.Row="1"
+                               Grid.Column="0"
+                               Text="Date/Heure:"
+                               VerticalOptions="Center"/>
+                        <HorizontalStackLayout Grid.Row="1"
+                                               Grid.Column="1"
+                                               Spacing="10">
+                            <DatePicker x:Name="DatePicker"/>
+                            <TimePicker x:Name="TimePicker"
+                                        Format="HH:mm"/>
+                        </HorizontalStackLayout>
+                    </Grid>
 
-                    <Button x:Name="AddDoseBtn" 
+                    <Button x:Name="AddDoseBtn"
                             Text="Ajouter la dose"
                             Clicked="OnAddDoseClicked"
                             BackgroundColor="Green"
@@ -40,36 +59,142 @@
                 </VerticalStackLayout>
             </Frame>
 
-            <!-- Concentration actuelle -->
-            <Frame BackgroundColor="LightGreen" Padding="15">
-                <VerticalStackLayout>
-                    <Label Text="Concentration actuelle" FontSize="18" FontAttributes="Bold"/>
-                    <Label x:Name="ConcentrationLabel" 
+            <!-- Concentration actuelle avec graphique -->
+            <Frame BackgroundColor="LightGreen"
+                   Padding="15"
+                   CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Concentration actuelle"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+                    <Label x:Name="ConcentrationLabel"
                            Text="0.00 unités"
-                           FontSize="24"
+                           FontSize="28"
+                           FontAttributes="Bold"
                            HorizontalOptions="Center"/>
-                    <Label x:Name="LastUpdateLabel" 
+                    <Label x:Name="LastUpdateLabel"
                            Text="Dernière mise à jour: --"
                            FontSize="12"
                            HorizontalOptions="Center"/>
+
+                    <!-- Graphique -->
+                    <Frame BackgroundColor="White"
+                           Padding="10"
+                           CornerRadius="5"
+                           HeightRequest="300">
+                        <chart:SfCartesianChart x:Name="ConcentrationChart">
+
+                            <chart:SfCartesianChart.Title>
+                                <Label Text="Évolution sur 24h"
+                                       FontSize="16"
+                                       FontAttributes="Bold"/>
+                            </chart:SfCartesianChart.Title>
+
+                            <!-- Ajouter le trackball -->
+                            <chart:SfCartesianChart.TrackballBehavior>
+                                <chart:ChartTrackballBehavior ShowLabel="True"
+                                                              ShowMarkers="True"
+                                                              ShowLine="True"/>
+                            </chart:SfCartesianChart.TrackballBehavior>
+
+                            <chart:SfCartesianChart.XAxes>
+                                <chart:DateTimeAxis ShowMajorGridLines="True"
+                                                    ShowMinorGridLines="True"
+                                                    MajorGridLineStyle="{StaticResource GridLineStyle}"
+                                                    MinorGridLineStyle="{StaticResource MinorGridLineStyle}">
+                                    <chart:DateTimeAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle LabelFormat="HH:mm"
+                                                                   FontSize="10"/>
+                                    </chart:DateTimeAxis.LabelStyle>
+                                    <!-- Afficher plus de labels sur l'axe X -->
+                                    <chart:DateTimeAxis.AxisLineStyle>
+                                        <chart:ChartLineStyle StrokeWidth="1"
+                                                              Stroke="Gray"/>
+                                    </chart:DateTimeAxis.AxisLineStyle>
+                                </chart:DateTimeAxis>
+                            </chart:SfCartesianChart.XAxes>
+
+                            <chart:SfCartesianChart.YAxes>
+                                <chart:NumericalAxis ShowMajorGridLines="True"
+                                                     ShowMinorGridLines="True"
+                                                     Minimum="0">
+                                    <chart:NumericalAxis.Title>
+                                        <chart:ChartAxisTitle Text="Concentration (unités)"/>
+                                    </chart:NumericalAxis.Title>
+                                    <chart:NumericalAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle LabelFormat="F1"
+                                                                   FontSize="10"/>
+                                    </chart:NumericalAxis.LabelStyle>
+                                </chart:NumericalAxis>
+                            </chart:SfCartesianChart.YAxes>
+
+                            <chart:LineSeries x:Name="ConcentrationSeries"
+                                              ItemsSource="{Binding ChartData}"
+                                              XBindingPath="Time"
+                                              YBindingPath="Concentration"
+                                              Fill="Blue"
+                                              StrokeWidth="3"
+                                              EnableTooltip="True"
+                                              ShowMarkers="True"
+                                              MarkerSettings="{StaticResource MarkerSettings}">
+
+                                <!-- Tooltip personnalisé -->
+                                <chart:LineSeries.TooltipTemplate>
+                                    <DataTemplate>
+                                        <Border Background="Black"
+                                                
+                                                Padding="10">
+                                            <StackLayout>
+                                                <Label Text="{Binding Item.Time, StringFormat='🕐 {0:dd/MM HH:mm}'}"
+                                                       TextColor="White"
+                                                       FontSize="12"/>
+                                                <Label Text="{Binding Item.Concentration, StringFormat='📊 {0:F2} unités'}"
+                                                       TextColor="White"
+                                                       FontSize="12"
+                                                       FontAttributes="Bold"/>
+                                            </StackLayout>
+                                        </Border>
+                                    </DataTemplate>
+                                </chart:LineSeries.TooltipTemplate>
+                            </chart:LineSeries>
+
+                        </chart:SfCartesianChart>
+                    </Frame>
                 </VerticalStackLayout>
             </Frame>
 
             <!-- Liste des doses -->
-            <Frame BackgroundColor="LightYellow" Padding="15">
-                <VerticalStackLayout>
-                    <Label Text="Doses récentes" FontSize="18" FontAttributes="Bold"/>
-                    <CollectionView x:Name="DosesCollection" ItemsSource="{Binding Doses}">
+            <Frame BackgroundColor="LightYellow"
+                   Padding="15"
+                   CornerRadius="10">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Doses récentes"
+                           FontSize="18"
+                           FontAttributes="Bold"/>
+                    <CollectionView x:Name="DosesCollection"
+                                    ItemsSource="{Binding Doses}"
+                                    MaximumHeightRequest="300">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Grid Padding="10,5" ColumnDefinitions="*,*,*">
-                                    <Label Grid.Column="0" Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}" />
-                                    <Label Grid.Column="1" Text="{Binding DoseMg, StringFormat='{0}mg'}" />
-                                    <Button Grid.Column="2" Text="❌" 
+                                <Grid Padding="10,5"
+                                      ColumnDefinitions="*,*,Auto"
+                                      BackgroundColor="White"
+                                      Margin="0,2">
+                                    <Label Grid.Column="0"
+                                           Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}"
+                                           VerticalOptions="Center"/>
+                                    <Label Grid.Column="1"
+                                           Text="{Binding DoseMg, StringFormat='{0}mg'}"
+                                           VerticalOptions="Center"
+                                           HorizontalOptions="Center"/>
+                                    <Button Grid.Column="2"
+                                            Text="❌"
                                             CommandParameter="{Binding Id}"
                                             Clicked="OnDeleteDoseClicked"
                                             BackgroundColor="Red"
-                                            TextColor="White"/>
+                                            TextColor="White"
+                                            WidthRequest="40"
+                                            HeightRequest="30"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
