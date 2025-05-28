@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage x:Class="BromazepamTracker.MainPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             Title="Bromazépam Tracker">
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="25" Padding="30,0" VerticalOptions="Center">
+
+            <!-- En-tête -->
+            <Label x:Name="WelcomeLabel" 
+                   Text="📊 Calculateur de Bromazépam"
+                   FontSize="24" 
+                   HorizontalOptions="Center" />
+
+            <!-- Ajouter une dose -->
+            <Frame BackgroundColor="LightBlue" Padding="15">
+                <VerticalStackLayout>
+                    <Label Text="Ajouter une dose" FontSize="18" FontAttributes="Bold"/>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Dose (mg):" VerticalOptions="Center"/>
+                        <Entry x:Name="DoseEntry" 
+                               Placeholder="3.0" 
+                               Keyboard="Numeric"
+                               WidthRequest="100"/>
+                    </HorizontalStackLayout>
+
+                    <HorizontalStackLayout Spacing="10">
+                        <Label Text="Date/Heure:" VerticalOptions="Center"/>
+                        <DatePicker x:Name="DatePicker" Date="{x:Static x:Static}"/>
+                        <TimePicker x:Name="TimePicker" Time="{x:Static x:Static}"/>
+                    </HorizontalStackLayout>
+
+                    <Button x:Name="AddDoseBtn" 
+                            Text="Ajouter la dose"
+                            Clicked="OnAddDoseClicked"
+                            BackgroundColor="Green"
+                            TextColor="White"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Concentration actuelle -->
+            <Frame BackgroundColor="LightGreen" Padding="15">
+                <VerticalStackLayout>
+                    <Label Text="Concentration actuelle" FontSize="18" FontAttributes="Bold"/>
+                    <Label x:Name="ConcentrationLabel" 
+                           Text="0.00 unités"
+                           FontSize="24"
+                           HorizontalOptions="Center"/>
+                    <Label x:Name="LastUpdateLabel" 
+                           Text="Dernière mise à jour: --"
+                           FontSize="12"
+                           HorizontalOptions="Center"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- Liste des doses -->
+            <Frame BackgroundColor="LightYellow" Padding="15">
+                <VerticalStackLayout>
+                    <Label Text="Doses récentes" FontSize="18" FontAttributes="Bold"/>
+                    <CollectionView x:Name="DosesCollection" ItemsSource="{Binding Doses}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Padding="10,5" ColumnDefinitions="*,*,*">
+                                    <Label Grid.Column="0" Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}" />
+                                    <Label Grid.Column="1" Text="{Binding DoseMg, StringFormat='{0}mg'}" />
+                                    <Button Grid.Column="2" Text="❌" 
+                                            CommandParameter="{Binding Id}"
+                                            Clicked="OnDeleteDoseClicked"
+                                            BackgroundColor="Red"
+                                            TextColor="White"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>
