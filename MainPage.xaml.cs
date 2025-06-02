@@ -191,7 +191,7 @@ namespace MoleculeEfficienceTracker
 
                 // 3. Vue initiale visible sur l'axe X
                 DateTime initialVisibleStartTime = currentTime.AddHours(-12);
-                DateTime initialVisibleEndTime = currentTime.AddHours(12);
+                DateTime initialVisibleEndTime = currentTime.AddHours(24);
 
                 double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours; 
                 double desiredVisibleDurationInHours = (initialVisibleEndTime - initialVisibleStartTime).TotalHours;

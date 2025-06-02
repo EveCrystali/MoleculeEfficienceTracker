@@ -84,12 +84,6 @@
                            HeightRequest="300">
                         <chart:SfCartesianChart x:Name="ConcentrationChart">
 
-                            <chart:SfCartesianChart.Title>
-                                <Label Text="Évolution sur 24h"
-                                       FontSize="16"
-                                       FontAttributes="Bold"/>
-                            </chart:SfCartesianChart.Title>
-
                             <!-- Ajouter le trackball -->
                             <chart:SfCartesianChart.TrackballBehavior>
                                 <chart:ChartTrackballBehavior ShowLabel="True"
