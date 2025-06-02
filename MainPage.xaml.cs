@@ -185,6 +185,9 @@ namespace MoleculeEfficienceTracker
 
                 // xAxis.VisibleMinimum = initialVisibleStartTime;
                 // xAxis.VisibleMaximum = initialVisibleEndTime;
+
+                xAxis.ZoomFactor = (initialVisibleEndTime - initialVisibleStartTime).TotalHours / (endTime - startTime).TotalHours;
+
             }
         }
 
