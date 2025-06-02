@@ -3,76 +3,100 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
-             Title="Bromazépam Tracker">
+             Title="Molecule Tracker">
 
     <!-- Ressources pour styles réutilisables -->
     <ContentPage.Resources>
-        <!-- Style de Frame général (cartes) -->
-        <Style x:Key="CardFrameStyle"
-               TargetType="Frame">
-            <Setter Property="BackgroundColor"
-                    Value="#F7FAFC"/>
-            <Setter Property="CornerRadius"
-                    Value="18"/>
-            <Setter Property="Padding"
-                    Value="20"/>
-            <Setter Property="HasShadow"
-                    Value="True"/>
-            <Setter Property="Shadow">
-                <Setter.Value>
-                    <Shadow Brush="#C9D6FF"
-                            Offset="0,4"
-                            Radius="16"
-                            Opacity="0.13"/>
-                </Setter.Value>
-            </Setter>
-        </Style>
-        <Style x:Key="PrimaryButtonStyle"
-               TargetType="Button">
-            <Setter Property="BackgroundColor"
-                    Value="#3182CE"/>
-            <Setter Property="TextColor"
-                    Value="White"/>
-            <Setter Property="CornerRadius"
-                    Value="12"/>
-            <Setter Property="FontAttributes"
-                    Value="Bold"/>
-            <Setter Property="FontSize"
-                    Value="16"/>
-            <Setter Property="Padding"
-                    Value="14,8"/>
-        </Style>
-        <Style x:Key="DeleteButtonStyle"
-               TargetType="Button">
-            <Setter Property="BackgroundColor"
-                    Value="#E53E3E"/>
-            <Setter Property="TextColor"
-                    Value="White"/>
-            <Setter Property="CornerRadius"
-                    Value="10"/>
-            <Setter Property="FontAttributes"
-                    Value="Bold"/>
-            <Setter Property="FontSize"
-                    Value="16"/>
-            <Setter Property="Padding"
-                    Value="12,8"/>
-        </Style>
-        <!-- Fond général de la page -->
-        <Color x:Key="MainBgColor">#F0F4F8</Color>
-        <!-- Pour le EmptyState -->
-        <Style x:Key="EmptyLabelStyle"
-               TargetType="Label">
-            <Setter Property="TextColor"
-                    Value="#A0AEC0"/>
-            <Setter Property="FontSize"
-                    Value="18"/>
-            <Setter Property="HorizontalOptions"
-                    Value="Center"/>
-            <Setter Property="FontAttributes"
-                    Value="Italic"/>
-            <Setter Property="Margin"
-                    Value="0,20,0,0"/>
-        </Style>
+        <ResourceDictionary>
+            <!-- Style de Frame général (cartes) -->
+            <Style x:Key="CardFrameStyle"
+                   TargetType="Frame">
+                <Setter Property="BackgroundColor"
+                        Value="#F7FAFC"/>
+                <Setter Property="CornerRadius"
+                        Value="18"/>
+                <Setter Property="Padding"
+                        Value="20"/>
+                <Setter Property="HasShadow"
+                        Value="True"/>
+                <Setter Property="Shadow">
+                    <Setter.Value>
+                        <Shadow Brush="#C9D6FF"
+                                Offset="0,4"
+                                Radius="16"
+                                Opacity="0.13"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="PrimaryButtonStyle"
+                   TargetType="Button">
+                <Setter Property="BackgroundColor"
+                        Value="#3182CE"/>
+                <Setter Property="TextColor"
+                        Value="White"/>
+                <Setter Property="CornerRadius"
+                        Value="12"/>
+                <Setter Property="FontAttributes"
+                        Value="Bold"/>
+                <Setter Property="FontSize"
+                        Value="16"/>
+                <Setter Property="Padding"
+                        Value="14,8"/>
+            </Style>
+            <Style x:Key="DeleteButtonStyle"
+                   TargetType="Button">
+                <Setter Property="BackgroundColor"
+                        Value="#E53E3E"/>
+                <Setter Property="TextColor"
+                        Value="White"/>
+                <Setter Property="CornerRadius"
+                        Value="10"/>
+                <Setter Property="FontAttributes"
+                        Value="Bold"/>
+                <Setter Property="FontSize"
+                        Value="16"/>
+                <Setter Property="Padding"
+                        Value="12,8"/>
+            </Style>
+            <!-- Fond général de la page -->
+            <Color x:Key="MainBgColor">#F0F4F8</Color>
+            <!-- Pour le EmptyState -->
+            <Style x:Key="EmptyLabelStyle"
+                   TargetType="Label">
+                <Setter Property="TextColor"
+                        Value="#A0AEC0"/>
+                <Setter Property="FontSize"
+                        Value="18"/>
+                <Setter Property="HorizontalOptions"
+                        Value="Center"/>
+                <Setter Property="FontAttributes"
+                        Value="Italic"/>
+                <Setter Property="Margin"
+                        Value="0,20,0,0"/>
+            </Style>
+
+            <!-- ... autres styles ... -->
+
+            <!-- Styles pour le Trackball du graphique -->
+            <chart:ChartLineStyle x:Key="CustomTrackballLineStyle"
+                                  Stroke="#3182CE"
+                                  StrokeWidth="2"
+                                  StrokeDashArray="3,2"/>
+
+            <chart:ChartLabelStyle x:Key="CustomTrackballLabelStyle"
+                                   Background="#2D3748"
+                                   TextColor="White"
+                                   FontSize="12"
+                                   CornerRadius="4"/>
+
+            <chart:ChartMarkerSettings x:Key="CustomTrackballMarkerSettings"
+                                       Type="Circle"
+                                       Fill="#3182CE"
+                                       Stroke="White"
+                                       StrokeWidth="2"
+                                       Height="16"
+                                       Width="16"/>
+        </ResourceDictionary>
     </ContentPage.Resources>
 
     <ContentPage.Background>
@@ -167,114 +191,89 @@
                            Margin="0,8,0,0"
                            HeightRequest="300">
                         <chart:SfCartesianChart x:Name="ConcentrationChart">
-                            
-                            <!-- Ajouter le trackball -->
+
                             <chart:SfCartesianChart.TrackballBehavior>
                                 <chart:ChartTrackballBehavior ShowLabel="True"
                                                               ShowMarkers="True"
-                                                              ShowLine="True"                                                              
-                                                              DisplayMode="FloatAllPoints">
-                                    <!-- Style de la ligne du trackball -->
-                                    <chart:ChartTrackballBehavior.LineStyle>
-                                        <chart:ChartLineStyle Stroke="Red" 
-                                                              StrokeWidth="1.5" 
-                                                              StrokeDashArray="4,2"/>
-                                    </chart:ChartTrackballBehavior.LineStyle>
-
-                                    <!-- Style des étiquettes du trackball -->
-                                    <chart:ChartTrackballBehavior.LabelStyle>
-                                        <chart:ChartLabelStyle Background="DarkSlateGray" 
-                                                               TextColor="White" 
-                                                               FontSize="10"
-                                                               CornerRadius="3"
-                                                               />
-                                    </chart:ChartTrackballBehavior.LabelStyle>
-
-                                    <!-- Style des marqueurs du trackball (si vous voulez qu'ils soient différents de ceux de la série) -->
-                                    <chart:ChartTrackballBehavior.MarkerSettings>
-                                        <chart:ChartMarkerSettings Type="Diamond"
-                                                                   Fill="OrangeRed"
-                                                                   Stroke="White"
-                                                                   StrokeWidth="1"
-                                                                   Height="10" Width="10"/>
-                                    </chart:ChartTrackballBehavior.MarkerSettings>
-                                </chart:ChartTrackballBehavior>
+                                                              ShowLine="True"
+                                                              DisplayMode="FloatAllPoints"/>
                             </chart:SfCartesianChart.TrackballBehavior>
 
-                            <!-- Activer le zoom et le panoramique (défilement) -->
                             <chart:SfCartesianChart.ZoomPanBehavior>
-                                <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True"/>
-                                <!-- ZoomMode="X" limite le zoom à l'axe X (temps), ce qui est généralement souhaité. -->
+                                <chart:ChartZoomPanBehavior ZoomMode="X"
+                                        EnablePanning="True"/>
                             </chart:SfCartesianChart.ZoomPanBehavior>
 
                             <chart:SfCartesianChart.XAxes>
                                 <chart:DateTimeAxis ShowMajorGridLines="True"
-                                                    ShowMinorGridLines="True"
-                                                    MajorGridLineStyle="{StaticResource GridLineStyle}"
-                                                    MinorGridLineStyle="{StaticResource MinorGridLineStyle}">
+                                                    ShowMinorGridLines="False"
+                                                    EdgeLabelsDrawingMode="Fit">
                                     <chart:DateTimeAxis.LabelStyle>
-                                        <chart:ChartAxisLabelStyle LabelFormat="HH:mm"
-                                                                   FontSize="10"/>
+                                        <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH:mm"
+                                                                   FontSize="10"
+                                                                   TextColor="#31465D"/>
                                     </chart:DateTimeAxis.LabelStyle>
-                                    <!-- Afficher plus de labels sur l'axe X -->
-                                    <chart:DateTimeAxis.AxisLineStyle>
-                                        <chart:ChartLineStyle StrokeWidth="1"
-                                                              Stroke="Gray"/>
-                                    </chart:DateTimeAxis.AxisLineStyle>
+                                    <chart:DateTimeAxis.MajorGridLineStyle>
+                                        <chart:ChartLineStyle Stroke="#E5E7EB"
+                                                StrokeWidth="1"/>
+                                    </chart:DateTimeAxis.MajorGridLineStyle>
                                 </chart:DateTimeAxis>
                             </chart:SfCartesianChart.XAxes>
-
                             <chart:SfCartesianChart.YAxes>
-                                <chart:NumericalAxis ShowMajorGridLines="True"
-                                                     ShowMinorGridLines="True"
-                                                     Minimum="0"
-                                                     RangePadding="Additional"> <!-- Permet un peu d'espace au-dessus de la valeur max -->
-                                    <chart:NumericalAxis.Title>
-                                        <chart:ChartAxisTitle Text="Concentration (unités)"/>
-                                    </chart:NumericalAxis.Title>
+                                <chart:NumericalAxis Minimum="0"
+                                                     ShowMajorGridLines="True"
+                                                     ShowMinorGridLines="False">
                                     <chart:NumericalAxis.LabelStyle>
-                                        <chart:ChartAxisLabelStyle LabelFormat="F1"
-                                                                   FontSize="10"/>
+                                        <chart:ChartAxisLabelStyle FontSize="10"
+                                                                   TextColor="#31465D"/>
                                     </chart:NumericalAxis.LabelStyle>
+                                    <chart:NumericalAxis.MajorGridLineStyle>
+                                        <chart:ChartLineStyle Stroke="#E5E7EB"
+                                                StrokeWidth="1"/>
+                                    </chart:NumericalAxis.MajorGridLineStyle>
                                 </chart:NumericalAxis>
                             </chart:SfCartesianChart.YAxes>
 
-                            <chart:LineSeries x:Name="ConcentrationSeries"
-                                              ItemsSource="{Binding ChartData}"
-                                              XBindingPath="Time"
-                                              YBindingPath="Concentration"
-                                              Fill="Blue"
-                                              StrokeWidth="3"
-                                              EnableTooltip="True"
-                                              ShowMarkers="True"
-                                              MarkerSettings="{StaticResource MarkerSettings}">
-
-                                <!-- Tooltip personnalisé -->
-                                <chart:LineSeries.TooltipTemplate>
+                            <!-- COURBE LISSEE et POINTS NOIRS -->
+                            <chart:SplineSeries
+                                ItemsSource="{Binding ChartData}"
+                                XBindingPath="Time"
+                                YBindingPath="Concentration"
+                                Fill="Blue"
+                                StrokeWidth="1.5"
+                                EnableTooltip="True"
+                                ShowMarkers="True">
+                                <chart:SplineSeries.MarkerSettings>
+                                    <chart:ChartMarkerSettings
+                                        Type="Circle"
+                                        Fill="Black"
+                                        Stroke="Black"
+                                        StrokeWidth="0.5"
+                                        Height="3"
+                                        Width="3"/>
+                                </chart:SplineSeries.MarkerSettings>
+                                <chart:SplineSeries.TooltipTemplate>
                                     <DataTemplate>
-                                        <Border Background="Black"
-                                                Padding="10">
-                                            <StackLayout>
-                                                <Label Text="{Binding Item.Time, StringFormat='🕐 {0:dd/MM HH:mm}'}"
+                                        <Border Background="#23272F"
+                                                Padding="7"
+                                                Stroke="White"
+                                                StrokeThickness="0.5">
+                                            <VerticalStackLayout>
+                                                <Label Text="{Binding Item.Time, StringFormat='🕒 {0:dd/MM HH:mm}'}"
                                                        TextColor="White"
                                                        FontSize="12"/>
-                                                <Label Text="{Binding Item.Concentration, StringFormat='📊 {0:F2} unités'}"
+                                                <Label Text="{Binding Item.Concentration, StringFormat='📈 {0:F2} unités'}"
                                                        TextColor="White"
-                                                       FontSize="12"
+                                                       FontSize="13"
                                                        FontAttributes="Bold"/>
-                                            </StackLayout>
+                                            </VerticalStackLayout>
                                         </Border>
                                     </DataTemplate>
-                                </chart:LineSeries.TooltipTemplate>
-                            </chart:LineSeries>
-
-                            <!-- Ajouter les annotations pour chaque dose -->
-                            <chart:SfCartesianChart.Annotations>
-                                <!-- Les annotations seront ajoutées dynamiquement dans le code-behind -->
-                            </chart:SfCartesianChart.Annotations>
-
+                                </chart:SplineSeries.TooltipTemplate>
+                            </chart:SplineSeries>
                         </chart:SfCartesianChart>
                     </Frame>
+
                 </VerticalStackLayout>
             </Frame>
 
@@ -294,7 +293,7 @@
                                IsVisible="False"
                                Style="{StaticResource EmptyLabelStyle}"/>
                         <!-- CollectionView : la liste -->
-                        <CollectionView x:Name="DosesCollection" 
+                        <CollectionView x:Name="DosesCollection"
                                         ItemsSource="{Binding Doses}"
                                         MaximumHeightRequest="300"
                                         IsVisible="True">

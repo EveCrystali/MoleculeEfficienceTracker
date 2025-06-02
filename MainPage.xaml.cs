@@ -65,7 +65,7 @@ namespace MoleculeEfficienceTracker
 
             // Mettre à jour l'affichage
             UpdateConcentrationDisplay();
-            UpdateChart();
+            await UpdateChart();
             UpdateDoseAnnotations();
             UpdateEmptyState();
         }
@@ -97,7 +97,7 @@ namespace MoleculeEfficienceTracker
                 DoseEntry.Text = "";
 
                 UpdateConcentrationDisplay();
-                UpdateChart();
+                await UpdateChart();
 
                 // ✅ Sauvegarder automatiquement après ajout
                 await SaveDataAsync();
@@ -112,7 +112,7 @@ namespace MoleculeEfficienceTracker
             UpdateDoseAnnotations();
             if (sender is Button btn) AnimateButton(btn);
             UpdateEmptyState();
-        
+
         }
 
         private async void OnDeleteDoseClicked(object sender, EventArgs e)
@@ -130,7 +130,7 @@ namespace MoleculeEfficienceTracker
                     {
                         Doses.Remove(dose);
                         UpdateConcentrationDisplay();
-                        UpdateChart();
+                        await UpdateChart();
 
                         // ✅ Sauvegarder automatiquement après suppression
                         await SaveDataAsync();
@@ -152,7 +152,7 @@ namespace MoleculeEfficienceTracker
             LastUpdateLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
         }
 
-        private void UpdateChart()
+        private async Task UpdateChart()
         {
             ChartData.Clear();
 
@@ -222,16 +222,19 @@ namespace MoleculeEfficienceTracker
                     xAxis.ZoomPosition = 0;
                 }
             }
+
+            await ConcentrationChart.FadeTo(0.7, 80);
+            await ConcentrationChart.FadeTo(1.0, 80);
         }
 
         private void StartConcentrationTimer()
         {
             IDispatcherTimer timer = Application.Current.Dispatcher.CreateTimer();
             timer.Interval = TimeSpan.FromMinutes(1);
-            timer.Tick += (s, e) =>
+            timer.Tick += async (s, e) =>
             {
                 UpdateConcentrationDisplay();
-                UpdateChart();
+                await UpdateChart();
             };
             timer.Start();
         }
@@ -309,14 +312,15 @@ namespace MoleculeEfficienceTracker
                 CoordinateUnit = ChartCoordinateUnit.Axis,
                 X1 = now,
                 Stroke = new SolidColorBrush(Colors.Red),
-                StrokeWidth = 2,
-                // Optionnel : Afficher un label "Maintenant"
+                StrokeWidth = 1, 
+                
                 Text = "Maintenant",
                 LabelStyle = new ChartAnnotationLabelStyle
                 {
                     TextColor = Colors.Red,
-                    FontSize = 12,
-                    Margin = new Thickness(4, 0, 0, 0)
+                    FontSize = 10,
+                    HorizontalTextAlignment = ChartLabelAlignment.Start,     
+                    Margin = new Thickness(5, 0, 0, 0) 
                 }
             };
             ConcentrationChart?.Annotations.Add(nowLine);
