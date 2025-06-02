@@ -1,26 +1,26 @@
 ﻿using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Syncfusion.Maui.Charts;
 using Microsoft.Maui.Graphics;
-using System.Text.Json; // Déjà présent
-using CommunityToolkit.Maui.Storage; // <-- Ajouter pour FileSaver
-using System.Text; // <-- Ajouter pour Encoding
-
+using System.Text.Json;
+using CommunityToolkit.Maui.Storage;
+using System.Text;
 
 namespace MoleculeEfficienceTracker
 {
     public partial class MainPage : ContentPage
     {
         private readonly BromazepamCalculator calculator;
-        private readonly DataPersistenceService persistenceService; // ✅ Nouveau service
+        private readonly DataPersistenceService persistenceService;
 
         public ObservableCollection<DoseEntry> Doses { get; set; }
         public ObservableCollection<ChartDataPoint> ChartData { get; set; }
 
         private readonly IAlertService alertService;
 
-        public BromazepamCalculator Calculator => calculator; // ✅ Exposer pour le binding
+        public BromazepamCalculator Calculator => calculator;
 
         public MainPage()
         {
@@ -49,6 +49,7 @@ namespace MoleculeEfficienceTracker
         {
             base.OnAppearing();
             await LoadDataAsync();
+            UpdateEmptyState();
         }
 
         // ✅ Nouvelle méthode pour charger les données
@@ -64,8 +65,9 @@ namespace MoleculeEfficienceTracker
 
             // Mettre à jour l'affichage
             UpdateConcentrationDisplay();
-            UpdateChart();
+            await UpdateChart();
             UpdateDoseAnnotations();
+            UpdateEmptyState();
         }
 
         // ✅ Nouvelle méthode pour sauvegarder
@@ -95,7 +97,7 @@ namespace MoleculeEfficienceTracker
                 DoseEntry.Text = "";
 
                 UpdateConcentrationDisplay();
-                UpdateChart();
+                await UpdateChart();
 
                 // ✅ Sauvegarder automatiquement après ajout
                 await SaveDataAsync();
@@ -108,6 +110,9 @@ namespace MoleculeEfficienceTracker
             }
 
             UpdateDoseAnnotations();
+            if (sender is Button btn) AnimateButton(btn);
+            UpdateEmptyState();
+
         }
 
         private async void OnDeleteDoseClicked(object sender, EventArgs e)
@@ -125,7 +130,7 @@ namespace MoleculeEfficienceTracker
                     {
                         Doses.Remove(dose);
                         UpdateConcentrationDisplay();
-                        UpdateChart();
+                        await UpdateChart();
 
                         // ✅ Sauvegarder automatiquement après suppression
                         await SaveDataAsync();
@@ -134,6 +139,7 @@ namespace MoleculeEfficienceTracker
             }
 
             UpdateDoseAnnotations();
+            UpdateEmptyState();
         }
 
         // Tes autres méthodes restent identiques...
@@ -146,7 +152,7 @@ namespace MoleculeEfficienceTracker
             LastUpdateLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
         }
 
-        private void UpdateChart()
+        private async Task UpdateChart()
         {
             ChartData.Clear();
 
@@ -159,10 +165,12 @@ namespace MoleculeEfficienceTracker
                     emptyXAxis.Minimum = nowForEmptyChart.AddDays(-7);
                     emptyXAxis.Maximum = nowForEmptyChart.AddDays(7);
                     emptyXAxis.ZoomFactor = (24.0 / (14.0 * 24.0)); // 24h visible sur 14 jours
-                    emptyXAxis.ZoomPosition = ( (emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor) ) > 0 ?
+                    emptyXAxis.ZoomPosition = ((emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor)) > 0 ?
                                               (nowForEmptyChart.AddHours(-12) - emptyXAxis.Minimum.Value).TotalHours /
-                                              ( (emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor) )
-                                              : 0;
+                                              ((emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor))
+                                              : 0.5; // Centrer si la plage est nulle
+                    emptyXAxis.IntervalType = DateTimeIntervalType.Auto; // Définir le type d'intervalle
+                    emptyXAxis.Interval = 3; // Afficher une étiquette toutes les 6 heures
                     emptyXAxis.ZoomPosition = Math.Max(0.0, Math.Min(1.0, emptyXAxis.ZoomPosition));
                 }
                 return;
@@ -188,12 +196,15 @@ namespace MoleculeEfficienceTracker
                 // 2. Plage totale de l'axe X (pour le défilement)
                 xAxis.Minimum = graphDataStartTime;
                 xAxis.Maximum = graphDataEndTime;
+                // Définir l'intervalle pour afficher plus d'heures
+                xAxis.IntervalType = DateTimeIntervalType.Auto;
+                xAxis.Interval = 3; // Par exemple, une étiquette toutes les 6 heures. Ajustez selon vos besoins (ex: 4, 3).
 
                 // 3. Vue initiale visible sur l'axe X
                 DateTime initialVisibleStartTime = currentTime.AddHours(-12);
                 DateTime initialVisibleEndTime = currentTime.AddHours(24);
 
-                double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours; 
+                double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours;
                 double desiredVisibleDurationInHours = (initialVisibleEndTime - initialVisibleStartTime).TotalHours;
 
                 if (totalAxisRangeInHours > 0)
@@ -201,7 +212,7 @@ namespace MoleculeEfficienceTracker
                     xAxis.ZoomFactor = desiredVisibleDurationInHours / totalAxisRangeInHours;
                     // S'assurer que ZoomFactor est dans les limites valides (par exemple > 0 et <= 1)
                     // Utiliser une petite valeur au lieu de 0 pour éviter les problèmes
-                    xAxis.ZoomFactor = Math.Max(0.00001, Math.Min(1.0, xAxis.ZoomFactor)); 
+                    xAxis.ZoomFactor = Math.Max(0.00001, Math.Min(1.0, xAxis.ZoomFactor));
 
                     // Correction : centrer la vue autour de "now" sur la plage totale
                     double desiredStartOffsetInHours = (initialVisibleStartTime - graphDataStartTime).TotalHours;
@@ -216,16 +227,19 @@ namespace MoleculeEfficienceTracker
                     xAxis.ZoomPosition = 0;
                 }
             }
+
+            await ConcentrationChart.FadeTo(0.7, 80);
+            await ConcentrationChart.FadeTo(1.0, 80);
         }
 
         private void StartConcentrationTimer()
         {
             IDispatcherTimer timer = Application.Current.Dispatcher.CreateTimer();
             timer.Interval = TimeSpan.FromMinutes(1);
-            timer.Tick += (s, e) =>
+            timer.Tick += async (s, e) =>
             {
                 UpdateConcentrationDisplay();
-                UpdateChart();
+                await UpdateChart();
             };
             timer.Start();
         }
@@ -289,6 +303,7 @@ namespace MoleculeEfficienceTracker
             }
 
             UpdateDoseAnnotations();
+            UpdateEmptyState();
         }
 
         private void UpdateDoseAnnotations()
@@ -302,40 +317,113 @@ namespace MoleculeEfficienceTracker
                 CoordinateUnit = ChartCoordinateUnit.Axis,
                 X1 = now,
                 Stroke = new SolidColorBrush(Colors.Red),
-                StrokeWidth = 2,
-                // Optionnel : Afficher un label "Maintenant"
+                StrokeWidth = 1,
+
                 Text = "Maintenant",
                 LabelStyle = new ChartAnnotationLabelStyle
                 {
                     TextColor = Colors.Red,
-                    FontSize = 12,
-                    Margin = new Thickness(4, 0, 0, 0)
+                    FontSize = 10,
+                    HorizontalTextAlignment = ChartLabelAlignment.Start,
+                    Margin = new Thickness(5, 0, 0, 0)
                 }
             };
             ConcentrationChart?.Annotations.Add(nowLine);
 
             // Annotations fixes pour chaque dose
-            foreach (DoseEntry dose in Doses)
+            List<DoseEntry> currentDoses = Doses.ToList(); // Obtenir la liste des doses une seule fois pour le calcul
+            foreach (DoseEntry dose in Doses) // Itérer sur l'ObservableCollection Doses
             {
-                TextAnnotation annotation = new TextAnnotation
+                // Utiliser directement le calculateur pour la concentration au moment exact de la dose
+                double concentrationAtDoseTime = calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
+
+                // Annotation pour la première ligne (Dose en mg) - sera la ligne du HAUT
+                TextAnnotation doseAnnotation = new TextAnnotation
                 {
                     CoordinateUnit = ChartCoordinateUnit.Axis,
                     X1 = dose.TimeTaken,
-                    Y1 = GetConcentrationAtTime(dose.TimeTaken), // ou dose.DoseMg si vous préférez
-                    Text = $"{dose.DoseMg}mg💊\n🕐:{dose.TimeTaken:HH:mm}"
+                    Y1 = concentrationAtDoseTime,
+                    Text = $"💊{dose.DoseMg}mg",
+                    LabelStyle = new ChartAnnotationLabelStyle
+                    {
+                        VerticalTextAlignment = ChartLabelAlignment.End,
+                        HorizontalTextAlignment = ChartLabelAlignment.Center,
+                        FontSize = 10, // Taille de police pour chaque ligne
+                        TextColor = Colors.DarkSlateBlue,
+                        // Marge pour positionner cette ligne au-dessus de la ligne de l'heure
+                        // (margeDeBase + hauteurApproximativeLigneHeure + espacementEntreLignes)
+                        // Exemple: 2 (base) + 14 (hauteur approx. pour FontSize 10) + 2 (espacement) = 18
+                        Margin = new Thickness(0, 0, 0, 20)
+                    }
                 };
-                ConcentrationChart?.Annotations.Add(annotation);
+                ConcentrationChart?.Annotations.Add(doseAnnotation);
+
+                // Annotation pour la deuxième ligne (Heure) - sera la ligne du BAS
+                TextAnnotation timeAnnotation = new TextAnnotation
+                {
+                    CoordinateUnit = ChartCoordinateUnit.Axis,
+                    X1 = dose.TimeTaken,
+                    Y1 = concentrationAtDoseTime,
+                    Text = $"🕐:{dose.TimeTaken:HH:mm}",
+                    LabelStyle = new ChartAnnotationLabelStyle
+                    {
+                        VerticalTextAlignment = ChartLabelAlignment.End,
+                        HorizontalTextAlignment = ChartLabelAlignment.Center,
+                        FontSize = 10, // Taille de police pour chaque ligne
+                        TextColor = Colors.DarkSlateBlue,
+                        // Marge pour positionner cette ligne juste au-dessus du point Y1 de la courbe
+                        Margin = new Thickness(0, 0, 0, 2)
+                    }
+                };
+                ConcentrationChart?.Annotations.Add(timeAnnotation);
             }
         }
 
-        // Méthode utilitaire pour obtenir la concentration au moment de la dose (optionnel)
-        private double GetConcentrationAtTime(DateTime time)
+        private DateTime? _lastDateTimeWithDayDisplayedOnXAxis = null;
+
+        private void ChartXAxis_LabelCreated(object sender, ChartAxisLabelEventArgs e)
         {
-            // Si vos points du graphique sont dans ChartData, trouvez la concentration correspondante
-            ChartDataPoint? point = ChartData?.FirstOrDefault(p => p.Time == time);
-            return point?.Concentration ?? 0;
+            DateTime currentLabelDateTime;
+
+            // Essayer différents formats selon ce que tu utilises dans l'axe
+            if (!DateTime.TryParseExact(e.Label, "dd/MM HH:mm", null, System.Globalization.DateTimeStyles.None, out currentLabelDateTime) &&
+                !DateTime.TryParseExact(e.Label, "HH:mm", null, System.Globalization.DateTimeStyles.None, out currentLabelDateTime) &&
+                !DateTime.TryParse(e.Label, out currentLabelDateTime))
+            {
+                // Ne rien changer si on n'arrive pas à parser
+                return;
+            }
+
+            if (_lastDateTimeWithDayDisplayedOnXAxis == null ||
+                currentLabelDateTime.Date != _lastDateTimeWithDayDisplayedOnXAxis.Value.Date)
+            {
+                e.Label = currentLabelDateTime.ToString("dd/MM HH:mm");
+                _lastDateTimeWithDayDisplayedOnXAxis = currentLabelDateTime;
+            }
+            else
+            {
+                e.Label = currentLabelDateTime.ToString("HH:mm");
+            }
         }
-        
+
+
+
+        private void UpdateEmptyState()
+        {
+            bool isEmpty = !Doses.Any();
+            if (EmptyDosesLabel != null)
+                EmptyDosesLabel.IsVisible = isEmpty;
+            if (DosesCollection != null)
+                DosesCollection.IsVisible = !isEmpty;
+        }
+
+        // Animation bouton (optionnel mais "wow effect" !)
+        private async void AnimateButton(Button btn)
+        {
+            await btn.ScaleTo(1.1, 80, Easing.CubicOut);
+            await btn.ScaleTo(1.0, 80, Easing.CubicIn);
+        }
+
 
     }
 }
