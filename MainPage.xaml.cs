@@ -49,6 +49,7 @@ namespace MoleculeEfficienceTracker
         {
             base.OnAppearing();
             await LoadDataAsync();
+            UpdateEmptyState();
         }
 
         // ✅ Nouvelle méthode pour charger les données
@@ -66,6 +67,7 @@ namespace MoleculeEfficienceTracker
             UpdateConcentrationDisplay();
             UpdateChart();
             UpdateDoseAnnotations();
+            UpdateEmptyState();
         }
 
         // ✅ Nouvelle méthode pour sauvegarder
@@ -108,6 +110,9 @@ namespace MoleculeEfficienceTracker
             }
 
             UpdateDoseAnnotations();
+            if (sender is Button btn) AnimateButton(btn);
+            UpdateEmptyState();
+        
         }
 
         private async void OnDeleteDoseClicked(object sender, EventArgs e)
@@ -134,6 +139,7 @@ namespace MoleculeEfficienceTracker
             }
 
             UpdateDoseAnnotations();
+            UpdateEmptyState();
         }
 
         // Tes autres méthodes restent identiques...
@@ -159,9 +165,9 @@ namespace MoleculeEfficienceTracker
                     emptyXAxis.Minimum = nowForEmptyChart.AddDays(-7);
                     emptyXAxis.Maximum = nowForEmptyChart.AddDays(7);
                     emptyXAxis.ZoomFactor = (24.0 / (14.0 * 24.0)); // 24h visible sur 14 jours
-                    emptyXAxis.ZoomPosition = ( (emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor) ) > 0 ?
+                    emptyXAxis.ZoomPosition = ((emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor)) > 0 ?
                                               (nowForEmptyChart.AddHours(-12) - emptyXAxis.Minimum.Value).TotalHours /
-                                              ( (emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor) )
+                                              ((emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor))
                                               : 0;
                     emptyXAxis.ZoomPosition = Math.Max(0.0, Math.Min(1.0, emptyXAxis.ZoomPosition));
                 }
@@ -193,7 +199,7 @@ namespace MoleculeEfficienceTracker
                 DateTime initialVisibleStartTime = currentTime.AddHours(-12);
                 DateTime initialVisibleEndTime = currentTime.AddHours(24);
 
-                double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours; 
+                double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours;
                 double desiredVisibleDurationInHours = (initialVisibleEndTime - initialVisibleStartTime).TotalHours;
 
                 if (totalAxisRangeInHours > 0)
@@ -201,7 +207,7 @@ namespace MoleculeEfficienceTracker
                     xAxis.ZoomFactor = desiredVisibleDurationInHours / totalAxisRangeInHours;
                     // S'assurer que ZoomFactor est dans les limites valides (par exemple > 0 et <= 1)
                     // Utiliser une petite valeur au lieu de 0 pour éviter les problèmes
-                    xAxis.ZoomFactor = Math.Max(0.00001, Math.Min(1.0, xAxis.ZoomFactor)); 
+                    xAxis.ZoomFactor = Math.Max(0.00001, Math.Min(1.0, xAxis.ZoomFactor));
 
                     // Correction : centrer la vue autour de "now" sur la plage totale
                     double desiredStartOffsetInHours = (initialVisibleStartTime - graphDataStartTime).TotalHours;
@@ -289,6 +295,7 @@ namespace MoleculeEfficienceTracker
             }
 
             UpdateDoseAnnotations();
+            UpdateEmptyState();
         }
 
         private void UpdateDoseAnnotations()
@@ -335,7 +342,23 @@ namespace MoleculeEfficienceTracker
             ChartDataPoint? point = ChartData?.FirstOrDefault(p => p.Time == time);
             return point?.Concentration ?? 0;
         }
-        
+
+        private void UpdateEmptyState()
+        {
+            bool isEmpty = !Doses.Any();
+            if (EmptyDosesLabel != null)
+                EmptyDosesLabel.IsVisible = isEmpty;
+            if (DosesCollection != null)
+                DosesCollection.IsVisible = !isEmpty;
+        }
+
+        // Animation bouton (optionnel mais "wow effect" !)
+        private async void AnimateButton(Button btn)
+        {
+            await btn.ScaleTo(1.1, 80, Easing.CubicOut);
+            await btn.ScaleTo(1.0, 80, Easing.CubicIn);
+        }
+
 
     }
 }
