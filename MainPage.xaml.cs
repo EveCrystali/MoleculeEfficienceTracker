@@ -168,7 +168,9 @@ namespace MoleculeEfficienceTracker
                     emptyXAxis.ZoomPosition = ((emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor)) > 0 ?
                                               (nowForEmptyChart.AddHours(-12) - emptyXAxis.Minimum.Value).TotalHours /
                                               ((emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor))
-                                              : 0;
+                                              : 0.5; // Centrer si la plage est nulle
+                    emptyXAxis.IntervalType = DateTimeIntervalType.Auto; // Définir le type d'intervalle
+                    emptyXAxis.Interval = 3; // Afficher une étiquette toutes les 6 heures
                     emptyXAxis.ZoomPosition = Math.Max(0.0, Math.Min(1.0, emptyXAxis.ZoomPosition));
                 }
                 return;
@@ -194,6 +196,9 @@ namespace MoleculeEfficienceTracker
                 // 2. Plage totale de l'axe X (pour le défilement)
                 xAxis.Minimum = graphDataStartTime;
                 xAxis.Maximum = graphDataEndTime;
+                // Définir l'intervalle pour afficher plus d'heures
+                xAxis.IntervalType = DateTimeIntervalType.Auto;
+                xAxis.Interval = 3; // Par exemple, une étiquette toutes les 6 heures. Ajustez selon vos besoins (ex: 4, 3).
 
                 // 3. Vue initiale visible sur l'axe X
                 DateTime initialVisibleStartTime = currentTime.AddHours(-12);
@@ -326,27 +331,61 @@ namespace MoleculeEfficienceTracker
             ConcentrationChart?.Annotations.Add(nowLine);
 
             // Annotations fixes pour chaque dose
-            foreach (DoseEntry dose in Doses)
+            List<DoseEntry> currentDoses = Doses.ToList(); // Obtenir la liste des doses une seule fois pour le calcul
+            foreach (DoseEntry dose in Doses) // Itérer sur l'ObservableCollection Doses
             {
-                TextAnnotation annotation = new TextAnnotation
+                // Utiliser directement le calculateur pour la concentration au moment exact de la dose
+                double concentrationAtDoseTime = calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
+
+                // Annotation pour la première ligne (Dose en mg) - sera la ligne du HAUT
+                TextAnnotation doseAnnotation = new TextAnnotation
                 {
                     CoordinateUnit = ChartCoordinateUnit.Axis,
                     X1 = dose.TimeTaken,
-                    Y1 = GetConcentrationAtTime(dose.TimeTaken), // ou dose.DoseMg si vous préférez
-                    Text = $"{dose.DoseMg}mg💊\n🕐:{dose.TimeTaken:HH:mm}"
+                    Y1 = concentrationAtDoseTime, 
+                    Text = $"💊{dose.DoseMg}mg",
+                    LabelStyle = new ChartAnnotationLabelStyle
+                    {
+                        VerticalTextAlignment = ChartLabelAlignment.End,
+                        HorizontalTextAlignment = ChartLabelAlignment.Center, 
+                        FontSize = 10, // Taille de police pour chaque ligne
+                        TextColor = Colors.DarkSlateBlue,           
+                        // Marge pour positionner cette ligne au-dessus de la ligne de l'heure
+                        // (margeDeBase + hauteurApproximativeLigneHeure + espacementEntreLignes)
+                        // Exemple: 2 (base) + 14 (hauteur approx. pour FontSize 10) + 2 (espacement) = 18
+                        Margin = new Thickness(0, 0, 0, 20) 
+                    }
                 };
-                ConcentrationChart?.Annotations.Add(annotation);
+                ConcentrationChart?.Annotations.Add(doseAnnotation);
+
+                // Annotation pour la deuxième ligne (Heure) - sera la ligne du BAS
+                TextAnnotation timeAnnotation = new TextAnnotation
+                {
+                    CoordinateUnit = ChartCoordinateUnit.Axis,
+                    X1 = dose.TimeTaken,
+                    Y1 = concentrationAtDoseTime,
+                    Text = $"🕐:{dose.TimeTaken:HH:mm}",
+                    LabelStyle = new ChartAnnotationLabelStyle
+                    {
+                        VerticalTextAlignment = ChartLabelAlignment.End,
+                        HorizontalTextAlignment = ChartLabelAlignment.Center,
+                        FontSize = 10, // Taille de police pour chaque ligne
+                        TextColor = Colors.DarkSlateBlue,
+                        // Marge pour positionner cette ligne juste au-dessus du point Y1 de la courbe
+                        Margin = new Thickness(0, 0, 0, 2) 
+                    }
+                };
+                ConcentrationChart?.Annotations.Add(timeAnnotation);
             }
         }
 
-        // Méthode utilitaire pour obtenir la concentration au moment de la dose (optionnel)
-        private double GetConcentrationAtTime(DateTime time)
-        {
-            // Si vos points du graphique sont dans ChartData, trouvez la concentration correspondante
-            ChartDataPoint? point = ChartData?.FirstOrDefault(p => p.Time == time);
-            return point?.Concentration ?? 0;
-        }
-
+        // L'ancienne méthode GetConcentrationAtTime n'est plus nécessaire et peut être supprimée
+        // private double GetConcentrationAtTime(DateTime time)
+        // {
+        //     ChartDataPoint? point = ChartData?.FirstOrDefault(p => p.Time == time);
+        //     return point?.Concentration ?? 0;
+        // }
+ 
         private void UpdateEmptyState()
         {
             bool isEmpty = !Doses.Any();

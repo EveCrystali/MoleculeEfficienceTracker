@@ -249,8 +249,8 @@
                                         Fill="Black"
                                         Stroke="Black"
                                         StrokeWidth="0.5"
-                                        Height="3"
-                                        Width="3"/>
+                                        Height="2"
+                                        Width="2"/>
                                 </chart:SplineSeries.MarkerSettings>
                                 <chart:SplineSeries.TooltipTemplate>
                                     <DataTemplate>
