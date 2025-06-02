@@ -94,8 +94,40 @@
                             <chart:SfCartesianChart.TrackballBehavior>
                                 <chart:ChartTrackballBehavior ShowLabel="True"
                                                               ShowMarkers="True"
-                                                              ShowLine="True"/>
+                                                              ShowLine="True"                                                              
+                                                              DisplayMode="FloatAllPoints">
+                                    <!-- Style de la ligne du trackball -->
+                                    <chart:ChartTrackballBehavior.LineStyle>
+                                        <chart:ChartLineStyle Stroke="Red" 
+                                                              StrokeWidth="1.5" 
+                                                              StrokeDashArray="4,2"/>
+                                    </chart:ChartTrackballBehavior.LineStyle>
+
+                                    <!-- Style des étiquettes du trackball -->
+                                    <chart:ChartTrackballBehavior.LabelStyle>
+                                        <chart:ChartLabelStyle Background="DarkSlateGray" 
+                                                               TextColor="White" 
+                                                               FontSize="10"
+                                                               CornerRadius="3"
+                                                               />
+                                    </chart:ChartTrackballBehavior.LabelStyle>
+
+                                    <!-- Style des marqueurs du trackball (si vous voulez qu'ils soient différents de ceux de la série) -->
+                                    <chart:ChartTrackballBehavior.MarkerSettings>
+                                        <chart:ChartMarkerSettings Type="Diamond"
+                                                                   Fill="OrangeRed"
+                                                                   Stroke="White"
+                                                                   StrokeWidth="1"
+                                                                   Height="10" Width="10"/>
+                                    </chart:ChartTrackballBehavior.MarkerSettings>
+                                </chart:ChartTrackballBehavior>
                             </chart:SfCartesianChart.TrackballBehavior>
+
+                            <!-- Activer le zoom et le panoramique (défilement) -->
+                            <chart:SfCartesianChart.ZoomPanBehavior>
+                                <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True"/>
+                                <!-- ZoomMode="X" limite le zoom à l'axe X (temps), ce qui est généralement souhaité. -->
+                            </chart:SfCartesianChart.ZoomPanBehavior>
 
                             <chart:SfCartesianChart.XAxes>
                                 <chart:DateTimeAxis ShowMajorGridLines="True"
@@ -117,7 +149,8 @@
                             <chart:SfCartesianChart.YAxes>
                                 <chart:NumericalAxis ShowMajorGridLines="True"
                                                      ShowMinorGridLines="True"
-                                                     Minimum="0">
+                                                     Minimum="0"
+                                                     RangePadding="Additional"> <!-- Permet un peu d'espace au-dessus de la valeur max -->
                                     <chart:NumericalAxis.Title>
                                         <chart:ChartAxisTitle Text="Concentration (unités)"/>
                                     </chart:NumericalAxis.Title>
@@ -156,6 +189,11 @@
                                     </DataTemplate>
                                 </chart:LineSeries.TooltipTemplate>
                             </chart:LineSeries>
+
+                            <!-- Ajouter les annotations pour chaque dose -->
+                            <chart:SfCartesianChart.Annotations>
+                                <!-- Les annotations seront ajoutées dynamiquement dans le code-behind -->
+                            </chart:SfCartesianChart.Annotations>
 
                         </chart:SfCartesianChart>
                     </Frame>
@@ -202,10 +240,10 @@
             </Frame>
 
             <Frame BackgroundColor="LightGray"
-                    Padding="10"
-                    CornerRadius="5">
+                   Padding="10"
+                   CornerRadius="5">
                 <HorizontalStackLayout Spacing="10"
-                        HorizontalOptions="Center">
+                                       HorizontalOptions="Center">
                     <Button Text="💾 Exporter"
                             Clicked="OnExportDataClicked"
                             BackgroundColor="Blue"
