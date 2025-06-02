@@ -163,7 +163,7 @@ namespace MoleculeEfficienceTracker
             // Augmenter le nombre de points pour une meilleure résolution sur la période étendue.
             // Original: 200 points pour 36h. Nouvelle période: ~8 jours (192h).
             // Suggestion: 800 points (environ 4 points/heure).
-            var numberOfPoints = 800;
+            var numberOfPoints = 400;
             var graphPoints = calculator.GenerateGraph(Doses.ToList(), startTime, endTime, numberOfPoints);
 
             foreach (var point in graphPoints)
