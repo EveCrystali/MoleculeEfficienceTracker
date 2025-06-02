@@ -54,10 +54,10 @@ namespace MoleculeEfficienceTracker
         // ✅ Nouvelle méthode pour charger les données
         private async Task LoadDataAsync() // Changé de async void à async Task
         {
-            var savedDoses = await persistenceService.LoadDosesAsync();
+            List<DoseEntry> savedDoses = await persistenceService.LoadDosesAsync();
 
             Doses.Clear();
-            foreach (var dose in savedDoses.OrderByDescending(d => d.TimeTaken))
+            foreach (DoseEntry? dose in savedDoses.OrderByDescending(d => d.TimeTaken))
             {
                 Doses.Add(dose);
             }
@@ -85,11 +85,11 @@ namespace MoleculeEfficienceTracker
         {
             if (double.TryParse(DoseEntry.Text, out double doseMg) && doseMg > 0)
             {
-                var selectedDate = DatePicker.Date;
-                var selectedTime = TimePicker.Time;
-                var dateTime = selectedDate.Add(selectedTime);
+                DateTime selectedDate = DatePicker.Date;
+                TimeSpan selectedTime = TimePicker.Time;
+                DateTime dateTime = selectedDate.Add(selectedTime);
 
-                var dose = new DoseEntry(dateTime, doseMg);
+                DoseEntry dose = new DoseEntry(dateTime, doseMg);
 
                 Doses.Insert(0, dose);
                 DoseEntry.Text = "";
@@ -114,7 +114,7 @@ namespace MoleculeEfficienceTracker
         {
             if (sender is Button button && button.CommandParameter is string doseId)
             {
-                var dose = Doses.FirstOrDefault(d => d.Id == doseId);
+                DoseEntry? dose = Doses.FirstOrDefault(d => d.Id == doseId);
                 if (dose != null)
                 {
                     bool confirm = await DisplayAlert("Supprimer",
@@ -139,8 +139,8 @@ namespace MoleculeEfficienceTracker
         // Tes autres méthodes restent identiques...
         private void UpdateConcentrationDisplay()
         {
-            var currentTime = DateTime.Now;
-            var concentration = calculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
+            DateTime currentTime = DateTime.Now;
+            double concentration = calculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
 
             ConcentrationLabel.Text = $"{concentration:F2} unités";
             LastUpdateLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
@@ -152,21 +152,32 @@ namespace MoleculeEfficienceTracker
 
             if (!Doses.Any())
             {
+                // Optionnel: Configurer l'axe même sans données pour avoir une vue par défaut
+                DateTime nowForEmptyChart = DateTime.Now;
+                if (ConcentrationChart?.XAxes?.FirstOrDefault() is DateTimeAxis emptyXAxis)
+                {
+                    emptyXAxis.Minimum = nowForEmptyChart.AddDays(-7);
+                    emptyXAxis.Maximum = nowForEmptyChart.AddDays(7);
+                    emptyXAxis.ZoomFactor = (24.0 / (14.0 * 24.0)); // 24h visible sur 14 jours
+                    emptyXAxis.ZoomPosition = ( (emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor) ) > 0 ?
+                                              (nowForEmptyChart.AddHours(-12) - emptyXAxis.Minimum.Value).TotalHours /
+                                              ( (emptyXAxis.Maximum.Value - emptyXAxis.Minimum.Value).TotalHours * (1 - emptyXAxis.ZoomFactor) )
+                                              : 0;
+                    emptyXAxis.ZoomPosition = Math.Max(0.0, Math.Min(1.0, emptyXAxis.ZoomPosition));
+                }
                 return;
             }
 
-            // Étendre la période pour charger plus de données, par exemple 7 jours en arrière et 1 jour en avant.
-            var startTime = DateTime.Now.AddDays(-7);
-            var endTime = DateTime.Now.AddDays(1);
-            var currentTime = DateTime.Now;
+            DateTime currentTime = DateTime.Now;
 
-            // Augmenter le nombre de points pour une meilleure résolution sur la période étendue.
-            // Original: 200 points pour 36h. Nouvelle période: ~8 jours (192h).
-            // Suggestion: 800 points (environ 4 points/heure).
-            var numberOfPoints = 400;
-            var graphPoints = calculator.GenerateGraph(Doses.ToList(), startTime, endTime, numberOfPoints);
+            // 1. Plage de calcul des données du graphique
+            DateTime graphDataStartTime = currentTime.AddDays(-7);
+            DateTime graphDataEndTime = currentTime.AddDays(3);
+            int numberOfPoints = 10 * 24 * 2; // 10 jours, 2 points par heure
 
-            foreach (var point in graphPoints)
+            List<(DateTime Time, double Concentration)> graphPoints = calculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
+
+            foreach ((DateTime Time, double Concentration) point in graphPoints)
             {
                 ChartData.Add(new ChartDataPoint(point.Time, point.Concentration));
             }
@@ -174,26 +185,42 @@ namespace MoleculeEfficienceTracker
             // Configurer l'axe X pour la vue initiale et la plage de défilement totale
             if (ConcentrationChart?.XAxes?.FirstOrDefault() is DateTimeAxis xAxis)
             {
-                // Définir la plage totale de données que l'axe peut afficher (pour le défilement)
-                xAxis.Minimum = startTime;
-                xAxis.Maximum = endTime;
+                // 2. Plage totale de l'axe X (pour le défilement)
+                xAxis.Minimum = graphDataStartTime;
+                xAxis.Maximum = graphDataEndTime;
 
-                // Définir la vue initiale visible, par exemple les dernières 24 heures jusqu'aux prochaines 12 heures.
-                // L'utilisateur pourra ensuite défiler pour voir le reste des données (jusqu'à -7 jours).
-                var initialVisibleStartTime = DateTime.Now.AddHours(-24);
-                var initialVisibleEndTime = DateTime.Now.AddHours(12);
+                // 3. Vue initiale visible sur l'axe X
+                DateTime initialVisibleStartTime = currentTime.AddHours(-12);
+                DateTime initialVisibleEndTime = currentTime.AddHours(12);
 
-                // xAxis.VisibleMinimum = initialVisibleStartTime;
-                // xAxis.VisibleMaximum = initialVisibleEndTime;
+                double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours; 
+                double desiredVisibleDurationInHours = (initialVisibleEndTime - initialVisibleStartTime).TotalHours;
 
-                xAxis.ZoomFactor = (initialVisibleEndTime - initialVisibleStartTime).TotalHours / (endTime - startTime).TotalHours;
+                if (totalAxisRangeInHours > 0)
+                {
+                    xAxis.ZoomFactor = desiredVisibleDurationInHours / totalAxisRangeInHours;
+                    // S'assurer que ZoomFactor est dans les limites valides (par exemple > 0 et <= 1)
+                    // Utiliser une petite valeur au lieu de 0 pour éviter les problèmes
+                    xAxis.ZoomFactor = Math.Max(0.00001, Math.Min(1.0, xAxis.ZoomFactor)); 
 
+                    // Correction : centrer la vue autour de "now" sur la plage totale
+                    double desiredStartOffsetInHours = (initialVisibleStartTime - graphDataStartTime).TotalHours;
+                    xAxis.ZoomPosition = desiredStartOffsetInHours / totalAxisRangeInHours;
+                    xAxis.ZoomPosition = Math.Max(0.0, Math.Min(1.0 - xAxis.ZoomFactor, xAxis.ZoomPosition));
+                }
+                else
+                {
+                    // Cas où la plage totale est nulle ou négative, comportement par défaut
+                    // Ne devrait pas arriver avec les définitions actuelles de graphDataStartTime/EndTime
+                    xAxis.ZoomFactor = 1;
+                    xAxis.ZoomPosition = 0;
+                }
             }
         }
 
         private void StartConcentrationTimer()
         {
-            var timer = Application.Current.Dispatcher.CreateTimer();
+            IDispatcherTimer timer = Application.Current.Dispatcher.CreateTimer();
             timer.Interval = TimeSpan.FromMinutes(1);
             timer.Tick += (s, e) =>
             {
@@ -207,22 +234,22 @@ namespace MoleculeEfficienceTracker
         {
             try
             {
-                var doses = Doses.ToList();
+                List<DoseEntry> doses = Doses.ToList();
                 if (!doses.Any())
                 {
                     await DisplayAlert("📂", "Aucune donnée à exporter", "OK");
                     return;
                 }
 
-                var json = JsonSerializer.Serialize(doses, new JsonSerializerOptions { WriteIndented = true });
-                var defaultFileName = $"bromazepam_export_{DateTime.Now:yyyyMMdd_HHmm}.json";
+                string json = JsonSerializer.Serialize(doses, new JsonSerializerOptions { WriteIndented = true });
+                string defaultFileName = $"bromazepam_export_{DateTime.Now:yyyyMMdd_HHmm}.json";
 
                 // Convertir la chaîne JSON en flux (Stream)
-                using var stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
+                using MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
 
                 // Utiliser FileSaver pour permettre à l'utilisateur de choisir l'emplacement et le nom du fichier
                 // Cela ouvrira une boîte de dialogue "Enregistrer sous..."
-                var fileSaverResult = await FileSaver.Default.SaveAsync(defaultFileName, stream, CancellationToken.None);
+                FileSaverResult fileSaverResult = await FileSaver.Default.SaveAsync(defaultFileName, stream, CancellationToken.None);
 
                 if (fileSaverResult.IsSuccessful)
                 {
@@ -269,8 +296,8 @@ namespace MoleculeEfficienceTracker
             ConcentrationChart?.Annotations.Clear();
 
             // Ligne verticale "Maintenant"
-            var now = DateTime.Now;
-            var nowLine = new VerticalLineAnnotation
+            DateTime now = DateTime.Now;
+            VerticalLineAnnotation nowLine = new VerticalLineAnnotation
             {
                 CoordinateUnit = ChartCoordinateUnit.Axis,
                 X1 = now,
@@ -288,9 +315,9 @@ namespace MoleculeEfficienceTracker
             ConcentrationChart?.Annotations.Add(nowLine);
 
             // Annotations fixes pour chaque dose
-            foreach (var dose in Doses)
+            foreach (DoseEntry dose in Doses)
             {
-                var annotation = new TextAnnotation
+                TextAnnotation annotation = new TextAnnotation
                 {
                     CoordinateUnit = ChartCoordinateUnit.Axis,
                     X1 = dose.TimeTaken,
@@ -305,7 +332,7 @@ namespace MoleculeEfficienceTracker
         private double GetConcentrationAtTime(DateTime time)
         {
             // Si vos points du graphique sont dans ChartData, trouvez la concentration correspondante
-            var point = ChartData?.FirstOrDefault(p => p.Time == time);
+            ChartDataPoint? point = ChartData?.FirstOrDefault(p => p.Time == time);
             return point?.Concentration ?? 0;
         }
         
