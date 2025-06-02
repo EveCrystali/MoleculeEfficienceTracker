@@ -1,26 +1,26 @@
 ﻿using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Syncfusion.Maui.Charts;
 using Microsoft.Maui.Graphics;
-using System.Text.Json; // Déjà présent
-using CommunityToolkit.Maui.Storage; // <-- Ajouter pour FileSaver
-using System.Text; // <-- Ajouter pour Encoding
-
+using System.Text.Json;
+using CommunityToolkit.Maui.Storage;
+using System.Text;
 
 namespace MoleculeEfficienceTracker
 {
     public partial class MainPage : ContentPage
     {
         private readonly BromazepamCalculator calculator;
-        private readonly DataPersistenceService persistenceService; // ✅ Nouveau service
+        private readonly DataPersistenceService persistenceService;
 
         public ObservableCollection<DoseEntry> Doses { get; set; }
         public ObservableCollection<ChartDataPoint> ChartData { get; set; }
 
         private readonly IAlertService alertService;
 
-        public BromazepamCalculator Calculator => calculator; // ✅ Exposer pour le binding
+        public BromazepamCalculator Calculator => calculator;
 
         public MainPage()
         {
@@ -317,15 +317,15 @@ namespace MoleculeEfficienceTracker
                 CoordinateUnit = ChartCoordinateUnit.Axis,
                 X1 = now,
                 Stroke = new SolidColorBrush(Colors.Red),
-                StrokeWidth = 1, 
-                
+                StrokeWidth = 1,
+
                 Text = "Maintenant",
                 LabelStyle = new ChartAnnotationLabelStyle
                 {
                     TextColor = Colors.Red,
                     FontSize = 10,
-                    HorizontalTextAlignment = ChartLabelAlignment.Start,     
-                    Margin = new Thickness(5, 0, 0, 0) 
+                    HorizontalTextAlignment = ChartLabelAlignment.Start,
+                    Margin = new Thickness(5, 0, 0, 0)
                 }
             };
             ConcentrationChart?.Annotations.Add(nowLine);
@@ -342,18 +342,18 @@ namespace MoleculeEfficienceTracker
                 {
                     CoordinateUnit = ChartCoordinateUnit.Axis,
                     X1 = dose.TimeTaken,
-                    Y1 = concentrationAtDoseTime, 
+                    Y1 = concentrationAtDoseTime,
                     Text = $"💊{dose.DoseMg}mg",
                     LabelStyle = new ChartAnnotationLabelStyle
                     {
                         VerticalTextAlignment = ChartLabelAlignment.End,
-                        HorizontalTextAlignment = ChartLabelAlignment.Center, 
+                        HorizontalTextAlignment = ChartLabelAlignment.Center,
                         FontSize = 10, // Taille de police pour chaque ligne
-                        TextColor = Colors.DarkSlateBlue,           
+                        TextColor = Colors.DarkSlateBlue,
                         // Marge pour positionner cette ligne au-dessus de la ligne de l'heure
                         // (margeDeBase + hauteurApproximativeLigneHeure + espacementEntreLignes)
                         // Exemple: 2 (base) + 14 (hauteur approx. pour FontSize 10) + 2 (espacement) = 18
-                        Margin = new Thickness(0, 0, 0, 20) 
+                        Margin = new Thickness(0, 0, 0, 20)
                     }
                 };
                 ConcentrationChart?.Annotations.Add(doseAnnotation);
@@ -372,20 +372,42 @@ namespace MoleculeEfficienceTracker
                         FontSize = 10, // Taille de police pour chaque ligne
                         TextColor = Colors.DarkSlateBlue,
                         // Marge pour positionner cette ligne juste au-dessus du point Y1 de la courbe
-                        Margin = new Thickness(0, 0, 0, 2) 
+                        Margin = new Thickness(0, 0, 0, 2)
                     }
                 };
                 ConcentrationChart?.Annotations.Add(timeAnnotation);
             }
         }
 
-        // L'ancienne méthode GetConcentrationAtTime n'est plus nécessaire et peut être supprimée
-        // private double GetConcentrationAtTime(DateTime time)
-        // {
-        //     ChartDataPoint? point = ChartData?.FirstOrDefault(p => p.Time == time);
-        //     return point?.Concentration ?? 0;
-        // }
- 
+        private DateTime? _lastDateTimeWithDayDisplayedOnXAxis = null;
+
+        private void ChartXAxis_LabelCreated(object sender, ChartAxisLabelEventArgs e)
+        {
+            DateTime currentLabelDateTime;
+
+            // Essayer différents formats selon ce que tu utilises dans l'axe
+            if (!DateTime.TryParseExact(e.Label, "dd/MM HH:mm", null, System.Globalization.DateTimeStyles.None, out currentLabelDateTime) &&
+                !DateTime.TryParseExact(e.Label, "HH:mm", null, System.Globalization.DateTimeStyles.None, out currentLabelDateTime) &&
+                !DateTime.TryParse(e.Label, out currentLabelDateTime))
+            {
+                // Ne rien changer si on n'arrive pas à parser
+                return;
+            }
+
+            if (_lastDateTimeWithDayDisplayedOnXAxis == null ||
+                currentLabelDateTime.Date != _lastDateTimeWithDayDisplayedOnXAxis.Value.Date)
+            {
+                e.Label = currentLabelDateTime.ToString("dd/MM HH:mm");
+                _lastDateTimeWithDayDisplayedOnXAxis = currentLabelDateTime;
+            }
+            else
+            {
+                e.Label = currentLabelDateTime.ToString("HH:mm");
+            }
+        }
+
+
+
         private void UpdateEmptyState()
         {
             bool isEmpty = !Doses.Any();
