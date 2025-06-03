@@ -345,7 +345,7 @@ namespace MoleculeEfficienceTracker
                     CoordinateUnit = ChartCoordinateUnit.Axis,
                     X1 = dose.TimeTaken,
                     Y1 = concentrationAtDoseTime,
-                    Text = $"💊{dose.DoseMg}mg",
+                    Text = $"🍵{dose.DoseMg}mg",
                     LabelStyle = new ChartAnnotationLabelStyle
                     {
                         VerticalTextAlignment = ChartLabelAlignment.End,
