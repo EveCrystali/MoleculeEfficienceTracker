@@ -121,7 +121,7 @@
             <Frame Style="{StaticResource CardFrameStyle}"
                    Margin="0,0,0,0">
                 <VerticalStackLayout Spacing="14">
-                    <Label Text="💊 Ajouter une dose"
+                    <Label Text="🍾 Ajouter une dose"
                            FontSize="20"
                            FontAttributes="Bold"
                            TextColor="#3182CE"/>

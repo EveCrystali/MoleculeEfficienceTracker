@@ -327,7 +327,8 @@ namespace MoleculeEfficienceTracker
                     TextColor = Colors.Red,
                     FontSize = 10,
                     HorizontalTextAlignment = ChartLabelAlignment.Start,
-                    Margin = new Thickness(5, 0, 0, 0)
+                    VerticalTextAlignment = ChartLabelAlignment.End,
+                    Margin = new Thickness(10, 0, 0, 0)
                 }
             };
             ConcentrationChart?.Annotations.Add(nowLine);

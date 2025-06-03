@@ -149,8 +149,31 @@ namespace MoleculeEfficienceTracker
             DateTime currentTime = DateTime.Now;
             double concentration = caffeineCalculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
 
-            ConcentrationLabel.Text = $"{concentration:F2} unités";
+            ConcentrationLabel.Text = $"{concentration:F2} mg";
             LastUpdateLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
+
+            // ✅ Afficher quand l'effet devient négligeable
+            if (caffeineCalculator is CaffeineCalculator caffeineCalc)
+            {
+                var ineffectiveTime = caffeineCalc.GetIneffectiveTime(Doses.ToList(), currentTime);
+
+                if (ineffectiveTime.HasValue)
+                {
+                    var timeRemaining = ineffectiveTime.Value - currentTime;
+                    if (timeRemaining.TotalMinutes > 0)
+                    {
+                        IneffectiveTimeLabel.Text = $"⚠️ Effet négligeable à {ineffectiveTime.Value:HH:mm} (dans {timeRemaining.TotalHours:F1}h)";
+                    }
+                    else
+                    {
+                        IneffectiveTimeLabel.Text = "⚠️ Effet actuellement négligeable";
+                    }
+                }
+                else
+                {
+                    IneffectiveTimeLabel.Text = "✅ Effet maintenu (>24h)";
+                }
+            }
         }
 
         private async Task UpdateChart()
@@ -233,6 +256,33 @@ namespace MoleculeEfficienceTracker
             await ConcentrationChart.FadeTo(1.0, 80);
         }
 
+        private void AddEffectivenessThresholdLine()
+        {
+            if (caffeineCalculator is CaffeineCalculator caffeineCalc)
+            {
+                var threshold = CaffeineCalculator.GetEffectivenessThreshold();
+
+                var thresholdAnnotation = new HorizontalLineAnnotation
+                {
+                    Y1 = threshold,
+                    Stroke = Brush.Red,
+                    StrokeWidth = 2,
+                    StrokeDashArray = new DoubleCollection { 5, 5 },
+                    Text = "Seuil d'efficacité ({threshold})",
+                    LabelStyle = new ChartAnnotationLabelStyle
+                    {
+                        FontSize = 10,
+                        TextColor = Colors.Red,
+                        Background = Brush.White,
+                        CornerRadius = 3,
+                        Margin = new Thickness(5)
+                    }
+                };
+
+                ConcentrationChart.Annotations.Add(thresholdAnnotation);
+            }
+        }
+
         private void StartConcentrationTimer()
         {
             IDispatcherTimer timer = Application.Current.Dispatcher.CreateTimer();
@@ -257,7 +307,7 @@ namespace MoleculeEfficienceTracker
                 }
 
                 string json = JsonSerializer.Serialize(doses, new JsonSerializerOptions { WriteIndented = true });
-                string defaultFileName = $"{CaffeineCalculator.DisplayName.ToLowerInvariant()}_export_{DateTime.Now:yyyyMMdd_HHmm}.json"; 
+                string defaultFileName = $"{CaffeineCalculator.DisplayName.ToLowerInvariant()}_export_{DateTime.Now:yyyyMMdd_HHmm}.json";
 
 
                 // Convertir la chaîne JSON en flux (Stream)
@@ -312,6 +362,8 @@ namespace MoleculeEfficienceTracker
         {
             ConcentrationChart?.Annotations.Clear();
 
+            AddEffectivenessThresholdLine();
+
             // Ligne verticale "Maintenant"
             DateTime now = DateTime.Now;
             VerticalLineAnnotation nowLine = new VerticalLineAnnotation
@@ -327,7 +379,8 @@ namespace MoleculeEfficienceTracker
                     TextColor = Colors.Red,
                     FontSize = 10,
                     HorizontalTextAlignment = ChartLabelAlignment.Start,
-                    Margin = new Thickness(5, 0, 0, 0)
+                    VerticalTextAlignment = ChartLabelAlignment.End,
+                    Margin = new Thickness(10, 0, 0, 0)
                 }
             };
             ConcentrationChart?.Annotations.Add(nowLine);
