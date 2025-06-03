@@ -60,6 +60,12 @@ namespace MoleculeEfficienceTracker.Core.Services
             return doses.Sum(dose => CalculateSingleDoseConcentration(dose, currentTime));
         }
 
+        // Retourne la valeur de la dose en unité de concentration (mg pour la caféine)
+        public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose)
+        {
+            return dose.DoseMg * CAFFEINE_MG_PER_UNIT; // Convertit les unités entrées en mg
+        }
+
         // Génère des points pour un graphique sur une période donnée
         // Période plus courte pour la caféine (élimination plus rapide)
         public List<(DateTime Time, double Concentration)> GenerateGraph(

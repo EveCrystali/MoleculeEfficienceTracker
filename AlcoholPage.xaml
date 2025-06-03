@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:MoleculeEfficienceTracker"
              xmlns:coreServices="clr-namespace:MoleculeEfficienceTracker.Core.Services"
+             xmlns:converters="clr-namespace:MoleculeEfficienceTracker.Converters"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
              x:TypeArguments="coreServices:AlcoholCalculator"
              Title="Alcool">
@@ -12,6 +13,9 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <!-- Style de Frame général (cartes) -->
+            <converters:ConcentrationTooltipConverter x:Key="ConcentrationTooltipConverter"/>
+            <converters:DoseDisplayConverter x:Key="DoseDisplayConverter"/>
+            <converters:DoseLabelConverter x:Key="DoseLabelConverter"/>
             <Style x:Key="CardFrameStyle"
                    TargetType="Frame">
                 <Setter Property="BackgroundColor"
@@ -134,7 +138,7 @@
                           RowSpacing="12">
                         <Label Grid.Row="0"
                                Grid.Column="0"
-                               Text="Dose (mg):"
+                               Text="{Binding Source={RelativeSource AncestorType={x:Type local:AlcoholPage}}, Path=Calculator.DoseUnit, Converter={StaticResource DoseLabelConverter}}"
                                VerticalOptions="Center"/>
                         <Frame Grid.Row="0"
                                Grid.Column="1"
@@ -315,7 +319,7 @@
                                                    Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}"
                                                    VerticalOptions="Center"/>
                                             <Label Grid.Column="1"
-                                                   Text="{Binding DoseMg, StringFormat='{0}mg'}"
+                                                   Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type local:AlcoholPage}}, Path=Calculator.DoseUnit}}"
                                                    VerticalOptions="Center"
                                                    HorizontalOptions="Center"/>
                                             <Button Grid.Column="2"

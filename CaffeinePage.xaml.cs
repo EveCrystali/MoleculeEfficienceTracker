@@ -1,4 +1,4 @@
-﻿﻿using MoleculeEfficienceTracker.Core.Models;
+﻿﻿﻿﻿using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -31,7 +31,7 @@ namespace MoleculeEfficienceTracker
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(24);   // Vue initiale de +24h
 
         public CaffeinePage()
-            : base("Caffeine")
+            : base("caffeine") // Utiliser une clé en minuscules pour la cohérence
         {
             InitializeComponent();
             base.InitializePageUI(); 

@@ -83,6 +83,13 @@ namespace MoleculeEfficienceTracker.Core.Services
             return doses.Sum(dose => CalculateSingleDoseConcentrationLinear(dose, currentTime));
         }
 
+        // Retourne la valeur de la dose en unité de concentration (unités pour l'alcool)
+        public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose)
+        {
+            // Si DoseUnit et ConcentrationUnit sont "u", DoseMg est la valeur correcte.
+            return dose.DoseMg;
+        }
+
         // Génère des points pour un graphique sur une période donnée
         public List<(DateTime Time, double Concentration)> GenerateGraph(
             List<DoseEntry> doses, DateTime startTime, DateTime endTime, int pointCount = 200)

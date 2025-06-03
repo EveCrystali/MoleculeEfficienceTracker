@@ -46,6 +46,12 @@ namespace MoleculeEfficienceTracker.Core.Services
             return doses.Sum(dose => CalculateSingleDoseConcentration(dose, currentTime));
         }
 
+        // Retourne la valeur de la dose en unité de concentration (mg pour le bromazépam)
+        public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose)
+        {
+            return dose.DoseMg; // L'unité de dose est déjà en mg
+        }
+
         // Génère des points pour un graphique sur une période donnée
         public List<(DateTime Time, double Concentration)> GenerateGraph(
             List<DoseEntry> doses, DateTime startTime, DateTime endTime, int pointCount = 100)

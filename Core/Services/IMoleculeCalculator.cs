@@ -10,4 +10,5 @@ public interface IMoleculeCalculator
     string DisplayName { get; }
     string DoseUnit { get; }
     string ConcentrationUnit { get; }
+    double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose); // Nouvelle méthode
 }

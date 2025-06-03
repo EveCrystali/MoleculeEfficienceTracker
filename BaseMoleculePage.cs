@@ -299,7 +299,8 @@ namespace MoleculeEfficienceTracker
             foreach (DoseEntry dose in Doses)
             {
                 double concentrationAtDoseTime = Calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
-                string doseText = $"{DoseAnnotationIcon}{dose.DoseMg}mg"; // "mg" est l'unité de la dose elle-même
+                double displayValue = Calculator.GetDoseDisplayValueInConcentrationUnit(dose);
+                string doseText = $"{DoseAnnotationIcon}{displayValue:F2}{Calculator.ConcentrationUnit}";
 
                 TextAnnotation doseAnnotation = new TextAnnotation
                 {

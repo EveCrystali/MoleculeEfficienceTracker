@@ -314,8 +314,8 @@
                                             <Label Grid.Column="0"
                                                    Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}"
                                                    VerticalOptions="Center"/>
-                                            <Label Grid.Column="1"
-                                                   Text="{Binding DoseMg, StringFormat='{0}mg'}"
+                                            <Label Grid.Column="1"                                                   
+                                                   Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type local:BromazepamPage}}, Path=Calculator.DoseUnit}}"
                                                    VerticalOptions="Center"
                                                    HorizontalOptions="Center"/>
                                             <Button Grid.Column="2"
