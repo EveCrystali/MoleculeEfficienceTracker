@@ -18,7 +18,7 @@ namespace MoleculeEfficienceTracker
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             }).UseMauiCommunityToolkit();
             builder.Services.AddSingleton<BromazepamCalculator>();
-            builder.Services.AddTransient<MainPage>();
+            
 #if DEBUG
             builder.Logging.AddDebug();
 #endif

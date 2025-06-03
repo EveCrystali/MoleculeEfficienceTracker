@@ -10,7 +10,7 @@ using System.Text;
 
 namespace MoleculeEfficienceTracker
 {
-    public partial class MainPage : ContentPage
+    public partial class BromazepamPage : ContentPage
     {
         private readonly BromazepamCalculator calculator;
         private readonly DataPersistenceService persistenceService;
@@ -22,7 +22,7 @@ namespace MoleculeEfficienceTracker
 
         public BromazepamCalculator Calculator => calculator;
 
-        public MainPage()
+        public BromazepamPage()
         {
             InitializeComponent();
             calculator = new BromazepamCalculator();
