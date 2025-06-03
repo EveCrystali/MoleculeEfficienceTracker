@@ -40,34 +40,6 @@ namespace MoleculeEfficienceTracker
         protected override async Task OnBeforeLoadDataAsync()
         {
             await base.OnBeforeLoadDataAsync(); // Appel à l'implémentation de base (facultatif ici car vide)
-
-            // --- Début de la logique de migration ---
-            string oldDataFilePath = Path.Combine(FileSystem.AppDataDirectory, "dose_data.json");
-            if (!await PersistenceService.HasDataAsync() && File.Exists(oldDataFilePath))
-            {
-                try
-                {
-                    var oldJson = await File.ReadAllTextAsync(oldDataFilePath);
-                    var oldDoses = JsonSerializer.Deserialize<List<DoseEntry>>(oldJson, new JsonSerializerOptions { PropertyNameCaseInsensitive = true }); // Soyez flexible avec la casse pour l'ancien format
-
-                    if (oldDoses != null && oldDoses.Any())
-                    {
-                        await PersistenceService.SaveDosesAsync(oldDoses);
-                        string migratedOldFilePath = Path.Combine(FileSystem.AppDataDirectory, $"dose_data_migrated_to_{MoleculeKey}.json");
-                        File.Move(oldDataFilePath, migratedOldFilePath);
-                        await AlertService.ShowAlertAsync("Migration Réussie", $"Vos anciennes données de {Calculator.DisplayName} ont été importées.", "OK");
-                    }
-                    else if (oldDoses == null || !oldDoses.Any())
-                    {
-                        File.Delete(oldDataFilePath);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    await AlertService.ShowAlertAsync("Erreur de Migration", $"Impossible de migrer: {ex.Message}", "OK");
-                }
-            }
-            // --- Fin de la logique de migration ---
         }
     }
 }

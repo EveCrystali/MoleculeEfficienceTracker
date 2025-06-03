@@ -1,4 +1,4 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using MoleculeEfficienceTracker.Core.Models;
@@ -9,7 +9,8 @@ namespace MoleculeEfficienceTracker.Core.Services
     {
 
         public string DisplayName => "Bromazépam";
-        public string Unit => "mg";
+        public string DoseUnit => "mg";
+        public string ConcentrationUnit => "mg";
 
         // Paramètres pharmacocinétiques du bromazépam
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures

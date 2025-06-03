@@ -8,5 +8,6 @@ public interface IMoleculeCalculator
     double CalculateSingleDoseConcentration(DoseEntry dose, DateTime time);
     List<(DateTime Time, double Concentration)> GenerateGraph(List<DoseEntry> doses, DateTime startTime, DateTime endTime, int points = 200);
     string DisplayName { get; }
-    string Unit { get; }
+    string DoseUnit { get; }
+    string ConcentrationUnit { get; }
 }

@@ -8,7 +8,8 @@ namespace MoleculeEfficienceTracker.Core.Services
     public class CaffeineCalculator : IMoleculeCalculator
     {
         public string DisplayName => "Caféine";
-        public string Unit => "unités";
+        public string DoseUnit => "u";
+        public string ConcentrationUnit => "mg";
 
         // Paramètres pharmacocinétiques de la caféine
         private const double HALF_LIFE_HOURS = 5.0; // Demi-vie moyenne en heures (3-7h)

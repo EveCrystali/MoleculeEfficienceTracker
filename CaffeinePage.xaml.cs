@@ -96,11 +96,5 @@ namespace MoleculeEfficienceTracker
                 ChartControl.Annotations.Add(thresholdAnnotation);
             }
         }
-
-        // Les méthodes comme OnAddDoseClicked, OnDeleteDoseClicked, OnExportDataClicked, etc.,
-        // sont maintenant dans la classe de base et seront appelées via les gestionnaires d'événements
-        // définis dans le XAML de CaffeinePage.xaml (qui doivent pointer vers les méthodes de la base).
-        // Assurez-vous que les gestionnaires d'événements dans votre XAML (ex: Clicked="OnAddDoseClicked")
-        // correspondent aux méthodes `protected` dans `BaseMoleculePage`.
     }
 }

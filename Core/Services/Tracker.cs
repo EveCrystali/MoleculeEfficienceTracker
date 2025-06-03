@@ -53,7 +53,7 @@ public class MoleculeTracker<TCalculator> where TCalculator : IMoleculeCalculato
     private void ShowMenu()
     {
         Console.WriteLine("\n--- Menu ---");
-        Console.WriteLine($"1. Ajouter une dose ({calculator.Unit})");
+        Console.WriteLine($"1. Ajouter une dose ({calculator.DoseUnit})");
         Console.WriteLine("2. Voir la concentration actuelle");
         Console.WriteLine("3. Voir toutes les doses");
         Console.WriteLine("4. Exporter les données pour graphique");
@@ -63,7 +63,7 @@ public class MoleculeTracker<TCalculator> where TCalculator : IMoleculeCalculato
 
     private void AddDose()
     {
-        Console.Write($"Dose en {calculator.Unit} : ");
+        Console.Write($"Dose en {calculator.DoseUnit} : ");
         if (!double.TryParse(Console.ReadLine(), out double doseMg))
         {
             Console.WriteLine("Dose invalide.");
@@ -86,7 +86,7 @@ public class MoleculeTracker<TCalculator> where TCalculator : IMoleculeCalculato
         }
 
         doses.Add(new DoseEntry(timeTaken, doseMg));
-        Console.WriteLine($"✅ Dose de {doseMg}{calculator.Unit} ajoutée pour {timeTaken:dd/MM/yyyy HH:mm}");
+        Console.WriteLine($"✅ Dose de {doseMg}{calculator.DoseUnit} ajoutée pour {timeTaken:dd/MM/yyyy HH:mm}");
     }
 
     private void ShowCurrentConcentration()
@@ -103,7 +103,7 @@ public class MoleculeTracker<TCalculator> where TCalculator : IMoleculeCalculato
             var individual = calculator.CalculateSingleDoseConcentration(dose, currentTime);
             if (individual > 0.01)
             {
-                Console.WriteLine($"  {dose.TimeTaken:dd/MM HH:mm} - {dose.DoseMg}{calculator.Unit} → {individual:F2}");
+                Console.WriteLine($"  {dose.TimeTaken:dd/MM HH:mm} - {dose.DoseMg}{calculator.DoseUnit} → {individual:F2}");
             }
         }
     }
@@ -113,7 +113,7 @@ public class MoleculeTracker<TCalculator> where TCalculator : IMoleculeCalculato
         Console.WriteLine("\n📋 Historique des doses :");
         foreach (var dose in doses.OrderBy(d => d.TimeTaken))
         {
-            Console.WriteLine($"  {dose.TimeTaken:dd/MM/yyyy HH:mm} - {dose.DoseMg}{calculator.Unit}");
+            Console.WriteLine($"  {dose.TimeTaken:dd/MM/yyyy HH:mm} - {dose.DoseMg}{calculator.DoseUnit}");
         }
     }
 

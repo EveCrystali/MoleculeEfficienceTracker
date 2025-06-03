@@ -5,9 +5,12 @@ using MoleculeEfficienceTracker.Core.Models;
 
 namespace MoleculeEfficienceTracker.Core.Services
 {
-    public class AlcoholCalculator
+    public class AlcoholCalculator : IMoleculeCalculator
     {
         public string DisplayName => "Alcool";
+
+        public string DoseUnit => "u";
+        public string ConcentrationUnit => "u";
 
         // Paramètres pharmacocinétiques de l'alcool
         private const double ELIMINATION_RATE_UNITS_PER_HOUR = 1.0; // 1 unité par heure (approximation)
