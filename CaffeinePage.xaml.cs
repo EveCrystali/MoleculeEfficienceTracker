@@ -20,6 +20,7 @@ namespace MoleculeEfficienceTracker
         public ObservableCollection<ChartDataPoint> ChartData { get; set; }
 
         private readonly IAlertService alertService;
+        private bool _isYAxisThresholdConfigured = false;
 
         public CaffeineCalculator CaffeineCalculator => caffeineCalculator;
 
@@ -51,6 +52,11 @@ namespace MoleculeEfficienceTracker
             base.OnAppearing();
             await LoadDataAsync();
             UpdateEmptyState();
+            if (!_isYAxisThresholdConfigured)
+            {
+                ConfigureYAxisThresholdStripLine();
+                _isYAxisThresholdConfigured = true;
+            }
         }
 
         // ✅ Nouvelle méthode pour charger les données
@@ -155,11 +161,11 @@ namespace MoleculeEfficienceTracker
             // ✅ Afficher quand l'effet devient négligeable
             if (caffeineCalculator is CaffeineCalculator caffeineCalc)
             {
-                var ineffectiveTime = caffeineCalc.GetIneffectiveTime(Doses.ToList(), currentTime);
+                DateTime? ineffectiveTime = caffeineCalc.GetIneffectiveTime(Doses.ToList(), currentTime);
 
                 if (ineffectiveTime.HasValue)
                 {
-                    var timeRemaining = ineffectiveTime.Value - currentTime;
+                    TimeSpan timeRemaining = ineffectiveTime.Value - currentTime;
                     if (timeRemaining.TotalMinutes > 0)
                     {
                         IneffectiveTimeLabel.Text = $"⚠️ Effet négligeable à {ineffectiveTime.Value:HH:mm} (dans {timeRemaining.TotalHours:F1}h)";
@@ -256,33 +262,49 @@ namespace MoleculeEfficienceTracker
             await ConcentrationChart.FadeTo(1.0, 80);
         }
 
-        private void AddEffectivenessThresholdLine()
+        private void ConfigureYAxisThresholdStripLine()
         {
-            if (caffeineCalculator is CaffeineCalculator caffeineCalc)
+            if (ConcentrationChart != null && ConcentrationChart.YAxes.FirstOrDefault() is NumericalAxis yAxis)
             {
-                var threshold = CaffeineCalculator.GetEffectivenessThreshold();
+                double threshold = CaffeineCalculator.GetEffectivenessThreshold();
 
-                var thresholdAnnotation = new HorizontalLineAnnotation
-                {
-                    Y1 = threshold,
-                    Stroke = Brush.Red,
-                    StrokeWidth = 2,
-                    StrokeDashArray = new DoubleCollection { 5, 5 },
-                    Text = "Seuil d'efficacité ({threshold})",
-                    LabelStyle = new ChartAnnotationLabelStyle
-                    {
-                        FontSize = 10,
-                        TextColor = Colors.Red,
-                        Background = Brush.White,
-                        CornerRadius = 3,
-                        Margin = new Thickness(5)
-                    }
-                };
+// Supprimer une éventuelle stripline précédente avec le même objectif pour éviter les doublons
+// si cette méthode était appelée plusieurs fois (bien que nous visions un appel unique).
+// Remplacer tout stripline existant par le nouveau (un seul stripline supporté)
+// Supprimer les anciennes annotations de seuil si elles existent
+if (ConcentrationChart != null)
+{
+    var oldThresholdAnnotations = ConcentrationChart.Annotations
+        .OfType<HorizontalLineAnnotation>()
+        .Where(a => a.Text != null && a.Text.StartsWith("Seuil d'efficacité"))
+        .ToList();
+    foreach (var annotation in oldThresholdAnnotations)
+        ConcentrationChart.Annotations.Remove(annotation);
 
-                ConcentrationChart.Annotations.Add(thresholdAnnotation);
+    // Ajouter une nouvelle ligne horizontale pour le seuil
+    ConcentrationChart.Annotations.Add(new HorizontalLineAnnotation
+    {
+        Y1 = threshold,
+        Stroke = new SolidColorBrush(Colors.Red),
+        StrokeWidth = 2,
+        StrokeDashArray = new DoubleCollection { 5, 5 },
+        Text = $"Seuil d'efficacité",
+        LabelStyle = new ChartAnnotationLabelStyle
+        {
+            HorizontalTextAlignment = ChartLabelAlignment.Start,
+            VerticalTextAlignment = ChartLabelAlignment.Center,
+            FontSize = 10,
+            TextColor = Colors.Red,
+            Background = Brush.White,
+            CornerRadius = 3,
+            Margin = new Thickness(5, 0, 0, 0)
+
+        },
+        ShowAxisLabel = true,
+    });
+}
             }
         }
-
         private void StartConcentrationTimer()
         {
             IDispatcherTimer timer = Application.Current.Dispatcher.CreateTimer();
@@ -361,8 +383,6 @@ namespace MoleculeEfficienceTracker
         private void UpdateDoseAnnotations()
         {
             ConcentrationChart?.Annotations.Clear();
-
-            AddEffectivenessThresholdLine();
 
             // Ligne verticale "Maintenant"
             DateTime now = DateTime.Now;
