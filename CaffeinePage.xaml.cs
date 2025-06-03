@@ -1,4 +1,4 @@
-﻿using MoleculeEfficienceTracker.Core.Models;
+﻿﻿using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -80,14 +80,17 @@ namespace MoleculeEfficienceTracker
                     Stroke = Brush.Red,
                     StrokeWidth = 2,
                     StrokeDashArray = new DoubleCollection { 5, 5 },
-                    Text = $"Seuil d'efficacité ({threshold}{Calculator.Unit})", // Utiliser DoseUnit du calculateur
+                    // Rétablit le texte et les styles de label de l'annotation d'origine
+                    Text = $"Seuil d'efficacité",
                     LabelStyle = new ChartAnnotationLabelStyle
                     {
                         FontSize = 10,
                         TextColor = Colors.Red,
                         Background = Brush.White,
                         CornerRadius = 3,
-                        Margin = new Thickness(5)
+                        HorizontalTextAlignment = ChartLabelAlignment.Start,
+                        VerticalTextAlignment = ChartLabelAlignment.Center,
+                        Margin = new Thickness(5, 0, 0, 0)
                     }
                 };
                 ChartControl.Annotations.Add(thresholdAnnotation);
