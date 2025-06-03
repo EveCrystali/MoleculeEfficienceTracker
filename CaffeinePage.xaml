@@ -1,9 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<ContentPage x:Class="MoleculeEfficienceTracker.CafeinePage"
+<local:BaseMoleculePage x:Class="MoleculeEfficienceTracker.CaffeinePage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MoleculeEfficienceTracker"
+             xmlns:coreServices="clr-namespace:MoleculeEfficienceTracker.Core.Services"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
-             Title="Molecule Tracker">
+             x:TypeArguments="coreServices:CaffeineCalculator"
+             Title="Caféine">
 
     <!-- Ressources pour styles réutilisables -->
     <ContentPage.Resources>
@@ -364,4 +367,4 @@
             </Frame>
         </VerticalStackLayout>
     </ScrollView>
-</ContentPage>
+</local:BaseMoleculePage>

@@ -12,7 +12,7 @@
     <!-- Onglet Bromazépam -->
     <local:BromazepamPage Title="Bromazépam" IconImageSource="💊" />
     <!-- Onglet Caféine -->
-    <local:CafeinePage Title="Caféine" IconImageSource="🍵" />
+    <local:CaffeinePage Title="Caféine" IconImageSource="🍵" />
     <!-- Onglet Alcool -->
     <local:AlcoholPage Title="Alcool" IconImageSource="🍾" />
 </TabbedPage>

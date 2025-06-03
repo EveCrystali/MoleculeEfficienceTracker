@@ -2,7 +2,6 @@
 using MoleculeEfficienceTracker.Core.Services;
 using Syncfusion.Maui.Core.Hosting;
 using CommunityToolkit.Maui;
-using CommunityToolkit.Maui;
 
 namespace MoleculeEfficienceTracker
 {
