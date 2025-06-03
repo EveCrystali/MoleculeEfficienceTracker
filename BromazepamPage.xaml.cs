@@ -57,6 +57,45 @@ namespace MoleculeEfficienceTracker
         // ✅ Nouvelle méthode pour charger les données
         private async Task LoadDataAsync() // Changé de async void à async Task
         {
+            // --- Début de la logique de migration ---
+            string oldDataFilePath = Path.Combine(FileSystem.AppDataDirectory, "dose_data.json");
+            // persistenceService utilise déjà le nouveau chemin basé sur moleculeKey ("bromazepam_dose_data.json")
+
+            // Vérifier si la migration est nécessaire :
+            // 1. Le nouveau fichier spécifique au bromazépam n'a pas de données.
+            // 2. L'ancien fichier générique existe.
+            if (!await persistenceService.HasDataAsync() && File.Exists(oldDataFilePath))
+            {
+                try
+                {
+                    var oldJson = await File.ReadAllTextAsync(oldDataFilePath);
+                    // Utiliser les mêmes options de désérialisation que celles utilisées pour sauvegarder l'ancien fichier.
+                    // Si DataPersistenceService a toujours utilisé CamelCase, c'est bon.
+                    var oldDoses = JsonSerializer.Deserialize<List<DoseEntry>>(oldJson, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+
+                    if (oldDoses != null && oldDoses.Any())
+                    {
+                        // Sauvegarder les données lues dans le nouveau fichier spécifique au bromazépam
+                        await persistenceService.SaveDosesAsync(oldDoses);
+
+                        // Renommer l'ancien fichier pour éviter une nouvelle migration
+                        string migratedOldFilePath = Path.Combine(FileSystem.AppDataDirectory, "dose_data_migrated_to_bromazepam.json");
+                        File.Move(oldDataFilePath, migratedOldFilePath);
+
+                        await alertService.ShowAlertAsync("Migration Réussie", "Vos anciennes données de Bromazépam ont été importées avec succès.", "OK");
+                    }
+                    else if (oldDoses != null && !oldDoses.Any() || oldDoses == null) // Si l'ancien fichier était vide ou invalide
+                    {
+                        File.Delete(oldDataFilePath); // On peut le supprimer car il ne contenait rien d'utile
+                    }
+                }
+                catch (Exception ex)
+                {
+                    await alertService.ShowAlertAsync("Erreur de Migration", $"Impossible de migrer vos anciennes données : {ex.Message}", "OK");
+                }
+            }
+            // --- Fin de la logique de migration ---
+
             List<DoseEntry> savedDoses = await persistenceService.LoadDosesAsync();
 
             Doses.Clear();

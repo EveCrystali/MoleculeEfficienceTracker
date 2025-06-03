@@ -5,12 +5,14 @@ namespace MoleculeEfficienceTracker.Core.Services
 {
     public class DataPersistenceService
     {
+        private readonly string _moleculeKey;
         private readonly string dataFilePath;
         private readonly JsonSerializerOptions jsonOptions;
 
-        public DataPersistenceService()
+        public DataPersistenceService(string moleculeKey)
         {
-            dataFilePath = Path.Combine(FileSystem.AppDataDirectory, "dose_data.json");
+            _moleculeKey = moleculeKey.ToLowerInvariant(); // Assurer la cohérence de la casse
+            dataFilePath = Path.Combine(FileSystem.AppDataDirectory, $"{_moleculeKey}_dose_data.json");
             jsonOptions = new JsonSerializerOptions 
             { 
                 WriteIndented = true,
