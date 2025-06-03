@@ -14,5 +14,5 @@
     <!-- Onglet Caféine -->
     <local:CafeinePage Title="Caféine" IconImageSource="🍵" />
     <!-- Onglet Alcool -->
-    <local:AlcoolPage Title="Alcool" IconImageSource="🍾" />
+    <local:AlcoholPage Title="Alcool" IconImageSource="🍾" />
 </TabbedPage>

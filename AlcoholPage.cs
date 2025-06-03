@@ -10,9 +10,11 @@ using System.Text;
 
 namespace MoleculeEfficienceTracker
 {
-    public partial class CafeinePage : ContentPage
+    public partial class AlcoholPage : ContentPage
     {
-        private readonly BromazepamCalculator calculator;
+        const string moleculeKey = "Alcohol";
+        
+        private readonly AlcoholCalculator alcoholCalculator;
         private readonly DataPersistenceService persistenceService;
 
         public ObservableCollection<DoseEntry> Doses { get; set; }
@@ -20,13 +22,13 @@ namespace MoleculeEfficienceTracker
 
         private readonly IAlertService alertService;
 
-        public BromazepamCalculator Calculator => calculator;
+        public AlcoholCalculator AlcoholCalculator => alcoholCalculator;
 
-        public CafeinePage()
+        public AlcoholPage()
         {
             InitializeComponent();
-            calculator = new BromazepamCalculator();
-            persistenceService = new DataPersistenceService();
+            alcoholCalculator = new AlcoholCalculator();
+            persistenceService = new DataPersistenceService(moleculeKey);
             alertService = new AlertService();
 
             Doses = new ObservableCollection<DoseEntry>();
@@ -146,7 +148,7 @@ namespace MoleculeEfficienceTracker
         private void UpdateConcentrationDisplay()
         {
             DateTime currentTime = DateTime.Now;
-            double concentration = calculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
+            double concentration = alcoholCalculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
 
             ConcentrationLabel.Text = $"{concentration:F2} unités";
             LastUpdateLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
@@ -179,11 +181,11 @@ namespace MoleculeEfficienceTracker
             DateTime currentTime = DateTime.Now;
 
             // 1. Plage de calcul des données du graphique
-            DateTime graphDataStartTime = currentTime.AddDays(-7);
-            DateTime graphDataEndTime = currentTime.AddDays(3);
-            int numberOfPoints = 10 * 24 * 2; // 10 jours, 2 points par heure
+            DateTime graphDataStartTime = currentTime.AddDays(-3);
+            DateTime graphDataEndTime = currentTime.AddDays(1);
+            int numberOfPoints = 4 * 24 * 4; // 8 jours, 4 points par heure
 
-            List<(DateTime Time, double Concentration)> graphPoints = calculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
+            List<(DateTime Time, double Concentration)> graphPoints = alcoholCalculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
 
             foreach ((DateTime Time, double Concentration) point in graphPoints)
             {
@@ -202,7 +204,7 @@ namespace MoleculeEfficienceTracker
 
                 // 3. Vue initiale visible sur l'axe X
                 DateTime initialVisibleStartTime = currentTime.AddHours(-12);
-                DateTime initialVisibleEndTime = currentTime.AddHours(24);
+                DateTime initialVisibleEndTime = currentTime.AddHours(12);
 
                 double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours;
                 double desiredVisibleDurationInHours = (initialVisibleEndTime - initialVisibleStartTime).TotalHours;
@@ -256,7 +258,7 @@ namespace MoleculeEfficienceTracker
                 }
 
                 string json = JsonSerializer.Serialize(doses, new JsonSerializerOptions { WriteIndented = true });
-                string defaultFileName = $"bromazepam_export_{DateTime.Now:yyyyMMdd_HHmm}.json";
+                string defaultFileName = $"{AlcoholCalculator.DisplayName.ToLowerInvariant()}_export_{DateTime.Now:yyyyMMdd_HHmm}.json"; 
 
                 // Convertir la chaîne JSON en flux (Stream)
                 using MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
@@ -297,7 +299,7 @@ namespace MoleculeEfficienceTracker
                 Doses.Clear();
                 await persistenceService.DeleteAllDataAsync();
                 UpdateConcentrationDisplay();
-                UpdateChart();
+                await UpdateChart();
 
                 await DisplayAlert("✅", "Toutes les données ont été supprimées", "OK");
             }
@@ -335,7 +337,7 @@ namespace MoleculeEfficienceTracker
             foreach (DoseEntry dose in Doses) // Itérer sur l'ObservableCollection Doses
             {
                 // Utiliser directement le calculateur pour la concentration au moment exact de la dose
-                double concentrationAtDoseTime = calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
+                double concentrationAtDoseTime = alcoholCalculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
 
                 // Annotation pour la première ligne (Dose en mg) - sera la ligne du HAUT
                 TextAnnotation doseAnnotation = new TextAnnotation

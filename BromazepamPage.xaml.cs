@@ -7,12 +7,14 @@ using Microsoft.Maui.Graphics;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
 using System.Text;
+using System.IO;
 
 namespace MoleculeEfficienceTracker
 {
     public partial class BromazepamPage : ContentPage
     {
-        private readonly BromazepamCalculator calculator;
+        const string moleculeKey = "bromazepam";
+        private readonly BromazepamCalculator bromazepamCalculator;
         private readonly DataPersistenceService persistenceService;
 
         public ObservableCollection<DoseEntry> Doses { get; set; }
@@ -20,13 +22,13 @@ namespace MoleculeEfficienceTracker
 
         private readonly IAlertService alertService;
 
-        public BromazepamCalculator Calculator => calculator;
+        public BromazepamCalculator BromazepamCalculator => bromazepamCalculator;
 
         public BromazepamPage()
         {
             InitializeComponent();
-            calculator = new BromazepamCalculator();
-            persistenceService = new DataPersistenceService();
+            bromazepamCalculator = new BromazepamCalculator();
+            persistenceService = new DataPersistenceService(moleculeKey);
             alertService = new AlertService();
 
             Doses = new ObservableCollection<DoseEntry>();
@@ -146,7 +148,7 @@ namespace MoleculeEfficienceTracker
         private void UpdateConcentrationDisplay()
         {
             DateTime currentTime = DateTime.Now;
-            double concentration = calculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
+            double concentration = bromazepamCalculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
 
             ConcentrationLabel.Text = $"{concentration:F2} unités";
             LastUpdateLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
@@ -183,7 +185,7 @@ namespace MoleculeEfficienceTracker
             DateTime graphDataEndTime = currentTime.AddDays(3);
             int numberOfPoints = 10 * 24 * 2; // 10 jours, 2 points par heure
 
-            List<(DateTime Time, double Concentration)> graphPoints = calculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
+            List<(DateTime Time, double Concentration)> graphPoints = bromazepamCalculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
 
             foreach ((DateTime Time, double Concentration) point in graphPoints)
             {
@@ -256,7 +258,7 @@ namespace MoleculeEfficienceTracker
                 }
 
                 string json = JsonSerializer.Serialize(doses, new JsonSerializerOptions { WriteIndented = true });
-                string defaultFileName = $"bromazepam_export_{DateTime.Now:yyyyMMdd_HHmm}.json";
+                string defaultFileName = $"{BromazepamCalculator.DisplayName.ToLowerInvariant()}_export_{DateTime.Now:yyyyMMdd_HHmm}.json"; // MODIFIÉ ICI
 
                 // Convertir la chaîne JSON en flux (Stream)
                 using MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
@@ -335,7 +337,7 @@ namespace MoleculeEfficienceTracker
             foreach (DoseEntry dose in Doses) // Itérer sur l'ObservableCollection Doses
             {
                 // Utiliser directement le calculateur pour la concentration au moment exact de la dose
-                double concentrationAtDoseTime = calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
+                double concentrationAtDoseTime = bromazepamCalculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
 
                 // Annotation pour la première ligne (Dose en mg) - sera la ligne du HAUT
                 TextAnnotation doseAnnotation = new TextAnnotation

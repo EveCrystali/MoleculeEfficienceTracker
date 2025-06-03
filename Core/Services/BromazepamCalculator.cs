@@ -5,8 +5,12 @@ using MoleculeEfficienceTracker.Core.Models;
 
 namespace MoleculeEfficienceTracker.Core.Services
 {
-    public class BromazepamCalculator
+    public class BromazepamCalculator : IMoleculeCalculator
     {
+
+        public string DisplayName => "Bromazépam";
+        public string Unit => "mg";
+
         // Paramètres pharmacocinétiques du bromazépam
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures
         private const double ABSORPTION_TIME_HOURS = 2.0; // Temps pour atteindre le pic

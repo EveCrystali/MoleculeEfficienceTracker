@@ -10,9 +10,10 @@ using System.Text;
 
 namespace MoleculeEfficienceTracker
 {
-    public partial class AlcoolPage : ContentPage
+    public partial class CafeinePage : ContentPage
     {
-        private readonly BromazepamCalculator calculator;
+        const string moleculeKey = "caffeine";
+        private readonly CaffeineCalculator caffeineCalculator;
         private readonly DataPersistenceService persistenceService;
 
         public ObservableCollection<DoseEntry> Doses { get; set; }
@@ -20,13 +21,13 @@ namespace MoleculeEfficienceTracker
 
         private readonly IAlertService alertService;
 
-        public BromazepamCalculator Calculator => calculator;
+        public CaffeineCalculator CaffeineCalculator => caffeineCalculator;
 
-        public AlcoolPage()
+        public CafeinePage()
         {
             InitializeComponent();
-            calculator = new BromazepamCalculator();
-            persistenceService = new DataPersistenceService();
+            caffeineCalculator = new CaffeineCalculator();
+            persistenceService = new DataPersistenceService(moleculeKey);
             alertService = new AlertService();
 
             Doses = new ObservableCollection<DoseEntry>();
@@ -146,7 +147,7 @@ namespace MoleculeEfficienceTracker
         private void UpdateConcentrationDisplay()
         {
             DateTime currentTime = DateTime.Now;
-            double concentration = calculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
+            double concentration = caffeineCalculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
 
             ConcentrationLabel.Text = $"{concentration:F2} unités";
             LastUpdateLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
@@ -183,7 +184,7 @@ namespace MoleculeEfficienceTracker
             DateTime graphDataEndTime = currentTime.AddDays(3);
             int numberOfPoints = 10 * 24 * 2; // 10 jours, 2 points par heure
 
-            List<(DateTime Time, double Concentration)> graphPoints = calculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
+            List<(DateTime Time, double Concentration)> graphPoints = caffeineCalculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
 
             foreach ((DateTime Time, double Concentration) point in graphPoints)
             {
@@ -201,7 +202,7 @@ namespace MoleculeEfficienceTracker
                 xAxis.Interval = 3; // Par exemple, une étiquette toutes les 6 heures. Ajustez selon vos besoins (ex: 4, 3).
 
                 // 3. Vue initiale visible sur l'axe X
-                DateTime initialVisibleStartTime = currentTime.AddHours(-12);
+                DateTime initialVisibleStartTime = currentTime.AddHours(-24);
                 DateTime initialVisibleEndTime = currentTime.AddHours(24);
 
                 double totalAxisRangeInHours = (graphDataEndTime - graphDataStartTime).TotalHours;
@@ -256,7 +257,8 @@ namespace MoleculeEfficienceTracker
                 }
 
                 string json = JsonSerializer.Serialize(doses, new JsonSerializerOptions { WriteIndented = true });
-                string defaultFileName = $"bromazepam_export_{DateTime.Now:yyyyMMdd_HHmm}.json";
+                string defaultFileName = $"{CaffeineCalculator.DisplayName.ToLowerInvariant()}_export_{DateTime.Now:yyyyMMdd_HHmm}.json"; 
+
 
                 // Convertir la chaîne JSON en flux (Stream)
                 using MemoryStream stream = new MemoryStream(Encoding.UTF8.GetBytes(json));
@@ -297,7 +299,7 @@ namespace MoleculeEfficienceTracker
                 Doses.Clear();
                 await persistenceService.DeleteAllDataAsync();
                 UpdateConcentrationDisplay();
-                UpdateChart();
+                await UpdateChart();
 
                 await DisplayAlert("✅", "Toutes les données ont été supprimées", "OK");
             }
@@ -335,7 +337,7 @@ namespace MoleculeEfficienceTracker
             foreach (DoseEntry dose in Doses) // Itérer sur l'ObservableCollection Doses
             {
                 // Utiliser directement le calculateur pour la concentration au moment exact de la dose
-                double concentrationAtDoseTime = calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
+                double concentrationAtDoseTime = caffeineCalculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
 
                 // Annotation pour la première ligne (Dose en mg) - sera la ligne du HAUT
                 TextAnnotation doseAnnotation = new TextAnnotation
