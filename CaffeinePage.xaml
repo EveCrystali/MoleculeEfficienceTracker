@@ -109,7 +109,7 @@
                              BackgroundColor="{StaticResource MainBgColor}">
 
             <!-- HEADER -->
-            <Label Text="📊 Calculateur de Bromazépam"
+            <Label Text="📊 Calculateur de Caféine"
                    FontSize="32"
                    TextColor="#2D3748"
                    HorizontalOptions="Center"
