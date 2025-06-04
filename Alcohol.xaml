@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:BaseMoleculePage x:Class="MoleculeEfficienceTracker.AlcoholPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MoleculeEfficienceTracker"
+             xmlns:coreServices="clr-namespace:MoleculeEfficienceTracker.Core.Services"
+             xmlns:converters="clr-namespace:MoleculeEfficienceTracker.Converters"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+             x:TypeArguments="coreServices:AlcoholCalculator"
+             Title="Alcool">
+
+    <!-- Ressources pour styles réutilisables -->
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <!-- Style de Frame général (cartes) -->
+            <converters:ConcentrationTooltipConverter x:Key="ConcentrationTooltipConverter"/>
+            <converters:DoseDisplayConverter x:Key="DoseDisplayConverter"/>
+            <converters:DoseLabelConverter x:Key="DoseLabelConverter"/>
+            <Style x:Key="CardFrameStyle"
+                   TargetType="Frame">
+                <Setter Property="BackgroundColor"
+                        Value="#F7FAFC"/>
+                <Setter Property="CornerRadius"
+                        Value="18"/>
+                <Setter Property="Padding"
+                        Value="20"/>
+                <Setter Property="HasShadow"
+                        Value="True"/>
+                <Setter Property="Shadow">
+                    <Setter.Value>
+                        <Shadow Brush="#C9D6FF"
+                                Offset="0,4"
+                                Radius="16"
+                                Opacity="0.13"/>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+            <Style x:Key="PrimaryButtonStyle"
+                   TargetType="Button">
+                <Setter Property="BackgroundColor"
+                        Value="#3182CE"/>
+                <Setter Property="TextColor"
+                        Value="White"/>
+                <Setter Property="CornerRadius"
+                        Value="12"/>
+                <Setter Property="FontAttributes"
+                        Value="Bold"/>
+                <Setter Property="FontSize"
+                        Value="16"/>
+                <Setter Property="Padding"
+                        Value="14,8"/>
+            </Style>
+            <Style x:Key="DeleteButtonStyle"
+                   TargetType="Button">
+                <Setter Property="BackgroundColor"
+                        Value="#E53E3E"/>
+                <Setter Property="TextColor"
+                        Value="White"/>
+                <Setter Property="CornerRadius"
+                        Value="10"/>
+                <Setter Property="FontAttributes"
+                        Value="Bold"/>
+                <Setter Property="FontSize"
+                        Value="16"/>
+                <Setter Property="Padding"
+                        Value="12,8"/>
+            </Style>
+            <!-- Fond général de la page -->
+            <Color x:Key="MainBgColor">#F0F4F8</Color>
+            <!-- Pour le EmptyState -->
+            <Style x:Key="EmptyLabelStyle"
+                   TargetType="Label">
+                <Setter Property="TextColor"
+                        Value="#A0AEC0"/>
+                <Setter Property="FontSize"
+                        Value="18"/>
+                <Setter Property="HorizontalOptions"
+                        Value="Center"/>
+                <Setter Property="FontAttributes"
+                        Value="Italic"/>
+                <Setter Property="Margin"
+                        Value="0,20,0,0"/>
+            </Style>
+
+            <!-- ... autres styles ... -->
+
+            <!-- Styles pour le Trackball du graphique -->
+            <chart:ChartLineStyle x:Key="CustomTrackballLineStyle"
+                                  Stroke="#3182CE"
+                                  StrokeWidth="2"
+                                  StrokeDashArray="3,2"/>
+
+            <chart:ChartLabelStyle x:Key="CustomTrackballLabelStyle"
+                                   Background="#2D3748"
+                                   TextColor="White"
+                                   FontSize="12"
+                                   CornerRadius="4"/>
+
+            <chart:ChartMarkerSettings x:Key="CustomTrackballMarkerSettings"
+                                       Type="Circle"
+                                       Fill="#3182CE"
+                                       Stroke="White"
+                                       StrokeWidth="2"
+                                       Height="16"
+                                       Width="16"/>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+
+    <ContentPage.Background>
+        <SolidColorBrush Color="{StaticResource MainBgColor}"/>
+    </ContentPage.Background>
+
+    <ScrollView>
+        <VerticalStackLayout Spacing="28"
+                             Padding="26"
+                             BackgroundColor="{StaticResource MainBgColor}">
+
+            <!-- HEADER -->
+            <Label Text="📊 Calculateur de Alcool"
+                   FontSize="32"
+                   TextColor="#2D3748"
+                   HorizontalOptions="Center"
+                   FontAttributes="Bold"
+                   Margin="0,10,0,8"
+                   Shadow="2,2,6,Gray"/>
+
+            <!-- AJOUTER UNE DOSE -->
+            <Frame Style="{StaticResource CardFrameStyle}"
+                   Margin="0,0,0,0">
+                <VerticalStackLayout Spacing="14">
+                    <Label Text="🍾 Ajouter une dose"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#3182CE"/>
+                    <Grid ColumnDefinitions="Auto,*"
+                          RowDefinitions="Auto,Auto"
+                          ColumnSpacing="12"
+                          RowSpacing="12">
+                        <Label Grid.Row="0"
+                               Grid.Column="0"
+                               Text="{Binding Source={RelativeSource AncestorType={x:Type local:AlcoholPage}}, Path=AlcoholCalculator.DoseUnit, Converter={StaticResource DoseLabelConverter}}"
+                               VerticalOptions="Center"/>
+                        <Frame Grid.Row="0"
+                               Grid.Column="1"
+                               CornerRadius="8"
+                               Padding="0"
+                               BackgroundColor="#EBF8FF"
+                               HasShadow="False"
+                               VerticalOptions="Center"
+                               HeightRequest="38">
+                            <Entry x:Name="DoseEntry"
+                                   Placeholder="3.0"
+                                   Keyboard="Numeric"
+                                   BackgroundColor="Transparent"
+                                   HeightRequest="38"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+                        <Label Grid.Row="1"
+                               Grid.Column="0"
+                               Text="Date/Heure:"
+                               VerticalOptions="Center"/>
+                        <HorizontalStackLayout Grid.Row="1"
+                                               Grid.Column="1"
+                                               Spacing="8">
+                            <DatePicker x:Name="DatePicker"/>
+                            <TimePicker x:Name="TimePicker"
+                                        Format="HH:mm"/>
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Button x:Name="AddDoseBtn"
+                            Text="Ajouter la dose"
+                            Clicked="OnAddDoseClicked"
+                            Style="{StaticResource PrimaryButtonStyle}"/>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- CONCENTRATION & GRAPHIQUE -->
+            <Frame Style="{StaticResource CardFrameStyle}"
+                   BackgroundColor="#E6FFFA">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Concentration actuelle"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#319795"/>
+                    <Label x:Name="ConcentrationLabel"
+                           FontSize="38"
+                           FontAttributes="Bold"
+                           TextColor="#22543D"
+                           HorizontalOptions="Center"/>
+                    <Label x:Name="LastUpdateLabel"
+                           FontSize="14"
+                           TextColor="#718096"
+                           HorizontalOptions="Center"/>
+                    <Frame Padding="10"
+                           CornerRadius="10"
+                           BackgroundColor="White"
+                           HasShadow="True"
+                           Margin="0,8,0,0"
+                           HeightRequest="300">
+                        <chart:SfCartesianChart x:Name="ConcentrationChart">
+
+                            <chart:SfCartesianChart.TrackballBehavior>
+                                <chart:ChartTrackballBehavior ShowLabel="True"
+                                                              ShowMarkers="True"
+                                                              ShowLine="True"
+                                                              DisplayMode="FloatAllPoints"/>
+                            </chart:SfCartesianChart.TrackballBehavior>
+
+                            <chart:SfCartesianChart.ZoomPanBehavior>
+                                <chart:ChartZoomPanBehavior ZoomMode="X"
+                                        EnablePanning="True"/>
+                            </chart:SfCartesianChart.ZoomPanBehavior>
+
+                            <chart:SfCartesianChart.XAxes>
+                                <chart:DateTimeAxis ShowMajorGridLines="True"
+                                                    ShowMinorGridLines="False"
+                                                    EdgeLabelsDrawingMode="Fit"
+                                                    LabelCreated="ChartXAxis_LabelCreated">
+                                    <chart:DateTimeAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH:mm"
+                                                                   FontSize="10"
+                                                                   TextColor="#31465D"/>
+                                    </chart:DateTimeAxis.LabelStyle>
+                                    <chart:DateTimeAxis.MajorGridLineStyle>
+                                        <chart:ChartLineStyle Stroke="#E5E7EB"
+                                                StrokeWidth="1"/>
+                                    </chart:DateTimeAxis.MajorGridLineStyle>
+                                </chart:DateTimeAxis>
+                            </chart:SfCartesianChart.XAxes>
+                            <chart:SfCartesianChart.YAxes>
+                                <chart:NumericalAxis Minimum="0"
+                                                     ShowMajorGridLines="True"
+                                                     ShowMinorGridLines="False">
+                                    <chart:NumericalAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle FontSize="10"
+                                                                   TextColor="#31465D"/>
+                                    </chart:NumericalAxis.LabelStyle>
+                                    <chart:NumericalAxis.MajorGridLineStyle>
+                                        <chart:ChartLineStyle Stroke="#E5E7EB"
+                                                StrokeWidth="1"/>
+                                    </chart:NumericalAxis.MajorGridLineStyle>
+                                </chart:NumericalAxis>
+                            </chart:SfCartesianChart.YAxes>
+
+                            <!-- COURBE LISSEE et POINTS NOIRS -->
+                            <chart:SplineSeries
+                                ItemsSource="{Binding ChartData}"
+                                XBindingPath="Time"
+                                YBindingPath="Concentration"
+                                Fill="Blue"
+                                StrokeWidth="1.5"
+                                EnableTooltip="True"
+                                ShowMarkers="True">
+                                <chart:SplineSeries.MarkerSettings>
+                                    <chart:ChartMarkerSettings
+                                        Type="Circle"
+                                        Fill="Black"
+                                        Stroke="Black"
+                                        StrokeWidth="0.5"
+                                        Height="2"
+                                        Width="2"/>
+                                </chart:SplineSeries.MarkerSettings>
+                                <chart:SplineSeries.TooltipTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#23272F"
+                                                Padding="7"
+                                                Stroke="White"
+                                                StrokeThickness="0.5">
+                                            <VerticalStackLayout>
+                                                <Label Text="{Binding Item.Time, StringFormat='🕒 {0:dd/MM HH:mm}'}"
+                                                       TextColor="White"
+                                                       FontSize="12"/>
+                                                <Label Text="{Binding Item.Concentration, StringFormat='📈 {0:F2} unités'}"
+                                                       TextColor="White"
+                                                       FontSize="13"
+                                                       FontAttributes="Bold"/>
+                                            </VerticalStackLayout>
+                                        </Border>
+                                    </DataTemplate>
+                                </chart:SplineSeries.TooltipTemplate>
+                            </chart:SplineSeries>
+                        </chart:SfCartesianChart>
+                    </Frame>
+
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- LISTE DES DOSES -->
+            <Frame Style="{StaticResource CardFrameStyle}"
+                   BackgroundColor="#FFFDE7">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Doses récentes"
+                           FontSize="20"
+                           FontAttributes="Bold"
+                           TextColor="#B7791F"/>
+                    <Grid x:Name="DosesListContainer"
+                          VerticalOptions="Start"> <!-- Empêche le Grid de s'étendre inutilement si vide -->
+                        <!-- Empty State (masqué quand il y a des doses) -->
+                        <Label x:Name="EmptyDosesLabel"
+                               Text="Aucune dose enregistrée 💤"
+                               IsVisible="{Binding IsDosesListEmpty}"
+                               Style="{StaticResource EmptyLabelStyle}"/>
+                        <!-- CollectionView : la liste -->
+                        <CollectionView x:Name="DosesCollection"
+                                        ItemsSource="{Binding Doses}"
+                                        MaximumHeightRequest="300"
+                                        IsVisible="{Binding HasDoses}"> <!-- Lier à une propriété booléenne -->
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Frame BackgroundColor="#FAF5FF"
+                                           CornerRadius="8"
+                                           Padding="0"
+                                           Margin="0,3"
+                                           HasShadow="False">
+                                        <Grid Padding="10,6"
+                                              ColumnDefinitions="*,*,Auto"
+                                              VerticalOptions="Center">
+                                            <Label Grid.Column="0"
+                                                   Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}"
+                                                   VerticalOptions="Center"/>
+                                            <Label Grid.Column="1"
+                                                   Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type local:AlcoholPage}}, Path=Calculator.DoseUnit}}"
+                                                   VerticalOptions="Center"
+                                                   HorizontalOptions="Center"/>
+                                            <Button Grid.Column="2"
+                                                    Text="❌"
+                                                    CommandParameter="{Binding Id}"
+                                                    Clicked="OnDeleteDoseClicked"
+                                                    Style="{StaticResource DeleteButtonStyle}"
+                                                    WidthRequest="38"
+                                                    HeightRequest="28"/>
+                                        </Grid>
+                                    </Frame>
+                                </DataTemplate>
+
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Grid>
+                </VerticalStackLayout>
+            </Frame>
+
+            <!-- BOUTONS EXPORT/RESET -->
+            <Frame Style="{StaticResource CardFrameStyle}"
+                   Padding="12"
+                   BackgroundColor="#EDF2F7">
+                <HorizontalStackLayout Spacing="22"
+                                       HorizontalOptions="Center">
+                    <Button Text="💾 Exporter"
+                            Clicked="OnExportDataClicked"
+                            Style="{StaticResource PrimaryButtonStyle}"/>
+                    <Button Text="🗑️ Effacer tout"
+                            Clicked="OnClearAllDataClicked"
+                            Style="{StaticResource DeleteButtonStyle}"/>
+                </HorizontalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</local:BaseMoleculePage>

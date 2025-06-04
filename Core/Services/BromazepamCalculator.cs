@@ -1,12 +1,17 @@
-﻿using System;
+﻿﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using MoleculeEfficienceTracker.Core.Models;
 
 namespace MoleculeEfficienceTracker.Core.Services
 {
-    public class BromazepamCalculator
+    public class BromazepamCalculator : IMoleculeCalculator
     {
+
+        public string DisplayName => "Bromazépam";
+        public string DoseUnit => "mg";
+        public string ConcentrationUnit => "mg";
+
         // Paramètres pharmacocinétiques du bromazépam
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures
         private const double ABSORPTION_TIME_HOURS = 2.0; // Temps pour atteindre le pic
@@ -39,6 +44,12 @@ namespace MoleculeEfficienceTracker.Core.Services
         public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime currentTime)
         {
             return doses.Sum(dose => CalculateSingleDoseConcentration(dose, currentTime));
+        }
+
+        // Retourne la valeur de la dose en unité de concentration (mg pour le bromazépam)
+        public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose)
+        {
+            return dose.DoseMg; // L'unité de dose est déjà en mg
         }
 
         // Génère des points pour un graphique sur une période donnée

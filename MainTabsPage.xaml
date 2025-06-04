@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TabbedPage
+    x:Class="MoleculeEfficienceTracker.MainTabsPage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MoleculeEfficienceTracker"
+    BarBackgroundColor="#F7FAFC"
+    BarTextColor="#2D3748"
+    SelectedTabColor="#3182CE"
+    UnselectedTabColor="#A0AEC0">
+    
+    <!-- Onglet Bromazépam -->
+    <local:BromazepamPage Title="Bromazépam" IconImageSource="💊" />
+    <!-- Onglet Caféine -->
+    <local:CaffeinePage Title="Caféine" IconImageSource="🍵" />
+    <!-- Onglet Alcool -->
+    <local:AlcoholPage Title="Alcool" IconImageSource="🍾" />
+</TabbedPage>

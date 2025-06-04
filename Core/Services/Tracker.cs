@@ -1,26 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using MoleculeEfficienceTracker.Core.Models;
 
 namespace MoleculeEfficienceTracker.Core.Services;
 
-public class BromazepamTracker
+public class MoleculeTracker<TCalculator> where TCalculator : IMoleculeCalculator, new()
 {
-    private List<DoseEntry> doses;
-    private BromazepamCalculator calculator;
+    private readonly List<DoseEntry> doses;
+    private readonly TCalculator calculator;
 
-    public BromazepamTracker()
+    public MoleculeTracker()
     {
         doses = new List<DoseEntry>();
-        calculator = new BromazepamCalculator();
+        calculator = new TCalculator();
     }
 
     public void Run()
     {
-        Console.WriteLine("=== Calculateur de Bromazépam ===");
+        Console.WriteLine($"=== Calculateur de {calculator.DisplayName} ===");
         Console.WriteLine("⚠️  À des fins éducatives uniquement - Suivez toujours votre prescription médicale");
         Console.WriteLine();
 
@@ -55,7 +53,7 @@ public class BromazepamTracker
     private void ShowMenu()
     {
         Console.WriteLine("\n--- Menu ---");
-        Console.WriteLine("1. Ajouter une dose");
+        Console.WriteLine($"1. Ajouter une dose ({calculator.DoseUnit})");
         Console.WriteLine("2. Voir la concentration actuelle");
         Console.WriteLine("3. Voir toutes les doses");
         Console.WriteLine("4. Exporter les données pour graphique");
@@ -65,7 +63,7 @@ public class BromazepamTracker
 
     private void AddDose()
     {
-        Console.Write("Dose en mg : ");
+        Console.Write($"Dose en {calculator.DoseUnit} : ");
         if (!double.TryParse(Console.ReadLine(), out double doseMg))
         {
             Console.WriteLine("Dose invalide.");
@@ -88,7 +86,7 @@ public class BromazepamTracker
         }
 
         doses.Add(new DoseEntry(timeTaken, doseMg));
-        Console.WriteLine($"✅ Dose de {doseMg}mg ajoutée pour {timeTaken:dd/MM/yyyy HH:mm}");
+        Console.WriteLine($"✅ Dose de {doseMg}{calculator.DoseUnit} ajoutée pour {timeTaken:dd/MM/yyyy HH:mm}");
     }
 
     private void ShowCurrentConcentration()
@@ -99,14 +97,13 @@ public class BromazepamTracker
         Console.WriteLine($"\n📊 Concentration actuelle estimée : {concentration:F2} unités");
         Console.WriteLine($"🕐 Calculé à : {currentTime:dd/MM/yyyy HH:mm}");
 
-        // Affichage de la contribution de chaque dose
         Console.WriteLine("\nContribution par dose :");
         foreach (var dose in doses.OrderByDescending(d => d.TimeTaken))
         {
             var individual = calculator.CalculateSingleDoseConcentration(dose, currentTime);
-            if (individual > 0.01) // Seuil minimal pour affichage
+            if (individual > 0.01)
             {
-                Console.WriteLine($"  {dose.TimeTaken:dd/MM HH:mm} - {dose.DoseMg}mg → {individual:F2}");
+                Console.WriteLine($"  {dose.TimeTaken:dd/MM HH:mm} - {dose.DoseMg}{calculator.DoseUnit} → {individual:F2}");
             }
         }
     }
@@ -116,7 +113,7 @@ public class BromazepamTracker
         Console.WriteLine("\n📋 Historique des doses :");
         foreach (var dose in doses.OrderBy(d => d.TimeTaken))
         {
-            Console.WriteLine($"  {dose.TimeTaken:dd/MM/yyyy HH:mm} - {dose.DoseMg}mg");
+            Console.WriteLine($"  {dose.TimeTaken:dd/MM/yyyy HH:mm} - {dose.DoseMg}{calculator.DoseUnit}");
         }
     }
 
@@ -133,7 +130,7 @@ public class BromazepamTracker
 
         var graphPoints = calculator.GenerateGraph(doses, startTime, endTime);
 
-        var fileName = $"bromazepam_data_{DateTime.Now:yyyyMMdd_HHmm}.csv";
+        var fileName = $"{calculator.DisplayName.ToLowerInvariant()}_data_{DateTime.Now:yyyyMMdd_HHmm}.csv";
         using (var writer = new System.IO.StreamWriter(fileName))
         {
             writer.WriteLine("DateTime,Concentration");
@@ -147,5 +144,3 @@ public class BromazepamTracker
         Console.WriteLine("Tu peux importer ce fichier dans Excel ou un autre outil pour créer un graphique.");
     }
 }
-
-

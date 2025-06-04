@@ -2,7 +2,6 @@
 using MoleculeEfficienceTracker.Core.Services;
 using Syncfusion.Maui.Core.Hosting;
 using CommunityToolkit.Maui;
-using CommunityToolkit.Maui;
 
 namespace MoleculeEfficienceTracker
 {
@@ -18,7 +17,9 @@ namespace MoleculeEfficienceTracker
                 fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
             }).UseMauiCommunityToolkit();
             builder.Services.AddSingleton<BromazepamCalculator>();
-            builder.Services.AddTransient<MainPage>();
+            builder.Services.AddSingleton<CaffeineCalculator>();
+            builder.Services.AddSingleton<AlcoholCalculator>();
+            
 #if DEBUG
             builder.Logging.AddDebug();
 #endif

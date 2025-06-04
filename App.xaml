@@ -3,11 +3,17 @@
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
-             xmlns:local="clr-namespace:MoleculeEfficienceTracker">
+             xmlns:local="clr-namespace:MoleculeEfficienceTracker"
+             xmlns:converters="clr-namespace:MoleculeEfficienceTracker.Converters">
 
     <Application.Resources>
         <ResourceDictionary>
-            <!-- Style pour les marqueurs -->
+            <!-- Convertisseurs globaux -->
+            <converters:DoseDisplayConverter x:Key="DoseDisplayConverter"/>
+            <converters:DoseLabelConverter x:Key="DoseLabelConverter"/>
+            <converters:ConcentrationTooltipConverter x:Key="ConcentrationTooltipConverter"/>
+            
+            <!-- Styles globaux pour les graphiques Syncfusion -->
             <chart:ChartMarkerSettings x:Key="MarkerSettings" 
                                       Type="Circle" 
                                       Width="6" 
