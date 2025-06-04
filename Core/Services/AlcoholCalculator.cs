@@ -8,7 +8,6 @@ namespace MoleculeEfficienceTracker.Core.Services
     public class AlcoholCalculator : IMoleculeCalculator
     {
         public string DisplayName => "Alcool";
-
         public string DoseUnit => "u";
         public string ConcentrationUnit => "u";
 

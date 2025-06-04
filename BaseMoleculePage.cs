@@ -45,6 +45,9 @@ namespace MoleculeEfficienceTracker
         protected abstract int GraphDataNumberOfPoints { get; } // Ex: 10 * 24 * 2
         protected abstract TimeSpan InitialVisibleStartOffset { get; } // Ex: TimeSpan.FromHours(-12)
         protected abstract TimeSpan InitialVisibleEndOffset { get; }   // Ex: TimeSpan.FromHours(24)
+        public bool HasDoses => Doses != null && Doses.Count > 0;
+        public bool IsDosesListEmpty => Doses == null || Doses.Count == 0; // Ou simplement !HasDoses
+
 
 
         protected BaseMoleculePage(string moleculeKey)
@@ -56,6 +59,18 @@ namespace MoleculeEfficienceTracker
 
             Doses = new ObservableCollection<DoseEntry>();
             ChartData = new ObservableCollection<ChartDataPoint>();
+
+            if (Doses is System.Collections.Specialized.INotifyCollectionChanged observableDoses)
+            {
+                observableDoses.CollectionChanged += (s, e) =>
+                {
+                    OnPropertyChanged(nameof(HasDoses));
+                    OnPropertyChanged(nameof(IsDosesListEmpty));
+                };
+            }
+            // Notifiez l'état initial
+            OnPropertyChanged(nameof(HasDoses));
+            OnPropertyChanged(nameof(IsDosesListEmpty));
         }
 
         /// <summary>

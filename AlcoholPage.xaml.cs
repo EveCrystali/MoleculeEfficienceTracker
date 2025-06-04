@@ -1,4 +1,4 @@
-﻿using MoleculeEfficienceTracker.Core.Models;
+using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,10 +7,11 @@ using Microsoft.Maui.Graphics;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
 using System.Text;
+using System.IO;
 
 namespace MoleculeEfficienceTracker
 {
- public partial class AlcoholPage : BaseMoleculePage<AlcoholCalculator>
+    public partial class AlcoholPage : BaseMoleculePage<AlcoholCalculator>
     {
         // Implémentation des propriétés abstraites pour les contrôles UI
         protected override Entry DoseInputControl => DoseEntry;
@@ -30,21 +31,10 @@ namespace MoleculeEfficienceTracker
         protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-12); // Vue initiale de -12h
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(12);   // Vue initiale de +12h
 
-        public AlcoholPage() : base("alcohol") 
+        public AlcoholPage() : base("alcohol")
         {
             InitializeComponent();
             base.InitializePageUI();
         }
-
-        // Si vous avez besoin de surcharger des méthodes spécifiques pour l'alcool,
-        // comme UpdateMoleculeSpecificConcentrationInfo ou AddMoleculeSpecificChartAnnotations,
-        // vous pouvez le faire ici. Par exemple :
-        /*
-        protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
-        {
-            // Logique spécifique à l'alcool pour afficher des informations supplémentaires
-            // basées sur la concentration.
-        }
-        */
     }
 }

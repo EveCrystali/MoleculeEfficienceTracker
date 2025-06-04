@@ -320,20 +320,21 @@
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
                                     <Frame BackgroundColor="#FAF5FF"
-                                           CornerRadius="8"
-                                           Padding="0"
+                                           CornerRadius="8"                                           
+                                           Padding="10,6"
                                            Margin="0,3"
                                            HasShadow="False">
-                                        <Grid Padding="10,6"
-                                              ColumnDefinitions="*,*,Auto"
-                                              VerticalOptions="Center">
+                                        <!-- Grid sans padding propre, VerticalOptions="Center" retiré -->
+                                        <Grid ColumnDefinitions="*,*,Auto">
                                             <Label Grid.Column="0"
                                                    Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}"
-                                                   VerticalOptions="Center"/>
+                                                   VerticalOptions="Center"
+                                                   TextColor="Black"/> <!-- Test: Couleur explicite -->
                                             <Label Grid.Column="1"                                                   
                                                    Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type local:CaffeinePage}}, Path=Calculator.DoseUnit}}"
                                                    VerticalOptions="Center"
-                                                   HorizontalOptions="Center"/>
+                                                   HorizontalOptions="Center"
+                                                   TextColor="Black"/> <!-- Test: Couleur explicite -->
                                             <Button Grid.Column="2"
                                                     Text="❌"
                                                     CommandParameter="{Binding Id}"
