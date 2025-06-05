@@ -20,6 +20,12 @@ namespace MoleculeEfficienceTracker.Core.Services
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
 
+        // Seuils d'effet exprimés en mg/L
+        public const double STRONG_THRESHOLD = 15.0;      // mg/L : effet fort/toxique
+        public const double MODERATE_THRESHOLD = 5.0;     // mg/L : effet net
+        public const double LIGHT_THRESHOLD = 1.0;        // mg/L : effet léger
+        public const double NEGLIGIBLE_THRESHOLD = 0.3;   // mg/L : effet négligeable
+
 
         private const double MINIMUM_EFFECTIVE_DOSE_MG_PER_KG = 0.5; // 0.5 mg/kg
         private const double AVERAGE_BODY_WEIGHT_KG = 70.0; // Poids moyen
@@ -91,25 +97,37 @@ namespace MoleculeEfficienceTracker.Core.Services
             return points;
         }
 
-        // Calculer quand la concentration tombera sous le seuil
-        public DateTime? GetIneffectiveTime(List<DoseEntry> doses, DateTime currentTime)
+        // Détermine le niveau d'effet subjectif
+        public EffectLevel GetEffectLevel(double concentration)
         {
-            if (!doses.Any()) return null;
+            if (concentration >= STRONG_THRESHOLD) return EffectLevel.Strong;
+            if (concentration >= MODERATE_THRESHOLD) return EffectLevel.Moderate;
+            if (concentration >= LIGHT_THRESHOLD) return EffectLevel.Light;
+            return EffectLevel.None;
+        }
 
-            // Chercher dans les prochaines 24h quand ça tombe sous le seuil
-            for (int minutes = 0; minutes < 24 * 60; minutes += 15) // Check toutes les 15 min
+        // Calculer quand la concentration tombera sous le seuil négligeable
+        public DateTime? PredictEffectEndTime(List<DoseEntry> doses, DateTime currentTime)
+        {
+            if (!doses.Any()) return currentTime;
+
+            for (int minutes = 0; minutes <= 24 * 60; minutes += 15)
             {
-                var checkTime = currentTime.AddMinutes(minutes);
-                var concentration = CalculateTotalConcentration(doses, checkTime);
-
-                if (concentration < GetEffectivenessThreshold())
-                {
+                DateTime checkTime = currentTime.AddMinutes(minutes);
+                double conc = CalculateTotalConcentration(doses, checkTime);
+                if (conc < NEGLIGIBLE_THRESHOLD)
                     return checkTime;
-                }
             }
 
-            return null; // Reste efficace dans les 24h
+            return null;
         }
+
+        // Compatibilité avec l'ancien nom de méthode
+        public DateTime? GetIneffectiveTime(List<DoseEntry> doses, DateTime currentTime) =>
+            PredictEffectEndTime(doses, currentTime);
+
+        // Indique si l'effet est négligeable pour une concentration donnée
+        public bool IsEffectNegligible(double concentration) => concentration < NEGLIGIBLE_THRESHOLD;
 
         public static class CaffeineUnits
         {

@@ -22,6 +22,10 @@ namespace MoleculeEfficienceTracker
         protected override Label EmptyStateIndicatorLabel => EmptyDosesLabel;
         protected override CollectionView DosesDisplayCollection => DosesCollection;
 
+        // Labels spécifiques à l'effet
+        private Label EffectStatusLabel => EffectStatus;
+        private Label EffectEndPredictionLabel => EffectPrediction;
+
         // Implémentation des propriétés abstraites spécifiques à la molécule
         protected override string DoseAnnotationIcon => "🍵";
         protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
@@ -40,61 +44,84 @@ namespace MoleculeEfficienceTracker
         // Surcharge pour la logique spécifique à la caféine
         protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
         {
-            if (Calculator is CaffeineCalculator caffeineCalc && IneffectiveTimeLabel != null)
+            if (Calculator is CaffeineCalculator caffeineCalc)
             {
-                var ineffectiveTime = caffeineCalc.GetIneffectiveTime(Doses.ToList(), currentTime);
-                if (ineffectiveTime.HasValue)
+                double concentration = caffeineCalc.CalculateTotalConcentration(doses, currentTime);
+                var level = caffeineCalc.GetEffectLevel(concentration);
+
+                string text = level switch
                 {
-                    var timeRemaining = ineffectiveTime.Value - currentTime;
-                    if (timeRemaining.TotalMinutes > 0)
+                    EffectLevel.Strong => "Effet fort/toxique",
+                    EffectLevel.Moderate => "Effet net",
+                    EffectLevel.Light => "Effet léger",
+                    _ => "Effet négligeable"
+                };
+
+                Color color = level switch
+                {
+                    EffectLevel.Strong => Colors.Green,
+                    EffectLevel.Moderate => Colors.Green,
+                    EffectLevel.Light => Colors.Orange,
+                    _ => Colors.Red
+                };
+
+                if (EffectStatusLabel != null)
+                {
+                    EffectStatusLabel.Text = text;
+                    EffectStatusLabel.TextColor = color;
+                    EffectStatusLabel.IsVisible = true;
+                }
+
+                DateTime? endTime = caffeineCalc.PredictEffectEndTime(doses, currentTime);
+                if (EffectEndPredictionLabel != null)
+                {
+                    if (endTime.HasValue && endTime.Value > currentTime)
                     {
-                        IneffectiveTimeLabel.Text = $"⚠️ Effet négligeable à {ineffectiveTime.Value:HH:mm} (dans {timeRemaining.TotalHours:F1}h)";
-                        IneffectiveTimeLabel.IsVisible = true;
+                        var remaining = endTime.Value - currentTime;
+                        EffectEndPredictionLabel.Text = $"Effet négligeable estimé dans {remaining.TotalHours:F1} heures";
                     }
                     else
                     {
-                        IneffectiveTimeLabel.Text = "⚠️ Effet actuellement négligeable";
-                        IneffectiveTimeLabel.IsVisible = true;
+                        EffectEndPredictionLabel.Text = "Effet actuellement négligeable";
                     }
+                    EffectEndPredictionLabel.IsVisible = true;
                 }
-                else
-                {
-                    IneffectiveTimeLabel.Text = "✅ Effet maintenu (>24h)";
-                    IneffectiveTimeLabel.IsVisible = true; // Ou false si pas d'info à afficher
-                }
-            }
-            else if (IneffectiveTimeLabel != null)
-            {
-                IneffectiveTimeLabel.IsVisible = false;
             }
         }
 
         protected override void AddMoleculeSpecificChartAnnotations()
         {
-            if (Calculator is CaffeineCalculator caffeineCalc && ChartControl != null)
+            if (Calculator is CaffeineCalculator calc && ChartControl != null)
             {
-                var threshold = CaffeineCalculator.GetEffectivenessThreshold();
-                var thresholdAnnotation = new HorizontalLineAnnotation
-                {
-                    Y1 = threshold,
-                    Stroke = Brush.Red,
-                    StrokeWidth = 2,
-                    StrokeDashArray = new DoubleCollection { 5, 5 },
-                    // Rétablit le texte et les styles de label de l'annotation d'origine
-                    Text = $"Seuil d'efficacité",
-                    LabelStyle = new ChartAnnotationLabelStyle
-                    {
-                        FontSize = 10,
-                        TextColor = Colors.Red,
-                        Background = Brush.White,
-                        CornerRadius = 3,
-                        HorizontalTextAlignment = ChartLabelAlignment.Start,
-                        VerticalTextAlignment = ChartLabelAlignment.Center,
-                        Margin = new Thickness(5, 0, 0, 0)
-                    }
-                };
-                ChartControl.Annotations.Add(thresholdAnnotation);
+                AddThresholdAnnotation(CaffeineCalculator.STRONG_THRESHOLD, "Effet fort", Colors.Green);
+                AddThresholdAnnotation(CaffeineCalculator.MODERATE_THRESHOLD, "Effet modéré", Colors.Green);
+                AddThresholdAnnotation(CaffeineCalculator.LIGHT_THRESHOLD, "Effet léger", Colors.Orange);
+                AddThresholdAnnotation(CaffeineCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Red);
             }
+        }
+
+        private void AddThresholdAnnotation(double yValue, string text, Color color)
+        {
+            var annotation = new HorizontalLineAnnotation
+            {
+                Y1 = yValue,
+                Stroke = new SolidColorBrush(color),
+                StrokeWidth = 2,
+                StrokeDashArray = new DoubleCollection { 5, 5 },
+                Text = text,
+                LabelStyle = new ChartAnnotationLabelStyle
+                {
+                    FontSize = 10,
+                    TextColor = color,
+                    Background = Brush.White,
+                    CornerRadius = 3,
+                    HorizontalTextAlignment = ChartLabelAlignment.Start,
+                    VerticalTextAlignment = ChartLabelAlignment.Center,
+                    Margin = new Thickness(5, 0, 0, 0)
+                }
+            };
+
+            ChartControl.Annotations.Add(annotation);
         }
     }
 }

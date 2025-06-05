@@ -198,7 +198,12 @@
                            FontSize="14"
                            TextColor="#718096"
                            HorizontalOptions="Center"/>
-                    <Label x:Name="IneffectiveTimeLabel"
+                    <Label x:Name="EffectStatus"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           TextColor="Green"
+                           Text=""/>
+                    <Label x:Name="EffectPrediction"
                            Text=""
                            FontSize="12"
                            TextColor="Red"
