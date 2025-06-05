@@ -48,6 +48,16 @@ namespace MoleculeEfficienceTracker.Core.Services
             return dose.DoseMg;
         }
 
+        public double CalculateTotalAmount(List<DoseEntry> doses, DateTime currentTime)
+        {
+            return doses.Sum(d =>
+            {
+                double conc = CalculateSingleDoseConcentration(d, currentTime);
+                double volume = d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
+                return conc * volume;
+            });
+        }
+
         public List<(DateTime Time, double Concentration)> GenerateGraph(
             List<DoseEntry> doses, DateTime startTime, DateTime endTime, int pointCount = 200)
         {

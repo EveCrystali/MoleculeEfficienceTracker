@@ -11,4 +11,10 @@ public interface IMoleculeCalculator
     string DoseUnit { get; }
     string ConcentrationUnit { get; }
     double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose); // Nouvelle méthode
+    /// <summary>
+    /// Returns the remaining amount of molecule in the body expressed in the same unit as the dose.
+    /// For molecules whose concentration unit is mg/L, this converts using the volume of distribution and weight.
+    /// For molecules already expressed in mg or units, this simply returns the concentration value.
+    /// </summary>
+    double CalculateTotalAmount(List<DoseEntry> doses, DateTime time);
 }

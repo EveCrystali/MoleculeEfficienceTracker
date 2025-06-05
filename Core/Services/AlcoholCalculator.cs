@@ -89,6 +89,11 @@ namespace MoleculeEfficienceTracker.Core.Services
             return dose.DoseMg;
         }
 
+        public double CalculateTotalAmount(List<DoseEntry> doses, DateTime currentTime)
+        {
+            return CalculateTotalConcentration(doses, currentTime);
+        }
+
         // Génère des points pour un graphique sur une période donnée
         public List<(DateTime Time, double Concentration)> GenerateGraph(
             List<DoseEntry> doses, DateTime startTime, DateTime endTime, int pointCount = 200)
