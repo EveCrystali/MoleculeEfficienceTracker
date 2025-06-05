@@ -93,8 +93,9 @@ public class MoleculeTracker<TCalculator> where TCalculator : IMoleculeCalculato
     {
         var currentTime = DateTime.Now;
         var concentration = calculator.CalculateTotalConcentration(doses, currentTime);
+        var amount = calculator.CalculateTotalAmount(doses, currentTime);
 
-        Console.WriteLine($"\n📊 Concentration actuelle estimée : {concentration:F2} unités");
+        Console.WriteLine($"\n📊 Quantité restante : {amount:F2}{calculator.DoseUnit} ({concentration:F2} {calculator.ConcentrationUnit})");
         Console.WriteLine($"🕐 Calculé à : {currentTime:dd/MM/yyyy HH:mm}");
 
         Console.WriteLine("\nContribution par dose :");

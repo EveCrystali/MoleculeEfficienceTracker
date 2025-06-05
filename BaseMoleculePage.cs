@@ -191,8 +191,9 @@ namespace MoleculeEfficienceTracker
         {
             DateTime currentTime = DateTime.Now;
             double concentration = Calculator.CalculateTotalConcentration(Doses.ToList(), currentTime);
+            double amount = Calculator.CalculateTotalAmount(Doses.ToList(), currentTime);
 
-            ConcentrationOutputLabel.Text = $"{concentration:F2} {Calculator.ConcentrationUnit}";
+            ConcentrationOutputLabel.Text = $"{amount:F2} {Calculator.DoseUnit} ({concentration:F2} {Calculator.ConcentrationUnit})";
             LastUpdateOutputLabel.Text = $"Mise à jour: {currentTime:HH:mm:ss}";
 
             UpdateMoleculeSpecificConcentrationInfo(Doses.ToList(), currentTime);
