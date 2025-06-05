@@ -46,6 +46,7 @@ namespace MoleculeEfficienceTracker
         protected abstract TimeSpan InitialVisibleStartOffset { get; } // Ex: TimeSpan.FromHours(-12)
         protected abstract TimeSpan InitialVisibleEndOffset { get; }   // Ex: TimeSpan.FromHours(24)
         protected virtual bool UseConcentrationUnitForDoseAnnotation => false;
+        protected virtual double? MaxThresholdYValue => null;
         public bool HasDoses => Doses != null && Doses.Count > 0;
         public bool IsDosesListEmpty => Doses == null || Doses.Count == 0; // Ou simplement !HasDoses
 
@@ -271,6 +272,16 @@ namespace MoleculeEfficienceTracker
                     xAxis.ZoomFactor = 1;
                     xAxis.ZoomPosition = 0;
                 }
+            }
+
+            if (chart.YAxes?.FirstOrDefault() is NumericalAxis yAxis)
+            {
+                double dataMax = ChartData.Any() ? ChartData.Max(p => p.Concentration) : 0;
+                double requiredMax = Math.Max(dataMax, MaxThresholdYValue ?? dataMax);
+                if (requiredMax <= 0) requiredMax = 1;
+                yAxis.Maximum = requiredMax * 1.1;
+                yAxis.ZoomFactor = 1;
+                yAxis.ZoomPosition = 0;
             }
 
             await chart.FadeTo(0.7, 80);

@@ -34,6 +34,7 @@ namespace MoleculeEfficienceTracker
         protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-24); // Vue initiale de -24h
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(24);   // Vue initiale de +24h
         protected override bool UseConcentrationUnitForDoseAnnotation => false;
+        protected override double? MaxThresholdYValue => CaffeineCalculator.STRONG_THRESHOLD;
 
         public CaffeinePage()
             : base("caffeine") // Utiliser une clé en minuscules pour la cohérence
