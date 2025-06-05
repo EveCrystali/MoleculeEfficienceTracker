@@ -129,5 +129,27 @@ namespace MoleculeEfficienceTracker
 
             ChartControl.Annotations.Add(annotation);
         }
+
+        protected override async Task OnBeforeLoadDataAsync()
+        {
+            await base.OnBeforeLoadDataAsync();
+
+            List<DoseEntry> existing = await PersistenceService.LoadDosesAsync();
+            bool converted = false;
+
+            foreach (DoseEntry d in existing)
+            {
+                if (d.DoseMg > 0 && d.DoseMg < 20)
+                {
+                    d.DoseMg *= CaffeineCalculator.MG_PER_UNIT;
+                    converted = true;
+                }
+            }
+
+            if (converted)
+            {
+                await PersistenceService.SaveDosesAsync(existing);
+            }
+        }
     }
 }
