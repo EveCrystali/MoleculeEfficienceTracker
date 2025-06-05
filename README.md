@@ -24,10 +24,11 @@ MoleculeEfficienceTracker est une application mobile multiplateforme développé
 ## ✨ Fonctionnalités
 
 ### 🧪 Molécules supportées
-- **Bromazépam** : Demi-vie 14h, absorption 2h, dosage en mg
+- **Bromazépam** : Demi-vie 14h, absorption 2h, biodisponibilité 84%, dosage en mg
 - **Caféine** : Demi-vie 5h, absorption 45min, système d'unités (1 unité = 80mg Nespresso)
 - **Alcool** : Élimination linéaire 1 unité/heure, absorption 45min
-- **Paracétamol** : Demi-vie 3h, absorption 30min, dosage en mg *(en développement)*
+- **Paracétamol** : Demi-vie 3h, absorption 30min, biodisponibilité 92%, dosage en mg *(en développement)*
+- **Ibuprofène** : Demi-vie 2h, absorption 30min, biodisponibilité 90%, dosage en mg *(en développement)*
 
 ### 📊 Fonctionnalités principales
 - **Suivi des doses** : Enregistrement avec date/heure précise

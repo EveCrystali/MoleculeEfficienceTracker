@@ -13,6 +13,7 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         private const double HALF_LIFE_HOURS = 2.0; // Demi-vie moyenne
         private const double ABSORPTION_TIME_HOURS = 0.5; // Temps d'absorption
+        private const double BIOAVAILABILITY = 0.90; // Fraction absorbée
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
@@ -28,7 +29,7 @@ namespace MoleculeEfficienceTracker.Core.Services
             double hoursElapsed = (currentTime - dose.TimeTaken).TotalHours;
             if (hoursElapsed < 0) return 0;
 
-            double concentration = (dose.DoseMg * absorptionConstant / (absorptionConstant - eliminationConstant)) *
+            double concentration = (dose.DoseMg * BIOAVAILABILITY * absorptionConstant / (absorptionConstant - eliminationConstant)) *
                                   (Math.Exp(-eliminationConstant * hoursElapsed) -
                                    Math.Exp(-absorptionConstant * hoursElapsed));
 

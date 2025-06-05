@@ -23,6 +23,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         // Paramètres pharmacocinétiques du bromazépam
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures
         private const double ABSORPTION_TIME_HOURS = 2.0; // Temps pour atteindre le pic
+        private const double BIOAVAILABILITY = 0.84; // Fraction absorbée
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
@@ -47,7 +48,7 @@ namespace MoleculeEfficienceTracker.Core.Services
             if (hoursElapsed < 0) return 0; // Dose future
 
             // Modèle pharmacocinétique à un compartiment avec absorption d'ordre 1
-            double concentration = (dose.DoseMg * absorptionConstant / (absorptionConstant - eliminationConstant)) *
+            double concentration = (dose.DoseMg * BIOAVAILABILITY * absorptionConstant / (absorptionConstant - eliminationConstant)) *
                                   (Math.Exp(-eliminationConstant * hoursElapsed) -
                                    Math.Exp(-absorptionConstant * hoursElapsed));
 
