@@ -98,10 +98,10 @@ namespace MoleculeEfficienceTracker
         {
             if (Calculator is CaffeineCalculator calc && ChartControl != null)
             {
-                AddThresholdAnnotation(CaffeineCalculator.STRONG_THRESHOLD, "Effet fort", Colors.Green);
-                AddThresholdAnnotation(CaffeineCalculator.MODERATE_THRESHOLD, "Effet modéré", Colors.Green);
-                AddThresholdAnnotation(CaffeineCalculator.LIGHT_THRESHOLD, "Effet léger", Colors.Orange);
-                AddThresholdAnnotation(CaffeineCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Red);
+                AddThresholdAnnotation(CaffeineCalculator.STRONG_THRESHOLD, "Effet fort / Toxic", Colors.Red);
+                AddThresholdAnnotation(CaffeineCalculator.MODERATE_THRESHOLD, "Effet net", Colors.Green);
+                AddThresholdAnnotation(CaffeineCalculator.LIGHT_THRESHOLD, "Effet léger", Colors.Blue);
+                AddThresholdAnnotation(CaffeineCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Grey);
             }
         }
 
