@@ -24,15 +24,15 @@ MoleculeEfficienceTracker est une application mobile multiplateforme développé
 ## ✨ Fonctionnalités
 
 ### 🧪 Molécules supportées
-- **Bromazépam** : Demi-vie 14h, absorption 2h, biodisponibilité 84%, dosage en mg
+- **Bromazépam** : Demi-vie 14h, absorption 2h, biodisponibilité 84%, concentration en **mg/L**
 - **Caféine** : Demi-vie 5h, absorption 45min, système d'unités (1 unité = 80mg Nespresso)
 - **Alcool** : Élimination linéaire 1 unité/heure, absorption 45min
-- **Paracétamol** : Demi-vie 3h, absorption 30min, biodisponibilité 92%, dosage en mg *(en développement)*
-- **Ibuprofène** : Demi-vie 2h, absorption 30min, biodisponibilité 90%, dosage en mg *(en développement)*
+- **Paracétamol** : Demi-vie 3h, absorption 30min, biodisponibilité 92%, concentration en **mg/L** *(en développement)*
+- **Ibuprofène** : Demi-vie 2h, absorption 30min, biodisponibilité 90%, concentration en **mg/L** *(en développement)*
 
 ### 📊 Fonctionnalités principales
 - **Suivi des doses** : Enregistrement avec date/heure précise
-- **Calculs pharmacocinétiques** : Modèle 1 compartiment avec absorption/élimination du 1er ordre
+- **Calculs pharmacocinétiques** : Modèle 1 compartiment (absorption/élimination du 1er ordre) prenant en compte le poids (72 kg par défaut) et le volume de distribution
 - **Graphiques temps réel** : Visualisation interactive avec annotations (Syncfusion Charts)
 - **Seuils d'efficacité** : Prédictions personnalisées (ex: seuil caféine à 35mg)
 - **Sauvegarde automatique** : Persistance JSON locale
@@ -45,15 +45,17 @@ L'application utilise le modèle pharmacocinétique standard :
 
 ```
 
-C(t) = (D × ka / (ka - ke)) × (e^(-ke×t) - e^(-ka×t))
+C(t) = (F × D × ka / (Vd × (ka - ke))) × (e^{-ke×t} - e^{-ka×t})
 
 ```
 
 Où :
-- `C(t)` = Concentration au temps t
-- `D` = Dose administrée
+- `C(t)` = Concentration au temps t (mg/L)
+- `F` = Biodisponibilité
+- `D` = Dose administrée (mg)
 - `ka` = Constante d'absorption
 - `ke` = Constante d'élimination
+- `Vd` = Volume de distribution (L)
 
 ## 🚀 Installation
 
