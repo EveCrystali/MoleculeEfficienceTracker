@@ -113,7 +113,7 @@
 
             <!-- HEADER -->
             <Label Text="📊 Calculateur de Bromazépam"
-                   FontSize="32"
+                   FontSize="24"
                    TextColor="#2D3748"
                    HorizontalOptions="Center"
                    FontAttributes="Bold"
@@ -123,9 +123,9 @@
             <!-- AJOUTER UNE DOSE -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    Margin="0,0,0,0">
-                <VerticalStackLayout Spacing="14">
+                <VerticalStackLayout Spacing="10">
                     <Label Text="💊 Ajouter une dose"
-                           FontSize="20"
+                           FontSize="16"
                            FontAttributes="Bold"
                            TextColor="#3182CE"/>
                     <Grid ColumnDefinitions="Auto,*"
@@ -143,12 +143,12 @@
                                BackgroundColor="#EBF8FF"
                                HasShadow="False"
                                VerticalOptions="Center"
-                               HeightRequest="38">
+                               HeightRequest="32">
                             <Entry x:Name="DoseEntry"
                                    Placeholder="3.0"
                                    Keyboard="Numeric"
                                    BackgroundColor="Transparent"
-                                   HeightRequest="38"
+                                   HeightRequest="32"
                                    VerticalOptions="Center"/>
                         </Frame>
                         <Label Grid.Row="1"
@@ -187,6 +187,16 @@
                            FontSize="14"
                            TextColor="#718096"
                            HorizontalOptions="Center"/>
+                    <Label x:Name="EffectStatus"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           TextColor="Green"
+                           Text=""/>
+                    <Label x:Name="EffectPrediction"
+                           FontSize="12"
+                           HorizontalOptions="Center"
+                           TextColor="Red"
+                           Text=""/>
                     <Frame Padding="10"
                            CornerRadius="10"
                            BackgroundColor="White"
@@ -277,16 +287,6 @@
                             </chart:SplineSeries>
                         </chart:SfCartesianChart>
                     </Frame>
-                    <Label x:Name="EffectStatus"
-                           FontSize="14"
-                           HorizontalOptions="Center"
-                           TextColor="Green"
-                           Text=""/>
-                    <Label x:Name="EffectPrediction"
-                           FontSize="12"
-                           HorizontalOptions="Center"
-                           TextColor="Red"
-                           Text=""/>
 
                 </VerticalStackLayout>
             </Frame>

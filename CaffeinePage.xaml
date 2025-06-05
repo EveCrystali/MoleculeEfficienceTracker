@@ -113,7 +113,7 @@
 
             <!-- HEADER -->
             <Label Text="📊 Calculateur de Caféine"
-                   FontSize="32"
+                   FontSize="24"
                    TextColor="#2D3748"
                    HorizontalOptions="Center"
                    FontAttributes="Bold"
@@ -123,9 +123,9 @@
             <!-- AJOUTER UNE DOSE -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    Margin="0,0,0,0">
-                <VerticalStackLayout Spacing="14">
+                <VerticalStackLayout Spacing="10">
                     <Label Text="🍵 Ajouter une dose"
-                           FontSize="20"
+                           FontSize="16"
                            FontAttributes="Bold"
                            TextColor="#3182CE"/>
                     <Grid ColumnDefinitions="Auto,*"
@@ -144,12 +144,12 @@
                                BackgroundColor="#EBF8FF"
                                HasShadow="False"
                                VerticalOptions="Center"
-                               HeightRequest="38">
+                               HeightRequest="32">
                             <Entry x:Name="DoseEntry"
                                    Placeholder="1.0 (= 1 Nespresso)"
                                    Keyboard="Numeric"
                                    BackgroundColor="Transparent"
-                                   HeightRequest="38"
+                                   HeightRequest="32"
                                    VerticalOptions="Center"/>
                         </Frame>
                     </Grid>
@@ -197,6 +197,11 @@
                     <Label x:Name="LastUpdateLabel"
                            FontSize="14"
                            TextColor="#718096"
+                           HorizontalOptions="Center"/>
+                    <Label x:Name="IneffectiveTimeLabel"
+                           Text=""
+                           FontSize="12"
+                           TextColor="Red"
                            HorizontalOptions="Center"/>
                     <Frame Padding="10"
                            CornerRadius="10"
@@ -288,11 +293,6 @@
                             </chart:SplineSeries>
                         </chart:SfCartesianChart>
                     </Frame>
-                    <Label x:Name="IneffectiveTimeLabel"
-                           Text=""
-                           FontSize="12"
-                           TextColor="Red"
-                           HorizontalOptions="Center"/>
 
                 </VerticalStackLayout>
             </Frame>
