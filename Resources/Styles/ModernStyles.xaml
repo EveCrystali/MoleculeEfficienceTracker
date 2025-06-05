@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+                    xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts">
+    <Style x:Key="CardFrameStyle" TargetType="Frame">
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Padding" Value="24"/>
+        <Setter Property="HasShadow" Value="True"/>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource PrimaryBrush}" Offset="0,6" Radius="18" Opacity="0.25"/>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="White" Offset="0"/>
+                <GradientStop Color="#F3F4F6" Offset="1"/>
+            </LinearGradientBrush>
+        </Setter>
+    </Style>
+
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+        <Setter Property="TextColor" Value="White"/>
+        <Setter Property="FontAttributes" Value="Bold"/>
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="Padding" Value="14,10"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="Background">
+            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                <GradientStop Color="{StaticResource Primary}" Offset="0"/>
+                <GradientStop Color="{StaticResource Tertiary}" Offset="1"/>
+            </LinearGradientBrush>
+        </Setter>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{StaticResource PrimaryBrush}" Offset="0,4" Radius="12" Opacity="0.3"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="DeleteButtonStyle" TargetType="Button">
+        <Setter Property="TextColor" Value="White"/>
+        <Setter Property="FontAttributes" Value="Bold"/>
+        <Setter Property="CornerRadius" Value="18"/>
+        <Setter Property="Padding" Value="14,10"/>
+        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="BackgroundColor" Value="#D32F2F"/>
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="#670000" Offset="0,4" Radius="12" Opacity="0.4"/>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="EmptyLabelStyle" TargetType="Label">
+        <Setter Property="TextColor" Value="#9CA3AF"/>
+        <Setter Property="FontSize" Value="18"/>
+        <Setter Property="HorizontalOptions" Value="Center"/>
+        <Setter Property="FontAttributes" Value="Italic"/>
+        <Setter Property="Margin" Value="0,20,0,0"/>
+    </Style>
+
+    <chart:ChartLineStyle x:Key="CustomTrackballLineStyle"
+                          Stroke="{StaticResource Primary}"
+                          StrokeWidth="2"
+                          StrokeDashArray="3,2"/>
+
+    <chart:ChartLabelStyle x:Key="CustomTrackballLabelStyle"
+                           Background="{StaticResource Primary}"
+                           TextColor="White"
+                           FontSize="12"
+                           CornerRadius="4"/>
+
+    <chart:ChartMarkerSettings x:Key="CustomTrackballMarkerSettings"
+                               Type="Circle"
+                               Fill="{StaticResource Primary}"
+                               Stroke="White"
+                               StrokeWidth="2"
+                               Height="16"
+                               Width="16"/>
+</ResourceDictionary>

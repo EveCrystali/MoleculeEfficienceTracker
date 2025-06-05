@@ -3,11 +3,7 @@
     x:Class="MoleculeEfficienceTracker.MainTabsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MoleculeEfficienceTracker"
-    BarBackgroundColor="#F7FAFC"
-    BarTextColor="#2D3748"
-    SelectedTabColor="#3182CE"
-    UnselectedTabColor="#A0AEC0">
+    xmlns:local="clr-namespace:MoleculeEfficienceTracker">
   
     <!-- Onglet Caféine -->
     <local:CaffeinePage Title="Caféine" IconImageSource="🍵" />

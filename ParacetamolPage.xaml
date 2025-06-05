@@ -11,94 +11,11 @@
     <!-- Ressources pour styles réutilisables -->
     <ContentPage.Resources>
         <ResourceDictionary>
-            <!-- Style de Frame général (cartes) -->
-            <Style x:Key="CardFrameStyle"
-                   TargetType="Frame">
-                <Setter Property="BackgroundColor"
-                        Value="#F7FAFC"/>
-                <Setter Property="CornerRadius"
-                        Value="18"/>
-                <Setter Property="Padding"
-                        Value="20"/>
-                <Setter Property="HasShadow"
-                        Value="True"/>
-                <Setter Property="Shadow">
-                    <Setter.Value>
-                        <Shadow Brush="#C9D6FF"
-                                Offset="0,4"
-                                Radius="16"
-                                Opacity="0.13"/>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-            <Style x:Key="PrimaryButtonStyle"
-                   TargetType="Button">
-                <Setter Property="BackgroundColor"
-                        Value="#3182CE"/>
-                <Setter Property="TextColor"
-                        Value="White"/>
-                <Setter Property="CornerRadius"
-                        Value="12"/>
-                <Setter Property="FontAttributes"
-                        Value="Bold"/>
-                <Setter Property="FontSize"
-                        Value="16"/>
-                <Setter Property="Padding"
-                        Value="14,8"/>
-            </Style>
-            <Style x:Key="DeleteButtonStyle"
-                   TargetType="Button">
-                <Setter Property="BackgroundColor"
-                        Value="#E53E3E"/>
-                <Setter Property="TextColor"
-                        Value="White"/>
-                <Setter Property="CornerRadius"
-                        Value="10"/>
-                <Setter Property="FontAttributes"
-                        Value="Bold"/>
-                <Setter Property="FontSize"
-                        Value="16"/>
-                <Setter Property="Padding"
-                        Value="12,8"/>
-            </Style>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <!-- Fond général de la page -->
             <Color x:Key="MainBgColor">#F0F4F8</Color>
-            <!-- Pour le EmptyState -->
-            <Style x:Key="EmptyLabelStyle"
-                   TargetType="Label">
-                <Setter Property="TextColor"
-                        Value="#A0AEC0"/>
-                <Setter Property="FontSize"
-                        Value="18"/>
-                <Setter Property="HorizontalOptions"
-                        Value="Center"/>
-                <Setter Property="FontAttributes"
-                        Value="Italic"/>
-                <Setter Property="Margin"
-                        Value="0,20,0,0"/>
-            </Style>
-
-            <!-- ... autres styles ... -->
-
-            <!-- Styles pour le Trackball du graphique -->
-            <chart:ChartLineStyle x:Key="CustomTrackballLineStyle"
-                                  Stroke="#3182CE"
-                                  StrokeWidth="2"
-                                  StrokeDashArray="3,2"/>
-
-            <chart:ChartLabelStyle x:Key="CustomTrackballLabelStyle"
-                                   Background="#2D3748"
-                                   TextColor="White"
-                                   FontSize="12"
-                                   CornerRadius="4"/>
-
-            <chart:ChartMarkerSettings x:Key="CustomTrackballMarkerSettings"
-                                       Type="Circle"
-                                       Fill="#3182CE"
-                                       Stroke="White"
-                                       StrokeWidth="2"
-                                       Height="16"
-                                       Width="16"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
