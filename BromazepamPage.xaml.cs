@@ -88,37 +88,38 @@ namespace MoleculeEfficienceTracker
             }
         }
 
+        private void AddThresholdAnnotation(double yValue, string text, Color color)
+        {
+            var annotation = new HorizontalLineAnnotation
+            {
+                Y1 = yValue,
+                Stroke = new SolidColorBrush(color),
+                StrokeWidth = 2,
+                StrokeDashArray = new DoubleCollection { 5, 5 },
+                Text = text,
+                LabelStyle = new ChartAnnotationLabelStyle
+                {
+                    FontSize = 10,
+                    TextColor = color,
+                    Background = Brush.White,
+                    CornerRadius = 3,
+                    HorizontalTextAlignment = ChartLabelAlignment.Start,
+                    VerticalTextAlignment = ChartLabelAlignment.Center,
+                    Margin = new Thickness(5, 0, 0, 0)
+                }
+            };
+
+            ChartControl.Annotations.Add(annotation);
+        }
+
         protected override void AddMoleculeSpecificChartAnnotations()
         {
             if (Calculator is BromazepamCalculator calc && ChartControl != null)
             {
-                void AddLevelLine(double y, Color color, string text)
-                {
-                    var ann = new HorizontalLineAnnotation
-                    {
-                        Y1 = y,
-                        Stroke = new SolidColorBrush(color),
-                        StrokeWidth = 2,
-                        StrokeDashArray = new DoubleCollection { 5, 5 },
-                        Text = text,
-                        LabelStyle = new ChartAnnotationLabelStyle
-                        {
-                            FontSize = 10,
-                            TextColor = color,
-                            Background = Brush.White,
-                            CornerRadius = 3,
-                            HorizontalTextAlignment = ChartLabelAlignment.Start,
-                            VerticalTextAlignment = ChartLabelAlignment.Center,
-                            Margin = new Thickness(5, 0, 0, 0)
-                        }
-                    };
-                    ChartControl.Annotations.Add(ann);
-                }
-
-                AddLevelLine(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, Colors.Red, "Seuil de perception");
-                AddLevelLine(BromazepamCalculator.LIGHT_THRESHOLD, Colors.Orange, "Effet anxiolytique très léger");
-                AddLevelLine(BromazepamCalculator.MODERATE_THRESHOLD, Colors.Green, "Effet anxiolytique modéré");
-                AddLevelLine(BromazepamCalculator.STRONG_THRESHOLD, Colors.Green, "Effet anxiolytique fort");
+                AddThresholdAnnotation(BromazepamCalculator.STRONG_THRESHOLD, "Effet fort", Colors.Green);
+                AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Effet modéré", Colors.Green);
+                AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Effet très léger", Colors.Orange);
+                AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Red);
             }
         }
 
