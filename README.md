@@ -1,6 +1,15 @@
-# MoleculeEfficienceTracker
+# MoleculeEfficienceTracker WIP
 
 MoleculeEfficienceTracker est une application mobile multiplateforme construite avec **.NET MAUI**. Elle permet d'enregistrer des prises de différentes molécules (bromazépam, caféine ou alcool) et d'estimer leur concentration dans le temps.
+L'auteur de cette application n'est pas médecin ni professionnel de santé.
+Cette application est fournie uniquement à des fins éducatives et informatives.
+Cette application ne fournit pas de conseils médicaux, de diagnostic ou de traitement.
+Les informations ne remplacent en aucun cas une consultation médicale professionnelle.
+Consultez toujours un professionnel de santé qualifié pour toute question médicale.
+L'utilisateur utilise cette application à ses propres risques.
+Le développeur décline toute responsabilité pour les dommages directs ou indirects
+résultant de l'utilisation de cette application, y compris les décisions médicales
+ou les conséquences sur la santé.
 
 ## Fonctionnalités principales
 
@@ -10,12 +19,14 @@ MoleculeEfficienceTracker est une application mobile multiplateforme construite 
 - **Annotations spécifiques** : la page Caféine ajoute par exemple une ligne indiquant le seuil d'efficacité et affiche le moment où l'effet devient négligeable【F:CaffeinePage.xaml.cs†L40-L98】.
 - **Export et nettoyage des données** : les doses enregistrées peuvent être exportées au format JSON ou entièrement supprimées via les boutons prévus dans l'interface【F:BaseMoleculePage.cs†L373-L407】【F:BaseMoleculePage.cs†L410-L425】.
 
+
 ## Structure générale
 
 - `BaseMoleculePage<T>` : page générique gérant l'interface commune (saisie de dose, liste, graphique, etc.). Les pages spécifiques héritent de cette classe et renseignent leur `Calculator` ainsi que quelques paramètres d'affichage.
 - `Core/Services` : contient les calculateurs pour chaque molécule (`BromazepamCalculator`, `CaffeineCalculator`, `AlcoholCalculator`), le service de persistance (`DataPersistenceService`) et un service d'alertes.
 - `Core/Models` : modèles `DoseEntry` et `ChartDataPoint` utilisés pour stocker les prises et représenter les points du graphique.
 - `Converters` : petites classes utilitaires pour formater les unités ou le texte affiché dans l'interface.
+
 
 ## Lancer l'application
 
@@ -28,11 +39,3 @@ dotnet build
 # Déploiement (exemple Android)
 dotnet maui deploy -f:net9.0-android
 ```
-
-## Capture d'écran
-
-Ajoutez ici une capture de l'application pour illustrer l'interface (optionnel).
-
-## Licence
-
-Ce projet est fourni à titre éducatif. Utilisez-le librement selon les termes de la licence du dépôt.
