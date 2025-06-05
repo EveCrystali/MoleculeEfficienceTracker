@@ -32,12 +32,13 @@ MoleculeEfficienceTracker est une application mobile multiplateforme développé
 
 ### 📊 Fonctionnalités principales
 - **Suivi des doses** : Enregistrement avec date/heure précise
-- **Calculs pharmacocinétiques** : Modèle 1 compartiment (absorption/élimination du 1er ordre) prenant en compte le poids (72 kg par défaut) et le volume de distribution
+ - **Calculs pharmacocinétiques** : Modèle 1 compartiment (absorption/élimination du 1er ordre) prenant en compte le poids (configurable, 72 kg par défaut) et le volume de distribution
 - **Graphiques temps réel** : Visualisation interactive avec annotations (Syncfusion Charts)
 - **Seuils d'efficacité** : Prédictions personnalisées (ex: seuil caféine à 35mg)
 - **Sauvegarde automatique** : Persistance JSON locale
 - **Export de données** : Sauvegarde au format JSON
 - **Interface intuitive** : Navigation par onglets avec design moderne
+- **Réglage du poids utilisateur** : saisie du poids personnel utilisé dans les calculs
 
 ### 🔬 Modèle mathématique
 
