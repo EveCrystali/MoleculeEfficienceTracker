@@ -91,7 +91,7 @@
                            FontAttributes="Bold"
                            TextColor="#319795"/>
                     <Label x:Name="ConcentrationLabel"
-                           FontSize="38"
+                           FontSize="32"
                            FontAttributes="Bold"
                            TextColor="#22543D"
                            HorizontalOptions="Center"/>
@@ -104,7 +104,7 @@
                            BackgroundColor="White"
                            HasShadow="True"
                            Margin="0,8,0,0"
-                           HeightRequest="240">
+                           HeightRequest="320">
                         <chart:SfCartesianChart x:Name="ConcentrationChart">
 
                             <chart:SfCartesianChart.TrackballBehavior>
