@@ -30,7 +30,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         private readonly double absorptionConstant; // ka
 
         // Seuils d'effet subjectif exprimés en mg/L pour le nouveau modèle
-        // Ces valeurs correspondent à une dose de 3 mg (effet fort) ingérée par
+        // Ces valeurs correspondent à une dose de 4.5 mg (effet fort) ingérée par
         // défaut chez un patient de 72 kg avec un Vd de 1 L/kg et une
         // biodisponibilité de 84 %.
         public const double STRONG_THRESHOLD = 0.0525;    // ≈ 4,5 mg
