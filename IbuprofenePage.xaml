@@ -11,94 +11,11 @@
     <!-- Ressources pour styles réutilisables -->
     <ContentPage.Resources>
         <ResourceDictionary>
-            <!-- Style de Frame général (cartes) -->
-            <Style x:Key="CardFrameStyle"
-                   TargetType="Frame">
-                <Setter Property="BackgroundColor"
-                        Value="#F7FAFC"/>
-                <Setter Property="CornerRadius"
-                        Value="18"/>
-                <Setter Property="Padding"
-                        Value="20"/>
-                <Setter Property="HasShadow"
-                        Value="True"/>
-                <Setter Property="Shadow">
-                    <Setter.Value>
-                        <Shadow Brush="#C9D6FF"
-                                Offset="0,4"
-                                Radius="16"
-                                Opacity="0.13"/>
-                    </Setter.Value>
-                </Setter>
-            </Style>
-            <Style x:Key="PrimaryButtonStyle"
-                   TargetType="Button">
-                <Setter Property="BackgroundColor"
-                        Value="#3182CE"/>
-                <Setter Property="TextColor"
-                        Value="White"/>
-                <Setter Property="CornerRadius"
-                        Value="12"/>
-                <Setter Property="FontAttributes"
-                        Value="Bold"/>
-                <Setter Property="FontSize"
-                        Value="16"/>
-                <Setter Property="Padding"
-                        Value="14,8"/>
-            </Style>
-            <Style x:Key="DeleteButtonStyle"
-                   TargetType="Button">
-                <Setter Property="BackgroundColor"
-                        Value="#E53E3E"/>
-                <Setter Property="TextColor"
-                        Value="White"/>
-                <Setter Property="CornerRadius"
-                        Value="10"/>
-                <Setter Property="FontAttributes"
-                        Value="Bold"/>
-                <Setter Property="FontSize"
-                        Value="16"/>
-                <Setter Property="Padding"
-                        Value="12,8"/>
-            </Style>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
             <!-- Fond général de la page -->
             <Color x:Key="MainBgColor">#F0F4F8</Color>
-            <!-- Pour le EmptyState -->
-            <Style x:Key="EmptyLabelStyle"
-                   TargetType="Label">
-                <Setter Property="TextColor"
-                        Value="#A0AEC0"/>
-                <Setter Property="FontSize"
-                        Value="18"/>
-                <Setter Property="HorizontalOptions"
-                        Value="Center"/>
-                <Setter Property="FontAttributes"
-                        Value="Italic"/>
-                <Setter Property="Margin"
-                        Value="0,20,0,0"/>
-            </Style>
-
-            <!-- ... autres styles ... -->
-
-            <!-- Styles pour le Trackball du graphique -->
-            <chart:ChartLineStyle x:Key="CustomTrackballLineStyle"
-                                  Stroke="#3182CE"
-                                  StrokeWidth="2"
-                                  StrokeDashArray="3,2"/>
-
-            <chart:ChartLabelStyle x:Key="CustomTrackballLabelStyle"
-                                   Background="#2D3748"
-                                   TextColor="White"
-                                   FontSize="12"
-                                   CornerRadius="4"/>
-
-            <chart:ChartMarkerSettings x:Key="CustomTrackballMarkerSettings"
-                                       Type="Circle"
-                                       Fill="#3182CE"
-                                       Stroke="White"
-                                       StrokeWidth="2"
-                                       Height="16"
-                                       Width="16"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
@@ -107,23 +24,13 @@
     </ContentPage.Background>
 
     <ScrollView>
-        <VerticalStackLayout Spacing="28"
-                             Padding="26"
+        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}"
                              BackgroundColor="{StaticResource MainBgColor}">
-
-            <!-- HEADER -->
-            <Label Text="📊 Calculateur de Ibuprofène"
-                   FontSize="24"
-                   TextColor="#2D3748"
-                   HorizontalOptions="Center"
-                   FontAttributes="Bold"
-                   Margin="0,10,0,8"
-                   Shadow="2,2,6,Gray"/>
 
             <!-- AJOUTER UNE DOSE -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    Margin="0,0,0,0">
-                <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="💊 Ajouter une dose"
                            FontSize="16"
                            FontAttributes="Bold"
@@ -173,7 +80,7 @@
             <!-- CONCENTRATION & GRAPHIQUE -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    BackgroundColor="#E6FFFA">
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="Concentration actuelle"
                            FontSize="20"
                            FontAttributes="Bold"
@@ -192,7 +99,7 @@
                            BackgroundColor="White"
                            HasShadow="True"
                            Margin="0,8,0,0"
-                           HeightRequest="300">
+                           HeightRequest="240">
                         <chart:SfCartesianChart x:Name="ConcentrationChart">
 
                             <chart:SfCartesianChart.TrackballBehavior>
@@ -284,7 +191,7 @@
             <!-- LISTE DES DOSES -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    BackgroundColor="#FFFDE7">
-                <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="Doses récentes"
                            FontSize="20"
                            FontAttributes="Bold"
