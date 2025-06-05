@@ -134,7 +134,7 @@
                           RowSpacing="12">
                         <Label Grid.Row="0"
                                Grid.Column="0"
-                               Text="Dose (u):"
+                               Text="Dose (mg):"
                                VerticalOptions="Center"/>
 
                         <Frame Grid.Row="0"
@@ -146,14 +146,14 @@
                                VerticalOptions="Center"
                                HeightRequest="32">
                             <Entry x:Name="DoseEntry"
-                                   Placeholder="1.0 (= 1 Nespresso)"
+                                   Placeholder="80 (= 1 Nespresso)"
                                    Keyboard="Numeric"
                                    BackgroundColor="Transparent"
                                    HeightRequest="32"
                                    VerticalOptions="Center"/>
                         </Frame>
                     </Grid>
-                    <Label Text="Exemples: Nespresso = 1.0, Lungo = 1.2, Tasse =  1.2, Coca-Cola = 0.4, Thé = 0.6"
+                    <Label Text="Exemples: Nespresso = 80 mg, Lungo = 95 mg, Tasse = 95 mg, Coca-Cola = 35 mg, Thé = 47 mg"
                            FontSize="10"
                            TextColor="#718096"
                            Margin="70,-20,0,0"/>

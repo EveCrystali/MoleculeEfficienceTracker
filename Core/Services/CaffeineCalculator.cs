@@ -8,7 +8,7 @@ namespace MoleculeEfficienceTracker.Core.Services
     public class CaffeineCalculator : IMoleculeCalculator
     {
         public string DisplayName => "Caféine";
-        public string DoseUnit => "u";
+        public string DoseUnit => "mg";
         public string ConcentrationUnit => "mg/L";
 
         // Paramètres pharmacocinétiques de la caféine
@@ -51,7 +51,7 @@ namespace MoleculeEfficienceTracker.Core.Services
 
             if (hoursElapsed < 0) return 0; // Dose future
 
-            double doseMg = dose.DoseMg * MG_PER_UNIT;
+            double doseMg = dose.DoseMg;
 
             double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
 
@@ -74,7 +74,8 @@ namespace MoleculeEfficienceTracker.Core.Services
         // Retourne la valeur de la dose en unité de concentration (mg pour la caféine)
         public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose)
         {
-            return dose.DoseMg * MG_PER_UNIT; // Convertit les unités entrées en mg
+            // La dose est désormais saisie directement en mg
+            return dose.DoseMg;
         }
 
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime currentTime)
