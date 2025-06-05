@@ -88,30 +88,38 @@ namespace MoleculeEfficienceTracker
             }
         }
 
+        private void AddThresholdAnnotation(double yValue, string text, Color color)
+        {
+            var annotation = new HorizontalLineAnnotation
+            {
+                Y1 = yValue,
+                Stroke = new SolidColorBrush(color),
+                StrokeWidth = 2,
+                StrokeDashArray = new DoubleCollection { 5, 5 },
+                Text = text,
+                LabelStyle = new ChartAnnotationLabelStyle
+                {
+                    FontSize = 10,
+                    TextColor = color,
+                    Background = Brush.White,
+                    CornerRadius = 3,
+                    HorizontalTextAlignment = ChartLabelAlignment.Start,
+                    VerticalTextAlignment = ChartLabelAlignment.Center,
+                    Margin = new Thickness(5, 0, 0, 0)
+                }
+            };
+
+            ChartControl.Annotations.Add(annotation);
+        }
+
         protected override void AddMoleculeSpecificChartAnnotations()
         {
             if (Calculator is BromazepamCalculator calc && ChartControl != null)
             {
-                var threshold = BromazepamCalculator.NEGLIGIBLE_THRESHOLD;
-                var annotation = new HorizontalLineAnnotation
-                {
-                    Y1 = threshold,
-                    Stroke = Brush.Red,
-                    StrokeWidth = 2,
-                    StrokeDashArray = new DoubleCollection { 5, 5 },
-                    Text = "Seuil de perception",
-                    LabelStyle = new ChartAnnotationLabelStyle
-                    {
-                        FontSize = 10,
-                        TextColor = Colors.Red,
-                        Background = Brush.White,
-                        CornerRadius = 3,
-                        HorizontalTextAlignment = ChartLabelAlignment.Start,
-                        VerticalTextAlignment = ChartLabelAlignment.Center,
-                        Margin = new Thickness(5, 0, 0, 0)
-                    }
-                };
-                ChartControl.Annotations.Add(annotation);
+                AddThresholdAnnotation(BromazepamCalculator.STRONG_THRESHOLD, "Effet fort", Colors.Green);
+                AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Effet modéré", Colors.Green);
+                AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Effet très léger", Colors.Orange);
+                AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Red);
             }
         }
 
