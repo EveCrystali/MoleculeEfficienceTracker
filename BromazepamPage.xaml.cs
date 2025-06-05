@@ -50,17 +50,17 @@ namespace MoleculeEfficienceTracker
 
                 string text = level switch
                 {
-                    BromazepamCalculator.EffectLevel.Strong => "Effet anxiolytique fort",
-                    BromazepamCalculator.EffectLevel.Moderate => "Effet anxiolytique modéré",
-                    BromazepamCalculator.EffectLevel.Light => "Effet anxiolytique très léger",
+                    EffectLevel.Strong => "Effet anxiolytique fort",
+                    EffectLevel.Moderate => "Effet anxiolytique modéré",
+                    EffectLevel.Light => "Effet anxiolytique très léger",
                     _ => "Effet négligeable"
                 };
 
                 Color color = level switch
                 {
-                    BromazepamCalculator.EffectLevel.Strong => Colors.Green,
-                    BromazepamCalculator.EffectLevel.Moderate => Colors.Green,
-                    BromazepamCalculator.EffectLevel.Light => Colors.Orange,
+                    EffectLevel.Strong => Colors.Green,
+                    EffectLevel.Moderate => Colors.Green,
+                    EffectLevel.Light => Colors.Orange,
                     _ => Colors.Red
                 };
 
