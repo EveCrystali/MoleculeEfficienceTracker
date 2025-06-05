@@ -19,6 +19,7 @@ namespace MoleculeEfficienceTracker
             builder.Services.AddSingleton<BromazepamCalculator>();
             builder.Services.AddSingleton<CaffeineCalculator>();
             builder.Services.AddSingleton<AlcoholCalculator>();
+            builder.Services.AddSingleton<ParacetamolCalculator>();
             
 #if DEBUG
             builder.Logging.AddDebug();
