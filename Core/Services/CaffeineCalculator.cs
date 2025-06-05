@@ -15,7 +15,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double HALF_LIFE_HOURS = 5.0; // Demi-vie moyenne en heures (3-7h)
         private const double ABSORPTION_TIME_HOURS = 0.75; // Temps pour atteindre le pic (45 min)
 
-        private const double CAFFEINE_MG_PER_UNIT = 80.0; // ✅ 1 unité = 80mg (Nespresso standard)
+        public const double MG_PER_UNIT = 80.0; // 1 unité = 80mg (Nespresso standard)
         private const double VOLUME_DISTRIBUTION_L_PER_KG = 0.6; // Volume de distribution moyen
         private const double BIOAVAILABILITY = 1.0; // Fraction absorbée (≈100 %)
 
@@ -51,7 +51,7 @@ namespace MoleculeEfficienceTracker.Core.Services
 
             if (hoursElapsed < 0) return 0; // Dose future
 
-            double doseMg = dose.DoseMg * CAFFEINE_MG_PER_UNIT;
+            double doseMg = dose.DoseMg * MG_PER_UNIT;
 
             double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
 
@@ -74,7 +74,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         // Retourne la valeur de la dose en unité de concentration (mg pour la caféine)
         public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose)
         {
-            return dose.DoseMg * CAFFEINE_MG_PER_UNIT; // Convertit les unités entrées en mg
+            return dose.DoseMg * MG_PER_UNIT; // Convertit les unités entrées en mg
         }
 
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime currentTime)
@@ -87,7 +87,7 @@ namespace MoleculeEfficienceTracker.Core.Services
                 return conc * volume;
             });
 
-            return totalMg / CAFFEINE_MG_PER_UNIT; // Résultat en unités
+            return totalMg; // Résultat en mg
         }
 
         // Génère des points pour un graphique sur une période donnée

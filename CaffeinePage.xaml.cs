@@ -47,6 +47,11 @@ namespace MoleculeEfficienceTracker
             if (Calculator is CaffeineCalculator caffeineCalc)
             {
                 double concentration = caffeineCalc.CalculateTotalConcentration(doses, currentTime);
+                double totalMg = caffeineCalc.CalculateTotalAmount(doses, currentTime);
+                double totalUnits = totalMg / CaffeineCalculator.MG_PER_UNIT;
+
+                ConcentrationOutputLabel.Text = $"{totalUnits:F1}u ({totalMg:F0} mg, {concentration:F2} {Calculator.ConcentrationUnit})";
+
                 var level = caffeineCalc.GetEffectLevel(concentration);
 
                 string text = level switch
