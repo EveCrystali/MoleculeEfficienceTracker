@@ -18,20 +18,27 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         public string DisplayName => "Bromazépam";
         public string DoseUnit => "mg";
-        public string ConcentrationUnit => "mg";
+        public string ConcentrationUnit => "mg/L";
 
         // Paramètres pharmacocinétiques du bromazépam
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures
         private const double ABSORPTION_TIME_HOURS = 2.0; // Temps pour atteindre le pic
+        private const double BIOAVAILABILITY = 0.84; // Fraction absorbée
+        private const double VOLUME_DISTRIBUTION_L_PER_KG = 1.0; // Volume de distribution
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
 
-        // Seuils d'effet subjectif (mg)
-        public const double STRONG_THRESHOLD = 3.0;
-        public const double MODERATE_THRESHOLD = 1.5;
-        public const double LIGHT_THRESHOLD = 0.5;
-        public const double NEGLIGIBLE_THRESHOLD = 0.2;
+        // Seuils d'effet subjectif exprimés en mg/L pour le nouveau modèle
+        // Ces valeurs correspondent à une dose de 3 mg (effet fort) ingérée par
+        // défaut chez un patient de 72 kg avec un Vd de 1 L/kg et une
+        // biodisponibilité de 84 %.
+        public const double STRONG_THRESHOLD = 0.0525;    // ≈ 4,5 mg
+        public const double MODERATE_THRESHOLD = 0.035;  // ≈ 3 mg
+        public const double LIGHT_THRESHOLD = 0.0175;     // ≈ 1,5 mg
+        public const double NEGLIGIBLE_THRESHOLD = 0.00583; // ≈ 0,5 mg
+
+
 
         public BromazepamCalculator()
         {
@@ -47,7 +54,8 @@ namespace MoleculeEfficienceTracker.Core.Services
             if (hoursElapsed < 0) return 0; // Dose future
 
             // Modèle pharmacocinétique à un compartiment avec absorption d'ordre 1
-            double concentration = (dose.DoseMg * absorptionConstant / (absorptionConstant - eliminationConstant)) *
+            double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
+            double concentration = (dose.DoseMg * BIOAVAILABILITY * absorptionConstant / (volume * (absorptionConstant - eliminationConstant))) *
                                   (Math.Exp(-eliminationConstant * hoursElapsed) -
                                    Math.Exp(-absorptionConstant * hoursElapsed));
 

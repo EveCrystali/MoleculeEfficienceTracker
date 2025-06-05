@@ -9,10 +9,12 @@ namespace MoleculeEfficienceTracker.Core.Services
     {
         public string DisplayName => "Paracétamol";
         public string DoseUnit => "mg";
-        public string ConcentrationUnit => "mg";
+        public string ConcentrationUnit => "mg/L";
 
         private const double HALF_LIFE_HOURS = 2.5; // Demi-vie moyenne
-        private const double ABSORPTION_TIME_HOURS = 0.5; // Temps d\'absorption
+        private const double ABSORPTION_TIME_HOURS = 0.5; // Temps d'absorption
+        private const double BIOAVAILABILITY = 0.92; // Fraction absorbée
+        private const double VOLUME_DISTRIBUTION_L_PER_KG = 0.95; // Volume de distribution
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
@@ -28,7 +30,8 @@ namespace MoleculeEfficienceTracker.Core.Services
             double hoursElapsed = (currentTime - dose.TimeTaken).TotalHours;
             if (hoursElapsed < 0) return 0;
 
-            double concentration = (dose.DoseMg * absorptionConstant / (absorptionConstant - eliminationConstant)) *
+            double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
+            double concentration = (dose.DoseMg * BIOAVAILABILITY * absorptionConstant / (volume * (absorptionConstant - eliminationConstant))) *
                                   (Math.Exp(-eliminationConstant * hoursElapsed) -
                                    Math.Exp(-absorptionConstant * hoursElapsed));
 
