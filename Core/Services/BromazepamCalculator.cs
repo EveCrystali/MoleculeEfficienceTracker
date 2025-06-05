@@ -5,6 +5,14 @@ using MoleculeEfficienceTracker.Core.Models;
 
 namespace MoleculeEfficienceTracker.Core.Services
 {
+    public enum EffectLevel
+    {
+        None,
+        Light,
+        Moderate,
+        Strong
+    }
+
     public class BromazepamCalculator : IMoleculeCalculator
     {
 
@@ -18,6 +26,12 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
+
+        // Seuils d'effet subjectif (mg)
+        public const double STRONG_THRESHOLD = 3.0;
+        public const double MODERATE_THRESHOLD = 1.5;
+        public const double LIGHT_THRESHOLD = 0.5;
+        public const double NEGLIGIBLE_THRESHOLD = 0.2;
 
         public BromazepamCalculator()
         {
@@ -69,5 +83,33 @@ namespace MoleculeEfficienceTracker.Core.Services
 
             return points;
         }
+
+        // Détermine le niveau d'effet subjectif en fonction de la concentration
+        public EffectLevel GetEffectLevel(double concentration)
+        {
+            if (concentration >= STRONG_THRESHOLD) return EffectLevel.Strong;
+            if (concentration >= MODERATE_THRESHOLD) return EffectLevel.Moderate;
+            if (concentration >= LIGHT_THRESHOLD) return EffectLevel.Light;
+            return EffectLevel.None;
+        }
+
+        // Prévoit le moment où la concentration passera sous le seuil négligeable
+        public DateTime? PredictEffectEndTime(List<DoseEntry> doses, DateTime currentTime)
+        {
+            if (!doses.Any()) return currentTime;
+
+            for (int minutes = 0; minutes <= 14 * 24 * 60; minutes += 30)
+            {
+                DateTime checkTime = currentTime.AddMinutes(minutes);
+                double conc = CalculateTotalConcentration(doses, checkTime);
+                if (conc < NEGLIGIBLE_THRESHOLD)
+                    return checkTime;
+            }
+
+            return null;
+        }
+
+        // Indique si l'effet est négligeable pour une concentration donnée
+        public bool IsEffectNegligible(double concentration) => concentration < NEGLIGIBLE_THRESHOLD;
     }
 }
