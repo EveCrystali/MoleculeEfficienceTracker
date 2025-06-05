@@ -1,41 +1,167 @@
-# MoleculeEfficienceTracker WIP
+# 🧬 MoleculeEfficienceTracker
 
-MoleculeEfficienceTracker est une application mobile multiplateforme construite avec **.NET MAUI**. Elle permet d'enregistrer des prises de différentes molécules (bromazépam, caféine ou alcool) et d'estimer leur concentration dans le temps.
-L'auteur de cette application n'est pas médecin ni professionnel de santé.
-Cette application est fournie uniquement à des fins éducatives et informatives.
-Cette application ne fournit pas de conseils médicaux, de diagnostic ou de traitement.
-Les informations ne remplacent en aucun cas une consultation médicale professionnelle.
-Consultez toujours un professionnel de santé qualifié pour toute question médicale.
-L'utilisateur utilise cette application à ses propres risques.
-Le développeur décline toute responsabilité pour les dommages directs ou indirects
-résultant de l'utilisation de cette application, y compris les décisions médicales
-ou les conséquences sur la santé.
+[![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-9.0-blue)](https://dotnet.microsoft.com/apps/maui)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Android-blue)](https://dotnet.microsoft.com/apps/maui)
+[![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE.md)
+[![Status](https://img.shields.io/badge/Status-WIP-yellow)](https://github.com/votre-username/MoleculeEfficienceTracker)
 
-## Fonctionnalités principales
+## 📖 Description
 
-- **Suivi des doses** : chaque page de molécule permet d'ajouter une dose avec une date et une heure. Les doses sont sauvegardées localement grâce au service `DataPersistenceService` qui stocke les données dans un fichier par molécule【F:Core/Services/DataPersistenceService.cs†L10-L23】.
-- **Calcul de concentration** : les classes `IMoleculeCalculator` et ses implémentations calculent la concentration estimée en fonction des paramètres pharmacocinétiques de chaque molécule (demi‑vie, temps d'absorption, etc.)【F:Core/Services/BromazepamCalculator.cs†L11-L26】【F:Core/Services/CaffeineCalculator.cs†L10-L30】【F:Core/Services/AlcoholCalculator.cs†L8-L29】.
-- **Graphique interactif** : chaque page affiche l'évolution de la concentration dans un graphique `Syncfusion` mis à jour après chaque ajout ou suppression de dose【F:BaseMoleculePage.cs†L208-L275】.
-- **Annotations spécifiques** : la page Caféine ajoute par exemple une ligne indiquant le seuil d'efficacité et affiche le moment où l'effet devient négligeable【F:CaffeinePage.xaml.cs†L40-L98】.
-- **Export et nettoyage des données** : les doses enregistrées peuvent être exportées au format JSON ou entièrement supprimées via les boutons prévus dans l'interface【F:BaseMoleculePage.cs†L373-L407】【F:BaseMoleculePage.cs†L410-L425】.
+MoleculeEfficienceTracker est une application mobile multiplateforme développée avec **.NET MAUI** qui permet de calculer et visualiser en temps réel la concentration de différentes molécules dans l'organisme. L'application utilise des modèles pharmacocinétiques scientifiques pour estimer l'évolution des concentrations après chaque prise.
+
+**⚠️ AVERTISSEMENT MÉDICAL IMPORTANT**
+
+> **L'auteur de cette application n'est pas médecin ni professionnel de santé.**
+> 
+> Cette application est fournie **uniquement à des fins éducatives et informatives**.
+> Elle ne fournit pas de conseils médicaux, de diagnostic ou de traitement.
+> Les informations ne remplacent en aucun cas une consultation médicale professionnelle.
+> 
+> **Consultez toujours un professionnel de santé qualifié pour toute question médicale.**
+> 
+> L'utilisateur utilise cette application à ses propres risques. Le développeur décline toute responsabilité pour les dommages directs ou indirects résultant de l'utilisation de cette application.
+
+## ✨ Fonctionnalités
+
+### 🧪 Molécules supportées
+- **Bromazépam** : Demi-vie 14h, absorption 2h, dosage en mg
+- **Caféine** : Demi-vie 5h, absorption 45min, système d'unités (1 unité = 80mg Nespresso)
+- **Alcool** : Élimination linéaire 1 unité/heure, absorption 45min
+- **Paracétamol** : Demi-vie 3h, absorption 30min, dosage en mg *(en développement)*
+
+### 📊 Fonctionnalités principales
+- **Suivi des doses** : Enregistrement avec date/heure précise
+- **Calculs pharmacocinétiques** : Modèle 1 compartiment avec absorption/élimination du 1er ordre
+- **Graphiques temps réel** : Visualisation interactive avec annotations (Syncfusion Charts)
+- **Seuils d'efficacité** : Prédictions personnalisées (ex: seuil caféine à 35mg)
+- **Sauvegarde automatique** : Persistance JSON locale
+- **Export de données** : Sauvegarde au format JSON
+- **Interface intuitive** : Navigation par onglets avec design moderne
+
+### 🔬 Modèle mathématique
+
+L'application utilise le modèle pharmacocinétique standard :
+
+```
+
+C(t) = (D × ka / (ka - ke)) × (e^(-ke×t) - e^(-ka×t))
+
+```
+
+Où :
+- `C(t)` = Concentration au temps t
+- `D` = Dose administrée
+- `ka` = Constante d'absorption
+- `ke` = Constante d'élimination
+
+## 🚀 Installation
+
+### Prérequis
+
+- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- [.NET MAUI Workload](https://docs.microsoft.com/dotnet/maui/get-started/installation)
+- Visual Studio 2022 17.8+ ou Visual Studio Code avec extensions C#
+
+### Plateformes supportées
+
+| Plateforme | Version minimale | Status |
+|------------|------------------|--------|
+| Android | API 21 (Android 5.0) | ✅ Testé |
+| Windows | Windows 10 version 1809+ | ✅ Testé |
 
 
-## Structure générale
+### Étapes d'installation
 
-- `BaseMoleculePage<T>` : page générique gérant l'interface commune (saisie de dose, liste, graphique, etc.). Les pages spécifiques héritent de cette classe et renseignent leur `Calculator` ainsi que quelques paramètres d'affichage.
-- `Core/Services` : contient les calculateurs pour chaque molécule (`BromazepamCalculator`, `CaffeineCalculator`, `AlcoholCalculator`), le service de persistance (`DataPersistenceService`) et un service d'alertes.
-- `Core/Models` : modèles `DoseEntry` et `ChartDataPoint` utilisés pour stocker les prises et représenter les points du graphique.
-- `Converters` : petites classes utilitaires pour formater les unités ou le texte affiché dans l'interface.
+1. **Cloner le repository**
+```
 
+git clone https://github.com/votre-username/MoleculeEfficienceTracker.git
+cd MoleculeEfficienceTracker
 
-## Lancer l'application
+```
 
-Le projet cible .NET 9 avec MAUI (Android, iOS, Windows et MacCatalyst). Il nécessite donc un SDK .NET compatible ainsi que les outils MAUI installés. Sur un poste configuré :
+2. **Restaurer les packages**
+```
 
-```bash
-# Restauration des packages et compilation
+dotnet restore
+
+```
+
+3. **Compiler le projet**
+```
+
 dotnet build
 
-# Déploiement (exemple Android)
-dotnet maui deploy -f:net9.0-android
 ```
+
+4. **Déployer sur votre plateforme**
+```
+
+
+# Android
+
+dotnet build -f net9.0-android
+dotnet maui deploy -f net9.0-android
+
+# Windows
+
+dotnet build -f net9.0-windows10.0.19041.0
+dotnet run -f net9.0-windows10.0.19041.0
+
+# iOS (nécessite macOS)
+
+dotnet build -f net9.0-ios
+
+```
+
+## 🏗️ Architecture
+
+```
+
+MoleculeEfficienceTracker/
+├── Core/
+│   ├── Models/           \# DoseEntry, ChartDataPoint
+│   └── Services/         \# Calculateurs, DataPersistence
+├── Pages/               \# BromazepamPage, CaffeinePage, etc.
+├── Converters/          \# Formatage UI
+└── Resources/           \# Images, styles
+
+```
+
+### Composants principaux
+
+- **`BaseMoleculePage<T>`** : Page générique commune à toutes les molécules
+- **`IMoleculeCalculator`** : Interface pour les calculs pharmacocinétiques
+- **`DataPersistenceService`** : Sauvegarde/chargement JSON automatique
+- **Calculateurs spécialisés** : Un par molécule avec paramètres spécifiques
+
+## 📱 Utilisation
+
+1. **Sélectionner une molécule** via les onglets
+2. **Ajouter une dose** en spécifiant la quantité et l'heure
+3. **Visualiser la concentration** en temps réel sur le graphique
+4. **Consulter l'historique** des doses prises
+5. **Exporter les données** si nécessaire
+
+## 🔮 Roadmap
+
+- [ ] Page "Charge totale d'intoxication" (toutes molécules)
+- [ ] Extension Ibuprofène (etc.)
+- [?] Calcul d'interactions médicamenteuses
+- [ ] Prédictions optimisées
+
+## 🤝 Contribution
+
+Ce projet est actuellement en développement privé. Les contributions externes ne sont pas acceptées pour le moment.
+
+## 📄 Licence
+
+Ce logiciel est protégé par une licence propriétaire. Voir [LICENSE.md](LICENSE.md) pour plus de détails.
+
+## ⚖️ Limitation de responsabilité
+
+L'utilisation de cette application se fait aux risques et périls de l'utilisateur. Le développeur ne peut être tenu responsable des conséquences de son utilisation, notamment en matière de santé ou de décisions médicales.
+
+---
+
+**Développé avec ❤️ et .NET MAUI**
