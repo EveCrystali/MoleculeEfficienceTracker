@@ -32,9 +32,6 @@
         <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}"
                              BackgroundColor="{StaticResource MainBgColor}">
 
-            <!-- HEADER -->
-            <Label Text="📊 Alcool" Style="{StaticResource CompactHeaderStyle}"/>
-
             <!-- AJOUTER UNE DOSE -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    Margin="0,0,0,0">
