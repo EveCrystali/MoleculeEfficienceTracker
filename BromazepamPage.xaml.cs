@@ -52,7 +52,7 @@ namespace MoleculeEfficienceTracker
                 {
                     EffectLevel.Strong => "Effet anxiolytique fort",
                     EffectLevel.Moderate => "Effet anxiolytique modéré",
-                    EffectLevel.Light => "Effet anxiolytique très léger",
+                    EffectLevel.Light => "Effet anxiolytique léger",
                     _ => "Effet négligeable"
                 };
 
@@ -118,7 +118,7 @@ namespace MoleculeEfficienceTracker
             {
                 AddThresholdAnnotation(BromazepamCalculator.STRONG_THRESHOLD, "Effet fort", Colors.Green);
                 AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Effet modéré", Colors.Green);
-                AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Effet très léger", Colors.Orange);
+                AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Effet léger", Colors.Orange);
                 AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Red);
             }
         }
