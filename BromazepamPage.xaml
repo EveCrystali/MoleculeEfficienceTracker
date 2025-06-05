@@ -277,16 +277,6 @@
                             </chart:SplineSeries>
                         </chart:SfCartesianChart>
                     </Frame>
-                    <Label x:Name="EffectStatus"
-                           FontSize="14"
-                           HorizontalOptions="Center"
-                           TextColor="Green"
-                           Text=""/>
-                    <Label x:Name="EffectPrediction"
-                           FontSize="12"
-                           HorizontalOptions="Center"
-                           TextColor="Red"
-                           Text=""/>
 
                 </VerticalStackLayout>
             </Frame>
