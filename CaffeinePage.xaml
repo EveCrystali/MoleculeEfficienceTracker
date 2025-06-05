@@ -15,17 +15,22 @@
                 <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Fond général de la page -->
-            <Color x:Key="MainBgColor">#F0F4F8</Color>
+            <AppThemeColor x:Key="MainBgColor" Light="#F0F4F8" Dark="#1F1F1F"/>
+            <AppThemeColor x:Key="EntryBgColor" Light="#EBF8FF" Dark="#3A3A3A"/>
+            <AppThemeColor x:Key="ChartSectionBgColor" Light="#E6FFFA" Dark="#2D2D2D"/>
+            <AppThemeColor x:Key="ListSectionBgColor" Light="#FFFDE7" Dark="#2D2D2D"/>
+            <AppThemeColor x:Key="ItemFrameBgColor" Light="#FAF5FF" Dark="#3A3A3A"/>
+            <AppThemeColor x:Key="ExportSectionBgColor" Light="#EDF2F7" Dark="#2D2D2D"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
     <ContentPage.Background>
-        <SolidColorBrush Color="{StaticResource MainBgColor}"/>
+        <SolidColorBrush Color="{DynamicResource MainBgColor}"/>
     </ContentPage.Background>
 
     <ScrollView>
         <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}"
-                             BackgroundColor="{StaticResource MainBgColor}">
+                             BackgroundColor="{DynamicResource MainBgColor}">
 
             <!-- AJOUTER UNE DOSE -->
             <Frame Style="{StaticResource CardFrameStyle}"
@@ -48,7 +53,7 @@
                                Grid.Column="1"
                                CornerRadius="8"
                                Padding="0"
-                               BackgroundColor="#EBF8FF"
+                               BackgroundColor="{DynamicResource EntryBgColor}"
                                HasShadow="False"
                                VerticalOptions="Center"
                                HeightRequest="32">
@@ -90,7 +95,7 @@
 
             <!-- CONCENTRATION & GRAPHIQUE -->
             <Frame Style="{StaticResource CardFrameStyle}"
-                   BackgroundColor="#E6FFFA">
+                   BackgroundColor="{DynamicResource ChartSectionBgColor}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Concentration actuelle"
                            FontSize="20"
@@ -117,7 +122,7 @@
                            HorizontalOptions="Center"/>
                     <Frame Padding="10"
                            CornerRadius="10"
-                           BackgroundColor="White"
+                           Style="{StaticResource CardFrameStyle}"
                            HasShadow="True"
                            Margin="0,8,0,0"
                            HeightRequest="320">
@@ -211,7 +216,7 @@
 
             <!-- LISTE DES DOSES -->
             <Frame Style="{StaticResource CardFrameStyle}"
-                   BackgroundColor="#FFFDE7">
+                   BackgroundColor="{DynamicResource ListSectionBgColor}">
                 <VerticalStackLayout Spacing="8">
                     <Label Text="Doses récentes"
                            FontSize="20"
@@ -231,8 +236,8 @@
                                         IsVisible="True">
                             <CollectionView.ItemTemplate>
                                 <DataTemplate>
-                                    <Frame BackgroundColor="#FAF5FF"
-                                           CornerRadius="8"                                           
+                                    <Frame BackgroundColor="{DynamicResource ItemFrameBgColor}"
+                                           CornerRadius="8"
                                            Padding="10,6"
                                            Margin="0,3"
                                            HasShadow="False">
@@ -267,7 +272,7 @@
             <!-- BOUTONS EXPORT/RESET -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    Padding="12"
-                   BackgroundColor="#EDF2F7">
+                   BackgroundColor="{DynamicResource ExportSectionBgColor}">
                 <HorizontalStackLayout Spacing="22"
                                        HorizontalOptions="Center">
                     <Button Text="💾 Exporter"
