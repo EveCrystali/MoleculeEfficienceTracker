@@ -24,23 +24,16 @@
     </ContentPage.Background>
 
     <ScrollView>
-        <VerticalStackLayout Spacing="28"
-                             Padding="26"
+        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}"
                              BackgroundColor="{StaticResource MainBgColor}">
 
             <!-- HEADER -->
-            <Label Text="📊 Calculateur de Bromazépam"
-                   FontSize="24"
-                   TextColor="#2D3748"
-                   HorizontalOptions="Center"
-                   FontAttributes="Bold"
-                   Margin="0,10,0,8"
-                   Shadow="2,2,6,Gray"/>
+            <Label Text="📊 Bromazépam" Style="{StaticResource CompactHeaderStyle}"/>
 
             <!-- AJOUTER UNE DOSE -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    Margin="0,0,0,0">
-                <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="💊 Ajouter une dose"
                            FontSize="16"
                            FontAttributes="Bold"
@@ -90,7 +83,7 @@
             <!-- CONCENTRATION & GRAPHIQUE -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    BackgroundColor="#E6FFFA">
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="Concentration actuelle"
                            FontSize="20"
                            FontAttributes="Bold"
@@ -119,7 +112,7 @@
                            BackgroundColor="White"
                            HasShadow="True"
                            Margin="0,8,0,0"
-                           HeightRequest="300">
+                           HeightRequest="240">
                         <chart:SfCartesianChart x:Name="ConcentrationChart">
 
                             <chart:SfCartesianChart.TrackballBehavior>
@@ -211,7 +204,7 @@
             <!-- LISTE DES DOSES -->
             <Frame Style="{StaticResource CardFrameStyle}"
                    BackgroundColor="#FFFDE7">
-                <VerticalStackLayout Spacing="10">
+                <VerticalStackLayout Spacing="8">
                     <Label Text="Doses récentes"
                            FontSize="20"
                            FontAttributes="Bold"
