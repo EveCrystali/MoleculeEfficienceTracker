@@ -9,13 +9,15 @@ namespace MoleculeEfficienceTracker.Core.Services
     {
         public string DisplayName => "Caféine";
         public string DoseUnit => "u";
-        public string ConcentrationUnit => "mg";
+        public string ConcentrationUnit => "mg/L";
 
         // Paramètres pharmacocinétiques de la caféine
         private const double HALF_LIFE_HOURS = 5.0; // Demi-vie moyenne en heures (3-7h)
         private const double ABSORPTION_TIME_HOURS = 0.75; // Temps pour atteindre le pic (45 min)
 
         private const double CAFFEINE_MG_PER_UNIT = 80.0; // ✅ 1 unité = 80mg (Nespresso standard)
+        private const double VOLUME_DISTRIBUTION_L_PER_KG = 0.6; // Volume de distribution moyen
+        private const double BIOAVAILABILITY = 1.0; // Fraction absorbée (≈100 %)
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
@@ -51,11 +53,14 @@ namespace MoleculeEfficienceTracker.Core.Services
 
             double doseMg = dose.DoseMg * CAFFEINE_MG_PER_UNIT;
 
+            double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
+
             // Modèle pharmacocinétique à un compartiment avec absorption d'ordre 1
             // Adapté pour la caféine avec absorption rapide
-            double concentration = (doseMg * absorptionConstant / (absorptionConstant - eliminationConstant)) *
-                                  (Math.Exp(-eliminationConstant * hoursElapsed) -
-                                   Math.Exp(-absorptionConstant * hoursElapsed));
+            double concentration = (doseMg * BIOAVAILABILITY * absorptionConstant /
+                                  (volume * (absorptionConstant - eliminationConstant))) *
+                                 (Math.Exp(-eliminationConstant * hoursElapsed) -
+                                  Math.Exp(-absorptionConstant * hoursElapsed));
 
             return Math.Max(0, concentration);
         }
@@ -74,8 +79,15 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime currentTime)
         {
-            // Convert the remaining amount expressed in mg to units
-            return CalculateTotalConcentration(doses, currentTime) / CAFFEINE_MG_PER_UNIT;
+            // Convertit la concentration totale (mg/L) en quantité restante (mg)
+            double totalMg = doses.Sum(d =>
+            {
+                double conc = CalculateSingleDoseConcentration(d, currentTime);
+                double volume = d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
+                return conc * volume;
+            });
+
+            return totalMg / CAFFEINE_MG_PER_UNIT; // Résultat en unités
         }
 
         // Génère des points pour un graphique sur une période donnée
