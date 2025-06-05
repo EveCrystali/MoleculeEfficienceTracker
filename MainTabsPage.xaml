@@ -8,6 +8,9 @@
     BarTextColor="#2D3748"
     SelectedTabColor="#3182CE"
     UnselectedTabColor="#A0AEC0">
+  
+    <!-- Onglet Caféine -->
+    <local:CaffeinePage Title="Caféine" IconImageSource="🍵" />
     
     <!-- Onglet Bromazépam -->
     <local:BromazepamPage Title="Bromazépam" IconImageSource="💊" />
@@ -15,8 +18,7 @@
     <local:ParacetamolPage Title="Paracétamol" IconImageSource="💊" />
     <!-- Onglet Ibuprofène -->
     <local:IbuprofenePage Title="Ibuprofène" IconImageSource="💊" />
-    <!-- Onglet Caféine -->
-    <local:CaffeinePage Title="Caféine" IconImageSource="🍵" />
+
     <!-- Onglet Alcool -->
     <local:AlcoholPage Title="Alcool" IconImageSource="🍾" />
 </TabbedPage>
