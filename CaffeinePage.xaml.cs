@@ -29,6 +29,7 @@ namespace MoleculeEfficienceTracker
         protected override int GraphDataNumberOfPoints => 10 * 24 * 2; // 10 jours, 2 points par heure
         protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-24); // Vue initiale de -24h
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(24);   // Vue initiale de +24h
+        protected override bool UseConcentrationUnitForDoseAnnotation => true;
 
         public CaffeinePage()
             : base("caffeine") // Utiliser une clé en minuscules pour la cohérence
