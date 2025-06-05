@@ -24,7 +24,9 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures
         private const double ABSORPTION_TIME_HOURS = 2.0; // Temps pour atteindre le pic
         private const double BIOAVAILABILITY = 0.84; // Fraction absorbée
-        private const double VOLUME_DISTRIBUTION_L_PER_KG = 1.0; // Volume de distribution
+        private const double VOLUME_DISTRIBUTION_L_PER_KG = 1.0; // Volume de distribution total
+        private const double CENTRAL_VOLUME_L_PER_KG = 0.56;     // Volume du compartiment central
+        private const double DISTRIBUTION_CONSTANT_ALPHA = 1.0;  // Constante de distribution (alpha)
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
@@ -47,17 +49,27 @@ namespace MoleculeEfficienceTracker.Core.Services
         }
 
         // Calcule la concentration pour une dose unique à un moment donné
+        // en utilisant un modèle bi-compartimental
         public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime currentTime)
         {
             double hoursElapsed = (currentTime - dose.TimeTaken).TotalHours;
 
             if (hoursElapsed < 0) return 0; // Dose future
 
-            // Modèle pharmacocinétique à un compartiment avec absorption d'ordre 1
-            double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
-            double concentration = (dose.DoseMg * BIOAVAILABILITY * absorptionConstant / (volume * (absorptionConstant - eliminationConstant))) *
-                                  (Math.Exp(-eliminationConstant * hoursElapsed) -
-                                   Math.Exp(-absorptionConstant * hoursElapsed));
+            double ka = absorptionConstant;               // Constante d'absorption
+            double beta = eliminationConstant;            // Phase d'élimination
+            double alpha = DISTRIBUTION_CONSTANT_ALPHA;    // Phase de distribution
+
+            double vc = dose.WeightKg * CENTRAL_VOLUME_L_PER_KG; // Volume central
+
+            double numerator = BIOAVAILABILITY * dose.DoseMg * ka;
+            double denom = vc * (alpha - ka) * (beta - ka);
+
+            double term1 = (alpha - ka) * Math.Exp(-beta * hoursElapsed);
+            double term2 = (beta - ka) * Math.Exp(-alpha * hoursElapsed);
+            double term3 = (alpha - beta) * Math.Exp(-ka * hoursElapsed);
+
+            double concentration = (numerator / denom) * (term1 + term2 - term3);
 
             return Math.Max(0, concentration);
         }
