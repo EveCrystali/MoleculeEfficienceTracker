@@ -29,11 +29,14 @@ namespace MoleculeEfficienceTracker.Core.Services
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
 
-        // Seuils d'effet subjectif (mg)
-        public const double STRONG_THRESHOLD = 3.0;
-        public const double MODERATE_THRESHOLD = 1.5;
-        public const double LIGHT_THRESHOLD = 0.5;
-        public const double NEGLIGIBLE_THRESHOLD = 0.2;
+        // Seuils d'effet subjectif exprimés en mg/L pour le nouveau modèle
+        // Ces valeurs correspondent à une dose de 3 mg (effet fort) ingérée par
+        // défaut chez un patient de 72 kg avec un Vd de 1 L/kg et une
+        // biodisponibilité de 84 %.
+        public const double STRONG_THRESHOLD = 0.0166;    // ≈ 3 mg
+        public const double MODERATE_THRESHOLD = 0.0083;  // ≈ 1,5 mg
+        public const double LIGHT_THRESHOLD = 0.0028;     // ≈ 0,5 mg
+        public const double NEGLIGIBLE_THRESHOLD = 0.0011; // ≈ 0,2 mg
 
         public BromazepamCalculator()
         {
