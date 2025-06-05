@@ -141,7 +141,8 @@ namespace MoleculeEfficienceTracker
                 TimeSpan selectedTime = TimePickerControl.Time;
                 DateTime dateTime = selectedDate.Add(selectedTime);
 
-                DoseEntry dose = new DoseEntry(dateTime, doseMg);
+                double weight = UserPreferences.GetWeightKg();
+                DoseEntry dose = new DoseEntry(dateTime, doseMg, weight);
 
                 Doses.Insert(0, dose);
                 DoseInputControl.Text = "";
