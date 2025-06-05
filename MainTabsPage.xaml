@@ -21,4 +21,6 @@
 
     <!-- Onglet Alcool -->
     <local:AlcoholPage Title="Alcool" IconImageSource="🍾" />
+    <!-- Onglet Paramètres -->
+    <local:SettingsPage Title="Réglages" IconImageSource="⚙️" />
 </TabbedPage>
