@@ -11,6 +11,10 @@
     
     <!-- Onglet Bromazépam -->
     <local:BromazepamPage Title="Bromazépam" IconImageSource="💊" />
+    <!-- Onglet Paracétamol -->
+    <local:ParacetamolPage Title="Paracétamol" IconImageSource="💊" />
+    <!-- Onglet Ibuprofène -->
+    <local:IbuprofenePage Title="Ibuprofène" IconImageSource="💊" />
     <!-- Onglet Caféine -->
     <local:CaffeinePage Title="Caféine" IconImageSource="🍵" />
     <!-- Onglet Alcool -->
