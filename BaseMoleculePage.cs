@@ -315,7 +315,7 @@ namespace MoleculeEfficienceTracker
             {
                 double concentrationAtDoseTime = Calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
                 double displayValue = Calculator.GetDoseDisplayValueInConcentrationUnit(dose);
-                string doseText = $"{DoseAnnotationIcon}{displayValue:F2}{Calculator.ConcentrationUnit}";
+                string doseText = $"{DoseAnnotationIcon}{displayValue:F2}{Calculator.DoseUnit}";
 
                 TextAnnotation doseAnnotation = new TextAnnotation
                 {
