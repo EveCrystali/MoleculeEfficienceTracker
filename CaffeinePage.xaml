@@ -198,7 +198,12 @@
                            FontSize="14"
                            TextColor="#718096"
                            HorizontalOptions="Center"/>
-                    <Label x:Name="IneffectiveTimeLabel"
+                    <Label x:Name="EffectStatus"
+                           FontSize="14"
+                           HorizontalOptions="Center"
+                           TextColor="Green"
+                           Text=""/>
+                    <Label x:Name="EffectPrediction"
                            Text=""
                            FontSize="12"
                            TextColor="Red"
@@ -282,7 +287,7 @@
                                                 <Label Text="{Binding Item.Time, StringFormat='🕒 {0:dd/MM HH:mm}'}"
                                                        TextColor="White"
                                                        FontSize="12"/>
-                                                <Label Text="{Binding Item.Concentration, StringFormat='📈 {0:F2} mg'}"
+                                                <Label Text="{Binding Item.Concentration, StringFormat='📈 {0:F2} mg/L'}"
                                                        TextColor="White"
                                                        FontSize="13"
                                                        FontAttributes="Bold"/>
