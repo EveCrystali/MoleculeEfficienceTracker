@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<local:BaseMoleculePage x:Class="MoleculeEfficienceTracker.BromazepamPage"
+<local:BaseMoleculePage x:Class="MoleculeEfficienceTracker.IbuprofenePage"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:local="clr-namespace:MoleculeEfficienceTracker"
              xmlns:coreServices="clr-namespace:MoleculeEfficienceTracker.Core.Services"
              xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
-             x:TypeArguments="coreServices:BromazepamCalculator"
-             Title="Bromazépam">
+             x:TypeArguments="coreServices:IbuprofeneCalculator"
+             Title="Ibuprofène">
 
     <!-- Ressources pour styles réutilisables -->
     <ContentPage.Resources>
@@ -112,7 +112,7 @@
                              BackgroundColor="{StaticResource MainBgColor}">
 
             <!-- HEADER -->
-            <Label Text="📊 Calculateur de Bromazépam"
+            <Label Text="📊 Calculateur de Ibuprofène"
                    FontSize="32"
                    TextColor="#2D3748"
                    HorizontalOptions="Center"
@@ -277,16 +277,6 @@
                             </chart:SplineSeries>
                         </chart:SfCartesianChart>
                     </Frame>
-                    <Label x:Name="EffectStatus"
-                           FontSize="14"
-                           HorizontalOptions="Center"
-                           TextColor="Green"
-                           Text=""/>
-                    <Label x:Name="EffectPrediction"
-                           FontSize="12"
-                           HorizontalOptions="Center"
-                           TextColor="Red"
-                           Text=""/>
 
                 </VerticalStackLayout>
             </Frame>
@@ -325,7 +315,7 @@
                                                    VerticalOptions="Center"
                                                    TextColor="Black"/> <!-- Test: Couleur explicite -->
                                             <Label Grid.Column="1"                                                   
-                                                   Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type local:BromazepamPage}}, Path=Calculator.DoseUnit}}"
+                                                   Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter={Binding Source={RelativeSource AncestorType={x:Type local:IbuprofenePage}}, Path=Calculator.DoseUnit}}"
                                                    VerticalOptions="Center"
                                                    HorizontalOptions="Center"
                                                    TextColor="Black"/> <!-- Test: Couleur explicite -->
