@@ -45,6 +45,7 @@ namespace MoleculeEfficienceTracker
         protected abstract int GraphDataNumberOfPoints { get; } // Ex: 10 * 24 * 2
         protected abstract TimeSpan InitialVisibleStartOffset { get; } // Ex: TimeSpan.FromHours(-12)
         protected abstract TimeSpan InitialVisibleEndOffset { get; }   // Ex: TimeSpan.FromHours(24)
+        protected virtual bool UseConcentrationUnitForDoseAnnotation => false;
         public bool HasDoses => Doses != null && Doses.Count > 0;
         public bool IsDosesListEmpty => Doses == null || Doses.Count == 0; // Ou simplement !HasDoses
 
@@ -317,7 +318,8 @@ namespace MoleculeEfficienceTracker
             {
                 double concentrationAtDoseTime = Calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
                 double displayValue = Calculator.GetDoseDisplayValueInConcentrationUnit(dose);
-                string doseText = $"{DoseAnnotationIcon}{displayValue:F2}{Calculator.DoseUnit}";
+                string unit = UseConcentrationUnitForDoseAnnotation ? Calculator.ConcentrationUnit : Calculator.DoseUnit;
+                string doseText = $"{DoseAnnotationIcon}{displayValue:F2}{unit}";
 
                 TextAnnotation doseAnnotation = new TextAnnotation
                 {
