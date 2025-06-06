@@ -208,15 +208,6 @@ namespace MoleculeEfficienceTracker
             // Par défaut, ne fait rien. La page Caféine surchargera ceci.
         }
 
-        /// <summary>
-        /// Permet aux pages dérivées de calculer un pourcentage d'effet pour une concentration donnée.
-        /// Retourne null si aucun calcul n'est souhaité.
-        /// </summary>
-        protected virtual double? GetEffectPercentForConcentration(double concentration)
-        {
-            return null;
-        }
-
         protected async Task UpdateChart()
         {
             ChartData.Clear();
@@ -252,9 +243,7 @@ namespace MoleculeEfficienceTracker
 
             foreach ((DateTime Time, double Concentration) point in graphPoints)
             {
-                double? effect = GetEffectPercentForConcentration(point.Concentration);
-                double effectValue = effect ?? 0;
-                ChartData.Add(new ChartDataPoint(point.Time, point.Concentration, effectValue));
+                ChartData.Add(new ChartDataPoint(point.Time, point.Concentration));
             }
 
             if (chart.XAxes?.FirstOrDefault() is DateTimeAxis xAxis)

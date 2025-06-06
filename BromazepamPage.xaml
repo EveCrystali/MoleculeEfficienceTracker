@@ -90,13 +90,9 @@
                            FontAttributes="Bold"
                            TextColor="#22543D"
                            HorizontalOptions="Center"/>
-                   <Label x:Name="LastUpdateLabel"
+                    <Label x:Name="LastUpdateLabel"
                            FontSize="14"
                            TextColor="#718096"
-                           HorizontalOptions="Center"/>
-                    <Label x:Name="EffectPower"
-                           FontSize="14"
-                           TextColor="#22543D"
                            HorizontalOptions="Center"/>
                     <Label x:Name="EffectStatus"
                            FontSize="14"
@@ -145,7 +141,7 @@
                                 </chart:DateTimeAxis>
                             </chart:SfCartesianChart.XAxes>
                             <chart:SfCartesianChart.YAxes>
-                                <chart:NumericalAxis x:Name="ConcentrationAxis" Name="ConcentrationAxis" Minimum="0" Maximum="0.21"
+                                <chart:NumericalAxis Minimum="0"
                                                      ShowMajorGridLines="True"
                                                      ShowMinorGridLines="False">
                                     <chart:NumericalAxis.LabelStyle>
@@ -157,12 +153,6 @@
                                                 StrokeWidth="1"/>
                                     </chart:NumericalAxis.MajorGridLineStyle>
                                 </chart:NumericalAxis>
-                                <chart:NumericalAxis x:Name="EffectAxis" Name="EffectAxis" Minimum="0" Maximum="100" OpposedPosition="True"
-                                                     ShowMajorGridLines="False">
-                                    <chart:NumericalAxis.LabelStyle>
-                                        <chart:ChartAxisLabelStyle FontSize="10" TextColor="#9B2C2C"/>
-                                    </chart:NumericalAxis.LabelStyle>
-                                </chart:NumericalAxis>
                             </chart:SfCartesianChart.YAxes>
 
                             <!-- COURBE LISSEE et POINTS NOIRS -->
@@ -170,7 +160,6 @@
                                 ItemsSource="{Binding ChartData}"
                                 XBindingPath="Time"
                                 YBindingPath="Concentration"
-                                YAxisName="ConcentrationAxis"
                                 Fill="Blue"
                                 StrokeWidth="1.5"
                                 EnableTooltip="True"
@@ -195,34 +184,6 @@
                                                        TextColor="White"
                                                        FontSize="12"/>
                                                 <Label Text="{Binding Item.Concentration, StringFormat='📈 {0:F2} mg'}"
-                                                       TextColor="White"
-                                                       FontSize="13"
-                                                       FontAttributes="Bold"/>
-                                            </VerticalStackLayout>
-                                        </Border>
-                                    </DataTemplate>
-                                </chart:SplineSeries.TooltipTemplate>
-                            </chart:SplineSeries>
-                            <chart:SplineSeries
-                                ItemsSource="{Binding ChartData}"
-                                XBindingPath="Time"
-                                YBindingPath="EffectPercent"
-                                YAxisName="EffectAxis"
-                                Stroke="DarkOrange"
-                                StrokeWidth="1.5"
-                                EnableTooltip="True"
-                                ShowMarkers="False">
-                                <chart:SplineSeries.TooltipTemplate>
-                                    <DataTemplate>
-                                        <Border Background="#23272F"
-                                                Padding="7"
-                                                Stroke="White"
-                                                StrokeThickness="0.5">
-                                            <VerticalStackLayout>
-                                                <Label Text="{Binding Item.Time, StringFormat='🕒 {0:dd/MM HH:mm}'}"
-                                                       TextColor="White"
-                                                       FontSize="12"/>
-                                                <Label Text="{Binding Item.EffectPercent, StringFormat='⚡ {0:F0}%'}"
                                                        TextColor="White"
                                                        FontSize="13"
                                                        FontAttributes="Bold"/>
