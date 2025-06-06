@@ -2,6 +2,13 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts">
+    <!-- Background brushes used by the card style -->
+    <LinearGradientBrush x:Key="CardLightBackgroundBrush" StartPoint="0,0" EndPoint="0,1">
+        <GradientStop Color="White" Offset="0"/>
+        <GradientStop Color="#F3F4F6" Offset="1"/>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="CardDarkBackgroundBrush" Color="#2D2D2D"/>
+
     <Style x:Key="CardFrameStyle" TargetType="Frame">
         <Setter Property="CornerRadius" Value="16"/>
         <Setter Property="Padding" Value="16"/>
@@ -12,10 +19,7 @@
             </Setter.Value>
         </Setter>
         <Setter Property="Background">
-            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                <GradientStop Color="White" Offset="0"/>
-                <GradientStop Color="#F3F4F6" Offset="1"/>
-            </LinearGradientBrush>
+            <AppThemeBinding Light="{StaticResource CardLightBackgroundBrush}" Dark="{StaticResource CardDarkBackgroundBrush}"/>
         </Setter>
     </Style>
 
