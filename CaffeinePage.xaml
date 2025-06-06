@@ -131,7 +131,7 @@
                             </chart:SfCartesianChart.TrackballBehavior>
 
                             <chart:SfCartesianChart.ZoomPanBehavior>
-                                <chart:ChartZoomPanBehavior ZoomMode="X"
+                                <chart:ChartZoomPanBehavior ZoomMode="XY"
                                                             EnablePanning="True"/>
                             </chart:SfCartesianChart.ZoomPanBehavior>
 
