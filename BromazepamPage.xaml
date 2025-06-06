@@ -157,7 +157,7 @@
                                                 StrokeWidth="1"/>
                                     </chart:NumericalAxis.MajorGridLineStyle>
                                 </chart:NumericalAxis>
-                                <chart:NumericalAxis x:Name="EffectAxis" Name="EffectAxis" Minimum="0" Maximum="100" OpposedPosition="True"
+                                <chart:NumericalAxis x:Name="EffectAxis" Name="EffectAxis" Minimum="0" Maximum="100" 
                                                      ShowMajorGridLines="False">
                                     <chart:NumericalAxis.LabelStyle>
                                         <chart:ChartAxisLabelStyle FontSize="10" TextColor="#9B2C2C"/>
@@ -208,7 +208,7 @@
                                 XBindingPath="Time"
                                 YBindingPath="EffectPercent"
                                 YAxisName="EffectAxis"
-                                Stroke="DarkOrange"
+                                
                                 StrokeWidth="1.5"
                                 EnableTooltip="True"
                                 ShowMarkers="False">
