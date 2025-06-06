@@ -157,7 +157,7 @@
                                                 StrokeWidth="1"/>
                                     </chart:NumericalAxis.MajorGridLineStyle>
                                 </chart:NumericalAxis>
-                                <chart:NumericalAxis x:Name="EffectAxis" Minimum="0" Maximum="100" OpposedPosition="True"
+                                <chart:NumericalAxis x:Name="EffectAxis" Minimum="0" Maximum="100" IsOpposed="True"
                                                      ShowMajorGridLines="False">
                                     <chart:NumericalAxis.LabelStyle>
                                         <chart:ChartAxisLabelStyle FontSize="10" TextColor="#9B2C2C"/>
