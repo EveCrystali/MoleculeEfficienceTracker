@@ -25,6 +25,9 @@ namespace MoleculeEfficienceTracker
         // Labels spécifiques à l'effet
         private Label EffectStatusLabel => EffectStatus;
         private Label EffectEndPredictionLabel => EffectPrediction;
+        private Label EffectPowerLabel => EffectPower;
+
+        private readonly PharmacodynamicModel _pdModel = new PharmacodynamicModel(0.05);
         
 
         protected override string DoseAnnotationIcon => "💊";
@@ -46,6 +49,7 @@ namespace MoleculeEfficienceTracker
             if (Calculator is BromazepamCalculator calc)
             {
                 double concentration = calc.CalculateTotalConcentration(doses, currentTime);
+                double effectPercent = _pdModel.GetEffectPercent(concentration);
                 var level = calc.GetEffectLevel(concentration);
 
                 string text = level switch
@@ -69,6 +73,12 @@ namespace MoleculeEfficienceTracker
                     EffectStatusLabel.Text = text;
                     EffectStatusLabel.TextColor = color;
                     EffectStatusLabel.IsVisible = true;
+                }
+
+                if (EffectPowerLabel != null)
+                {
+                    EffectPowerLabel.Text = $"Puissance de l'effet : {effectPercent:F0} %";
+                    EffectPowerLabel.IsVisible = true;
                 }
 
                 DateTime? endTime = calc.PredictEffectEndTime(doses, currentTime);
@@ -121,6 +131,11 @@ namespace MoleculeEfficienceTracker
                 AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Effet léger", Colors.Orange);
                 AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Red);
             }
+        }
+
+        protected override double? GetEffectPercentForConcentration(double concentration)
+        {
+            return _pdModel.GetEffectPercent(concentration);
         }
 
         protected override async Task OnBeforeLoadDataAsync()
