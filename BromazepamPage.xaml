@@ -145,7 +145,7 @@
                                 </chart:DateTimeAxis>
                             </chart:SfCartesianChart.XAxes>
                             <chart:SfCartesianChart.YAxes>
-                                <chart:NumericalAxis x:Name="ConcentrationAxis" Minimum="0"
+                                <chart:NumericalAxis x:Name="ConcentrationAxis" Minimum="0" Maximum="0.21"
                                                      ShowMajorGridLines="True"
                                                      ShowMinorGridLines="False">
                                     <chart:NumericalAxis.LabelStyle>
@@ -157,7 +157,7 @@
                                                 StrokeWidth="1"/>
                                     </chart:NumericalAxis.MajorGridLineStyle>
                                 </chart:NumericalAxis>
-                                <chart:NumericalAxis x:Name="EffectAxis" Minimum="0" Maximum="100" IsOpposed="True"
+                                <chart:NumericalAxis x:Name="EffectAxis" Minimum="0" Maximum="100" OpposedPosition="True"
                                                      ShowMajorGridLines="False">
                                     <chart:NumericalAxis.LabelStyle>
                                         <chart:ChartAxisLabelStyle FontSize="10" TextColor="#9B2C2C"/>
@@ -170,6 +170,7 @@
                                 ItemsSource="{Binding ChartData}"
                                 XBindingPath="Time"
                                 YBindingPath="Concentration"
+                                YAxisName="ConcentrationAxis"
                                 Fill="Blue"
                                 StrokeWidth="1.5"
                                 EnableTooltip="True"
