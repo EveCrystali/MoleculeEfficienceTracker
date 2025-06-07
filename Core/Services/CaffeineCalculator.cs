@@ -23,8 +23,8 @@ namespace MoleculeEfficienceTracker.Core.Services
         private readonly double absorptionConstant; // ka
 
         // Seuils d'effet exprimés en mg/L
-        public const double STRONG_THRESHOLD = 10.0;      // mg/L : effet fort/toxique
-        public const double MODERATE_THRESHOLD = 5.0;     // mg/L : effet net
+        public const double STRONG_THRESHOLD = 8.0;      // mg/L : effet fort/toxique
+        public const double MODERATE_THRESHOLD = 3.0;     // mg/L : effet net
         public const double LIGHT_THRESHOLD = 1;        // mg/L : effet léger
         public const double NEGLIGIBLE_THRESHOLD = 0.3;   // mg/L : effet négligeable
 
