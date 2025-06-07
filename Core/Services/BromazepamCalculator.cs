@@ -112,6 +112,22 @@ namespace MoleculeEfficienceTracker.Core.Services
             return EffectLevel.None;
         }
 
+        /// <summary>
+        /// Détermine un niveau d'effet à partir du pourcentage de saturation des récepteurs.
+        /// Les seuils sont inspirés de la littérature :
+        /// 0-30 % = léger, 30-60 % = modéré, 60-80 % = marqué, >80 % = danger.
+        /// </summary>
+        public EffectLevel GetEffectLevelFromSaturation(double saturationPercent)
+        {
+            if (saturationPercent >= 80)
+                return EffectLevel.Strong;
+            if (saturationPercent >= 60)
+                return EffectLevel.Moderate;
+            if (saturationPercent >= 30)
+                return EffectLevel.Light;
+            return EffectLevel.None;
+        }
+
         // Prévoit le moment où la concentration passera sous le seuil négligeable
         public DateTime? PredictEffectEndTime(List<DoseEntry> doses, DateTime currentTime)
         {

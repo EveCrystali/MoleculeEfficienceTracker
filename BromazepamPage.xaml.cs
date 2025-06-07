@@ -49,23 +49,23 @@ namespace MoleculeEfficienceTracker
             if (Calculator is BromazepamCalculator calc)
             {
                 double concentration = calc.CalculateTotalConcentration(doses, currentTime);
-                double effectPercent = _pdModel.GetEffectPercent(concentration);
-                var level = calc.GetEffectLevel(concentration);
+                double saturation = _pdModel.GetEffectPercent(concentration);
+                var level = calc.GetEffectLevelFromSaturation(saturation);
 
                 string text = level switch
                 {
-                    EffectLevel.Strong => "Effet anxiolytique fort",
-                    EffectLevel.Moderate => "Effet anxiolytique modéré",
-                    EffectLevel.Light => "Effet anxiolytique léger",
-                    _ => "Effet négligeable"
+                    EffectLevel.Strong => "⚠️ Risque de surdosage",
+                    EffectLevel.Moderate => "Effet marqué",
+                    EffectLevel.Light => "Effet modéré",
+                    _ => "Effet léger"
                 };
 
                 Color color = level switch
                 {
-                    EffectLevel.Strong => Colors.Green,
+                    EffectLevel.Strong => Colors.Red,
                     EffectLevel.Moderate => Colors.Green,
-                    EffectLevel.Light => Colors.Orange,
-                    _ => Colors.Red
+                    EffectLevel.Light => Colors.Green,
+                    _ => Colors.Orange
                 };
 
                 if (EffectStatusLabel != null)
@@ -77,7 +77,7 @@ namespace MoleculeEfficienceTracker
 
                 if (EffectPowerLabel != null)
                 {
-                    EffectPowerLabel.Text = $"Puissance de l'effet : {effectPercent:F0} %";
+                    EffectPowerLabel.Text = $"Saturation des récepteurs : {saturation:F0} %";
                     EffectPowerLabel.IsVisible = true;
                 }
 
@@ -126,10 +126,10 @@ namespace MoleculeEfficienceTracker
         {
             if (Calculator is BromazepamCalculator calc && ChartControl != null)
             {
-                AddThresholdAnnotation(BromazepamCalculator.STRONG_THRESHOLD, "Effet fort", Colors.Green);
-                AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Effet modéré", Colors.Green);
-                AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Effet léger", Colors.Orange);
-                AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Seuil de perception", Colors.Red);
+                AddThresholdAnnotation(BromazepamCalculator.STRONG_THRESHOLD, "Fort (4,5mg)", Colors.Orange);
+                AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Modéré (3mg)", Colors.YellowGreen);
+                AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Léger (1,5mg)", Colors.Green);
+                AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Imperceptible", Colors.Grey);
             }
         }
 
