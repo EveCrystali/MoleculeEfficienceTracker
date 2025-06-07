@@ -127,7 +127,7 @@ namespace MoleculeEfficienceTracker
             if (Calculator is BromazepamCalculator calc && ChartControl != null)
             {
                 AddThresholdAnnotation(BromazepamCalculator.STRONG_THRESHOLD, "Fort (4,5mg)", Colors.Orange);
-                AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Modéré (3mg)", Colors.Yellow);
+                AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Modéré (3mg)", Colors.YellowGreen);
                 AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Léger (1,5mg)", Colors.Green);
                 AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Imperceptible", Colors.Grey);
             }
