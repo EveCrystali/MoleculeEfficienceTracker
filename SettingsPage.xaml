@@ -8,7 +8,7 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <AppThemeColor x:Key="MainBgColor" Light="#F0F4F8" Dark="#1F1F1F"/>
+            <OnAppTheme x:Key="MainBgColor" x:TypeArguments="Color" Light="#F0F4F8" Dark="#1F1F1F"/>
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Background>

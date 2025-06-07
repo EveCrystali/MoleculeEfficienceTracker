@@ -20,12 +20,12 @@
             <converters:DoseDisplayConverter x:Key="DoseDisplayConverter"/>
             <converters:DoseLabelConverter x:Key="DoseLabelConverter"/>
             <!-- Fond général de la page -->
-            <AppThemeColor x:Key="MainBgColor" Light="#F0F4F8" Dark="#1F1F1F"/>
-            <AppThemeColor x:Key="EntryBgColor" Light="#EBF8FF" Dark="#3A3A3A"/>
-            <AppThemeColor x:Key="ChartSectionBgColor" Light="#E6FFFA" Dark="#2D2D2D"/>
-            <AppThemeColor x:Key="ListSectionBgColor" Light="#FFFDE7" Dark="#2D2D2D"/>
-            <AppThemeColor x:Key="ItemFrameBgColor" Light="#FAF5FF" Dark="#3A3A3A"/>
-            <AppThemeColor x:Key="ExportSectionBgColor" Light="#EDF2F7" Dark="#2D2D2D"/>
+            <OnAppTheme x:Key="MainBgColor" x:TypeArguments="Color" Light="#F0F4F8" Dark="#1F1F1F"/>
+            <OnAppTheme x:Key="EntryBgColor" x:TypeArguments="Color" Light="#EBF8FF" Dark="#3A3A3A"/>
+            <OnAppTheme x:Key="ChartSectionBgColor" x:TypeArguments="Color" Light="#E6FFFA" Dark="#2D2D2D"/>
+            <OnAppTheme x:Key="ListSectionBgColor" x:TypeArguments="Color" Light="#FFFDE7" Dark="#2D2D2D"/>
+            <OnAppTheme x:Key="ItemFrameBgColor" x:TypeArguments="Color" Light="#FAF5FF" Dark="#3A3A3A"/>
+            <OnAppTheme x:Key="ExportSectionBgColor" x:TypeArguments="Color" Light="#EDF2F7" Dark="#2D2D2D"/>
         </ResourceDictionary>
     </ContentPage.Resources>
 
