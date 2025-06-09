@@ -9,11 +9,21 @@ namespace MoleculeEfficienceTracker.Core.Services
     {
         public string DisplayName => "Alcool";
         public string DoseUnit => "u";
-        public string ConcentrationUnit => "u";
+        public string ConcentrationUnit => "g/L";
 
         // Paramètres pharmacocinétiques de l'alcool
         private const double ELIMINATION_RATE_UNITS_PER_HOUR = 1.0; // 1 unité par heure (approximation)
         private const double ABSORPTION_TIME_HOURS = 0.75; // Temps pour atteindre le pic (45 min)
+
+        // Conversion unité -> grammes et volume de distribution approximatif
+        public const double GRAMS_PER_UNIT = 10.0;           // 1 unité ≈ 10 g d'alcool pur
+        private const double BODY_WATER_RATIO = 0.68;         // Coefficient de Widmark moyen (L/kg)
+
+        // Seuils d'effets exprimés en g/L
+        public const double BAC_STRONG_THRESHOLD = 1.0;      // g/L : ivresse marquée
+        public const double BAC_MODERATE_THRESHOLD = 0.5;    // g/L : limite légale FR
+        public const double BAC_LIGHT_THRESHOLD = 0.2;       // g/L : effets légers
+        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.1;  // g/L : quasiment nul
         
         // Pour l'alcool, l'élimination suit une cinétique d'ordre zéro (linéaire)
         // mais on peut approximer avec un modèle de premier ordre pour simplifier
@@ -76,10 +86,10 @@ namespace MoleculeEfficienceTracker.Core.Services
             }
         }
 
-        // Calcule la concentration totale en tenant compte de toutes les doses
+        // Calcule le BAC total en g/L en tenant compte de toutes les doses
         public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime currentTime)
         {
-            return doses.Sum(dose => CalculateSingleDoseConcentrationLinear(dose, currentTime));
+            return doses.Sum(d => CalculateSingleDoseBloodAlcohol(d, currentTime));
         }
 
         // Retourne la valeur de la dose en unité de concentration (unités pour l'alcool)
@@ -89,9 +99,48 @@ namespace MoleculeEfficienceTracker.Core.Services
             return dose.DoseMg;
         }
 
+        // Quantité totale restante en unités
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime currentTime)
         {
-            return CalculateTotalConcentration(doses, currentTime);
+            return doses.Sum(d => CalculateSingleDoseConcentrationLinear(d, currentTime));
+        }
+
+        // --- Nouveau calcul : concentration sanguine en g/L (BAC) ---
+        public double CalculateSingleDoseBloodAlcohol(DoseEntry dose, DateTime currentTime)
+        {
+            double units = CalculateSingleDoseConcentrationLinear(dose, currentTime);
+            double grams = units * GRAMS_PER_UNIT;
+            double volume = dose.WeightKg * BODY_WATER_RATIO;
+            return volume > 0 ? grams / volume : 0;
+        }
+
+        public double CalculateTotalBloodAlcohol(List<DoseEntry> doses, DateTime currentTime)
+        {
+            return doses.Sum(d => CalculateSingleDoseBloodAlcohol(d, currentTime));
+        }
+
+        public EffectLevel GetEffectLevelFromBAC(double bac)
+        {
+            if (bac >= BAC_STRONG_THRESHOLD) return EffectLevel.Strong;
+            if (bac >= BAC_MODERATE_THRESHOLD) return EffectLevel.Moderate;
+            if (bac >= BAC_LIGHT_THRESHOLD) return EffectLevel.Light;
+            return EffectLevel.None;
+        }
+
+        // Prévision du retour sous le seuil négligeable
+        public DateTime? PredictSoberTime(List<DoseEntry> doses, DateTime currentTime)
+        {
+            if (!doses.Any()) return currentTime;
+
+            for (int minutes = 0; minutes <= 72 * 60; minutes += 15)
+            {
+                DateTime check = currentTime.AddMinutes(minutes);
+                double bac = CalculateTotalBloodAlcohol(doses, check);
+                if (bac < BAC_NEGLIGIBLE_THRESHOLD)
+                    return check;
+            }
+
+            return null;
         }
 
         // Génère des points pour un graphique sur une période donnée
@@ -102,25 +151,11 @@ namespace MoleculeEfficienceTracker.Core.Services
             var timeSpan = endTime - startTime;
             var interval = timeSpan.TotalMinutes / pointCount;
 
-            var doseParams = doses.Select(d => new
-            {
-                d.TimeTaken,
-                A = (d.DoseMg * absorptionConstant) /
-                    (absorptionConstant - eliminationConstant)
-            }).ToList();
-
             for (int i = 0; i <= pointCount; i++)
             {
                 var currentTime = startTime.AddMinutes(i * interval);
-                double total = 0;
-                foreach (var p in doseParams)
-                {
-                    double hoursElapsed = (currentTime - p.TimeTaken).TotalHours;
-                    if (hoursElapsed < 0) continue;
-                    double conc = p.A * (Math.Exp(-eliminationConstant * hoursElapsed) - Math.Exp(-absorptionConstant * hoursElapsed));
-                    if (conc > 0) total += conc;
-                }
-                points.Add((currentTime, total));
+                double bac = CalculateTotalBloodAlcohol(doses, currentTime);
+                points.Add((currentTime, bac));
             }
 
             return points;
