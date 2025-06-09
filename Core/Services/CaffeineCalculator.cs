@@ -100,11 +100,25 @@ namespace MoleculeEfficienceTracker.Core.Services
             var timeSpan = endTime - startTime;
             var interval = timeSpan.TotalMinutes / pointCount;
 
+            var doseParams = doses.Select(d => new
+            {
+                d.TimeTaken,
+                A = (d.DoseMg * BIOAVAILABILITY * absorptionConstant) /
+                    (d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG * (absorptionConstant - eliminationConstant))
+            }).ToList();
+
             for (int i = 0; i <= pointCount; i++)
             {
                 var currentTime = startTime.AddMinutes(i * interval);
-                var concentration = CalculateTotalConcentration(doses, currentTime);
-                points.Add((currentTime, concentration));
+                double total = 0;
+                foreach (var p in doseParams)
+                {
+                    double hoursElapsed = (currentTime - p.TimeTaken).TotalHours;
+                    if (hoursElapsed < 0) continue;
+                    double conc = p.A * (Math.Exp(-eliminationConstant * hoursElapsed) - Math.Exp(-absorptionConstant * hoursElapsed));
+                    if (conc > 0) total += conc;
+                }
+                points.Add((currentTime, total));
             }
 
             return points;

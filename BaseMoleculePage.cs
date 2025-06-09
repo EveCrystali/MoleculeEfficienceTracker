@@ -2,6 +2,7 @@ using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
 using Syncfusion.Maui.Charts;
 using System.Collections.ObjectModel;
+using MoleculeEfficienceTracker.Core.Extensions;
 using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
 using System.Text;
@@ -24,7 +25,7 @@ namespace MoleculeEfficienceTracker
         protected readonly string MoleculeKey;
 
         public ObservableCollection<DoseEntry> Doses { get; set; }
-        public ObservableCollection<ChartDataPoint> ChartData { get; set; }
+        public ObservableRangeCollection<ChartDataPoint> ChartData { get; set; }
 
         private DateTime? _lastDateTimeWithDayDisplayedOnXAxis = null;
 
@@ -59,7 +60,7 @@ namespace MoleculeEfficienceTracker
             AlertService = new AlertService(); // Ou injectez si vous préférez
 
             Doses = new ObservableCollection<DoseEntry>();
-            ChartData = new ObservableCollection<ChartDataPoint>();
+            ChartData = new ObservableRangeCollection<ChartDataPoint>();
 
             if (Doses is System.Collections.Specialized.INotifyCollectionChanged observableDoses)
             {
@@ -219,7 +220,6 @@ namespace MoleculeEfficienceTracker
 
         protected async Task UpdateChart()
         {
-            ChartData.Clear();
             var chart = ChartControl; // Utiliser la propriété abstraite
 
             if (chart == null) return;
@@ -248,14 +248,21 @@ namespace MoleculeEfficienceTracker
             DateTime graphDataEndTime = currentTime.Add(GraphDataEndOffset);
             int numberOfPoints = GraphDataNumberOfPoints;
 
-            List<(DateTime Time, double Concentration)> graphPoints = Calculator.GenerateGraph(Doses.ToList(), graphDataStartTime, graphDataEndTime, numberOfPoints);
+            List<DoseEntry> dosesCopy = Doses.ToList();
 
-            foreach ((DateTime Time, double Concentration) point in graphPoints)
+            List<ChartDataPoint> newData = await Task.Run(() =>
             {
-                double? effect = GetEffectPercentForConcentration(point.Concentration);
-                double effectValue = effect ?? 0;
-                ChartData.Add(new ChartDataPoint(point.Time, point.Concentration, effectValue));
-            }
+                var points = Calculator.GenerateGraph(dosesCopy, graphDataStartTime, graphDataEndTime, numberOfPoints);
+                List<ChartDataPoint> list = new();
+                foreach (var point in points)
+                {
+                    double effectValue = GetEffectPercentForConcentration(point.Concentration) ?? 0;
+                    list.Add(new ChartDataPoint(point.Time, point.Concentration, effectValue));
+                }
+                return list;
+            });
+
+            ChartData.ReplaceRange(newData);
 
             if (chart.XAxes?.FirstOrDefault() is DateTimeAxis xAxis)
             {
@@ -372,7 +379,8 @@ namespace MoleculeEfficienceTracker
         protected void StartConcentrationTimer()
         {
             IDispatcherTimer timer = Application.Current.Dispatcher.CreateTimer();
-            timer.Interval = TimeSpan.FromMinutes(1); // Mettre à jour toutes les minutes
+            // Mise à jour moins fréquente pour réduire la charge sur Android
+            timer.Interval = TimeSpan.FromMinutes(5);
             timer.Tick += async (s, e) =>
             {
                 UpdateConcentrationDisplay();
