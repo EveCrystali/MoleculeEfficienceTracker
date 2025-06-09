@@ -16,6 +16,12 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double BIOAVAILABILITY = 0.90; // Fraction absorbée
         private const double VOLUME_DISTRIBUTION_L_PER_KG = 0.15; // Volume de distribution
 
+        // Seuils d'effet exprimés en mg/L
+        public const double STRONG_THRESHOLD = 25.0;      // mg/L : effet fort, pic après 400mg
+        public const double MODERATE_THRESHOLD = 12.0;    // mg/L : effet net
+        public const double LIGHT_THRESHOLD = 4.0;        // mg/L : effet léger
+        public const double NEGLIGIBLE_THRESHOLD = 2.0;   // mg/L : effet négligeable
+
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
 
@@ -74,5 +80,33 @@ namespace MoleculeEfficienceTracker.Core.Services
 
             return points;
         }
+
+        // Détermine le niveau d'effet subjectif
+        public EffectLevel GetEffectLevel(double concentration)
+        {
+            if (concentration >= STRONG_THRESHOLD) return EffectLevel.Strong;
+            if (concentration >= MODERATE_THRESHOLD) return EffectLevel.Moderate;
+            if (concentration >= LIGHT_THRESHOLD) return EffectLevel.Light;
+            return EffectLevel.None;
+        }
+
+        // Prévoit le moment où la concentration passera sous le seuil négligeable
+        public DateTime? PredictEffectEndTime(List<DoseEntry> doses, DateTime currentTime)
+        {
+            if (!doses.Any()) return currentTime;
+
+            for (int minutes = 0; minutes <= 24 * 60; minutes += 15)
+            {
+                DateTime checkTime = currentTime.AddMinutes(minutes);
+                double conc = CalculateTotalConcentration(doses, checkTime);
+                if (conc < NEGLIGIBLE_THRESHOLD)
+                    return checkTime;
+            }
+
+            return null;
+        }
+
+        // Indique si l'effet est négligeable pour une concentration donnée
+        public bool IsEffectNegligible(double concentration) => concentration < NEGLIGIBLE_THRESHOLD;
     }
 }
