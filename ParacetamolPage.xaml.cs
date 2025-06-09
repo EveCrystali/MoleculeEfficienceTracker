@@ -21,6 +21,13 @@ namespace MoleculeEfficienceTracker
         protected override SfCartesianChart ChartControl => ConcentrationChart;
         protected override CollectionView DosesDisplayCollection => DosesCollection;
         protected override Label EmptyStateIndicatorLabel => EmptyDosesLabel;
+
+        // Labels spécifiques à l'effet
+        private Label EffectStatusLabel => EffectStatus;
+        private Label EffectEndPredictionLabel => EffectPrediction;
+        private Label EffectPowerLabel => EffectPower;
+
+        private readonly PharmacodynamicModel _pdModel = new PharmacodynamicModel(ParacetamolCalculator.STRONG_THRESHOLD);
         
 
         protected override string DoseAnnotationIcon => "💊";
