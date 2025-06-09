@@ -36,7 +36,7 @@ namespace MoleculeEfficienceTracker
         protected override int GraphDataNumberOfPoints => 10 * 24 * 2;
         // Zoom plus serré : la majorité des utilisations concernent un seul
         // comprimé de 1 g, l'effet durant seulement quelques heures.
-        protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-4);
+        protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-12);
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(12);
 
 
