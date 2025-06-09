@@ -34,7 +34,7 @@ namespace MoleculeEfficienceTracker
         protected override TimeSpan GraphDataEndOffset => TimeSpan.FromDays(3);
         protected override int GraphDataNumberOfPoints => 10 * 24 * 2;
         protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-12); // Ajustez si nécessaire
-        protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(24);  // Ajustez si nécessaire
+        protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(12);  // Ajustez si nécessaire
 
 
         public IbuprofenePage() : base("ibuprofene")
@@ -76,7 +76,7 @@ namespace MoleculeEfficienceTracker
 
                 if (EffectPowerLabel != null)
                 {
-                    EffectPowerLabel.Text = $"Effet estimé : {effectPercent:F0} %";
+                    EffectPowerLabel.Text = $"Saturation : {effectPercent:F0} %";
                     EffectPowerLabel.IsVisible = true;
                 }
 
