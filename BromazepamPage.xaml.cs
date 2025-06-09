@@ -77,7 +77,7 @@ namespace MoleculeEfficienceTracker
 
                 if (EffectPowerLabel != null)
                 {
-                    EffectPowerLabel.Text = $"Saturation des récepteurs : {saturation:F0} %";
+                    EffectPowerLabel.Text = $"Saturation : {saturation:F0} %";
                     EffectPowerLabel.IsVisible = true;
                 }
 
