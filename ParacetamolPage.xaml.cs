@@ -88,7 +88,7 @@ namespace MoleculeEfficienceTracker
 
                 if (EffectPowerLabel != null)
                 {
-                    EffectPowerLabel.Text = $"Estimation d'efficacité : {effectPercent:F0} %";
+                    EffectPowerLabel.Text = $"Saturation : {effectPercent:F0} %";
                     EffectPowerLabel.IsVisible = true;
                 }
 
