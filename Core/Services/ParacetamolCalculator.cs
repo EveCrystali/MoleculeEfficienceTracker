@@ -17,7 +17,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double VOLUME_DISTRIBUTION_L_PER_KG = 0.95; // Volume de distribution
 
         // Seuils d'effet exprimés en mg/L
-        public const double STRONG_THRESHOLD = 8.0;      // mg/L : effet fort, pic après 1g
+        public const double STRONG_THRESHOLD = 8.5;      // mg/L : effet fort, pic après 1g
         public const double MODERATE_THRESHOLD = 5.0;    // mg/L : effet net
         public const double LIGHT_THRESHOLD = 2.0;        // mg/L : effet léger
         public const double NEGLIGIBLE_THRESHOLD = 1.5;   // mg/L : effet négligeable
