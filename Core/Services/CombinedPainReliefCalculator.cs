@@ -24,15 +24,11 @@ namespace MoleculeEfficienceTracker.Core.Services
         private readonly double _maxCombinedEffect;
 
         // Threshold percentages on the normalised 0-100 % scale
-        public double ParacetamolStrongPercent { get; }
-        public double ParacetamolModeratePercent { get; }
-        public double ParacetamolLightPercent { get; }
-        public double ParacetamolNegligiblePercent { get; }
-
-        public double IbuprofenStrongPercent { get; }
-        public double IbuprofenModeratePercent { get; }
-        public double IbuprofenLightPercent { get; }
-        public double IbuprofenNegligiblePercent { get; }
+        // Values correspond to the stronger of each molecule's individual thresholds
+        // so that one common set of lines can be displayed on the chart.
+        public double StrongPercent { get; }
+        public double ModeratePercent { get; }
+        public double LightPercent { get; }
 
         public CombinedPainReliefCalculator()
         {
@@ -49,22 +45,24 @@ namespace MoleculeEfficienceTracker.Core.Services
             _maxCombinedEffect = effectPara + effectIbu;
             if (_maxCombinedEffect <= 0) _maxCombinedEffect = 100.0; // Sécurité
 
-            ParacetamolStrongPercent = ComputeParaPercent(ParacetamolCalculator.STRONG_THRESHOLD);
-            ParacetamolModeratePercent = ComputeParaPercent(ParacetamolCalculator.MODERATE_THRESHOLD);
-            ParacetamolLightPercent = ComputeParaPercent(ParacetamolCalculator.LIGHT_THRESHOLD);
-            ParacetamolNegligiblePercent = ComputeParaPercent(ParacetamolCalculator.NEGLIGIBLE_THRESHOLD);
-
-            IbuprofenStrongPercent = ComputeIbuPercent(IbuprofeneCalculator.STRONG_THRESHOLD);
-            IbuprofenModeratePercent = ComputeIbuPercent(IbuprofeneCalculator.MODERATE_THRESHOLD);
-            IbuprofenLightPercent = ComputeIbuPercent(IbuprofeneCalculator.LIGHT_THRESHOLD);
-            IbuprofenNegligiblePercent = ComputeIbuPercent(IbuprofeneCalculator.NEGLIGIBLE_THRESHOLD);
+            StrongPercent = ComputeUnifiedPercent(
+                ParacetamolCalculator.STRONG_THRESHOLD,
+                IbuprofeneCalculator.STRONG_THRESHOLD);
+            ModeratePercent = ComputeUnifiedPercent(
+                ParacetamolCalculator.MODERATE_THRESHOLD,
+                IbuprofeneCalculator.MODERATE_THRESHOLD);
+            LightPercent = ComputeUnifiedPercent(
+                ParacetamolCalculator.LIGHT_THRESHOLD,
+                IbuprofeneCalculator.LIGHT_THRESHOLD);
         }
 
-        private double ComputeParaPercent(double concentration)
-            => 100.0 * _paraPd.GetEffectPercent(concentration) / _maxCombinedEffect;
-
-        private double ComputeIbuPercent(double concentration)
-            => 100.0 * _ibuPd.GetEffectPercent(concentration) / _maxCombinedEffect;
+        private double ComputeUnifiedPercent(double paraConcentration, double ibuConcentration)
+        {
+            double effectPara = _paraPd.GetEffectPercent(paraConcentration);
+            double effectIbu = _ibuPd.GetEffectPercent(ibuConcentration);
+            double effect = Math.Max(effectPara, effectIbu);
+            return 100.0 * effect / _maxCombinedEffect;
+        }
 
         private bool IsParacetamol(DoseEntry d) =>
             string.Equals(d.MoleculeKey, "paracetamol", StringComparison.OrdinalIgnoreCase);

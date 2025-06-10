@@ -212,15 +212,9 @@ namespace MoleculeEfficienceTracker
         protected override void AddMoleculeSpecificChartAnnotations()
         {
             if (ChartControl == null) return;
-            AddThresholdAnnotation(Calculator.ParacetamolStrongPercent, "PCT fort", Colors.Orange);
-            AddThresholdAnnotation(Calculator.ParacetamolModeratePercent, "PCT modéré", Colors.YellowGreen);
-            AddThresholdAnnotation(Calculator.ParacetamolLightPercent, "PCT léger", Colors.Green);
-            AddThresholdAnnotation(Calculator.ParacetamolNegligiblePercent, "PCT imperceptible", Colors.Grey);
-
-            AddThresholdAnnotation(Calculator.IbuprofenStrongPercent, "IBU fort", Colors.Orange);
-            AddThresholdAnnotation(Calculator.IbuprofenModeratePercent, "IBU modéré", Colors.YellowGreen);
-            AddThresholdAnnotation(Calculator.IbuprofenLightPercent, "IBU léger", Colors.Green);
-            AddThresholdAnnotation(Calculator.IbuprofenNegligiblePercent, "IBU imperceptible", Colors.Grey);
+            AddThresholdAnnotation(Calculator.StrongPercent, "Effet fort", Colors.Orange);
+            AddThresholdAnnotation(Calculator.ModeratePercent, "Effet modéré", Colors.YellowGreen);
+            AddThresholdAnnotation(Calculator.LightPercent, "Effet léger", Colors.Green);
         }
 
         protected override async Task UpdateChart()
