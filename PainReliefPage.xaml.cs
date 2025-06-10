@@ -1,5 +1,6 @@
 using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -41,14 +42,45 @@ namespace MoleculeEfficienceTracker
             RefreshDoseGroups();
         }
 
+        protected override async Task OnBeforeLoadDataAsync()
+        {
+            await base.OnBeforeLoadDataAsync();
+
+            // Charger les données existantes des pages individuelles
+            DataPersistenceService paraService = new DataPersistenceService("paracetamol");
+            DataPersistenceService ibuService = new DataPersistenceService("ibuprofene");
+
+            var para = await paraService.LoadDosesAsync();
+            foreach (var d in para)
+            {
+                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "paracetamol";
+                if (!Doses.Any(x => x.Id == d.Id)) Doses.Add(d);
+            }
+
+            var ibu = await ibuService.LoadDosesAsync();
+            foreach (var d in ibu)
+            {
+                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "ibuprofene";
+                if (!Doses.Any(x => x.Id == d.Id)) Doses.Add(d);
+            }
+
+            // Trier par date décroissante
+            var ordered = Doses.OrderByDescending(d => d.TimeTaken).ToList();
+            Doses.Clear();
+            foreach (var d in ordered) Doses.Add(d);
+        }
+
         private void RefreshDoseGroups()
         {
             ParacetamolDoses.Clear();
             IbuprofenDoses.Clear();
             foreach (var d in Doses)
             {
-                if (d.MoleculeKey == "paracetamol") ParacetamolDoses.Add(d);
-                else if (d.MoleculeKey == "ibuprofen") IbuprofenDoses.Add(d);
+                if (d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase))
+                    ParacetamolDoses.Add(d);
+                else if (d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) ||
+                         d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase))
+                    IbuprofenDoses.Add(d);
             }
         }
 
@@ -77,6 +109,12 @@ namespace MoleculeEfficienceTracker
 
             if (sender is Button btn) AnimateButton(btn);
             UpdateEmptyState();
+        }
+
+        protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
+        {
+            double effect = Calculator.CalculateTotalConcentration(doses, currentTime);
+            ConcentrationOutputLabel.Text = $"Effet total : {effect:F0} %";
         }
 
         private async void OnDeleteDoseClickedCustom(object sender, EventArgs e)

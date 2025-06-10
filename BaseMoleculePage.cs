@@ -144,7 +144,8 @@ namespace MoleculeEfficienceTracker
                 DateTime dateTime = selectedDate.Add(selectedTime);
 
                 double weight = UserPreferences.GetWeightKg();
-                DoseEntry dose = new DoseEntry(dateTime, doseMg, weight);
+                // Enregistrer la clé de molécule pour permettre l'agrégation multi-molécules
+                DoseEntry dose = new DoseEntry(dateTime, doseMg, weight, MoleculeKey);
 
                 Doses.Insert(0, dose);
                 DoseInputControl.Text = "";

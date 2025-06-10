@@ -7,7 +7,8 @@ namespace MoleculeEfficienceTracker.Core.Services
 {
     /// <summary>
     /// Calculator combining Paracetamol and Ibuprofen effects.
-    /// Concentration returned by this calculator represents the summed effect percentage.
+    /// The returned "concentration" represents a normalised effect percentage where
+    /// 100 % correspond to the simultaneous peak of 1 g paracetamol and 400 mg ibuprofène.
     /// </summary>
     public class CombinedPainReliefCalculator : IMoleculeCalculator
     {
@@ -20,11 +21,33 @@ namespace MoleculeEfficienceTracker.Core.Services
         // EC50 approximations for an Emax model
         private readonly PharmacodynamicModel _paraPd = new(ParacetamolCalculator.MODERATE_THRESHOLD);
         private readonly PharmacodynamicModel _ibuPd = new(12.0);
+        private readonly double _maxCombinedEffect;
 
-        private IEnumerable<DoseEntry> Filter(List<DoseEntry> doses, string key)
+        public CombinedPainReliefCalculator()
         {
-            return doses.Where(d => string.Equals(d.MoleculeKey, key, StringComparison.OrdinalIgnoreCase));
+            // Calculer l'effet maximal attendu pour 1 g de paracétamol et 400 mg d'ibuprofène
+            DateTime refTime = DateTime.Now;
+            var paraDose = new DoseEntry(refTime, 1000, 72, "paracetamol");
+            var ibuDose = new DoseEntry(refTime, 400, 72, "ibuprofen");
+            var paraPeak = _paraCalc.GenerateGraph(new List<DoseEntry> { paraDose }, refTime, refTime.AddHours(6), 120)
+                                      .Max(p => p.Concentration);
+            var ibuPeak = _ibuCalc.GenerateGraph(new List<DoseEntry> { ibuDose }, refTime, refTime.AddHours(6), 120)
+                                    .Max(p => p.Concentration);
+            double effectPara = _paraPd.GetEffectPercent(paraPeak);
+            double effectIbu = _ibuPd.GetEffectPercent(ibuPeak);
+            _maxCombinedEffect = effectPara + effectIbu;
+            if (_maxCombinedEffect <= 0) _maxCombinedEffect = 100.0; // Sécurité
         }
+
+        private bool IsParacetamol(DoseEntry d) =>
+            string.Equals(d.MoleculeKey, "paracetamol", StringComparison.OrdinalIgnoreCase);
+
+        private bool IsIbuprofen(DoseEntry d) =>
+            string.Equals(d.MoleculeKey, "ibuprofen", StringComparison.OrdinalIgnoreCase) ||
+            string.Equals(d.MoleculeKey, "ibuprofene", StringComparison.OrdinalIgnoreCase);
+
+        private IEnumerable<DoseEntry> FilterPara(IEnumerable<DoseEntry> doses) => doses.Where(IsParacetamol);
+        private IEnumerable<DoseEntry> FilterIbu(IEnumerable<DoseEntry> doses) => doses.Where(IsIbuprofen);
 
         public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime time)
         {
@@ -43,11 +66,12 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime time)
         {
-            double paraConc = _paraCalc.CalculateTotalConcentration(Filter(doses, "paracetamol").ToList(), time);
-            double ibuConc = _ibuCalc.CalculateTotalConcentration(Filter(doses, "ibuprofen").ToList(), time);
+            double paraConc = _paraCalc.CalculateTotalConcentration(FilterPara(doses).ToList(), time);
+            double ibuConc = _ibuCalc.CalculateTotalConcentration(FilterIbu(doses).ToList(), time);
             double effectPara = _paraPd.GetEffectPercent(paraConc);
             double effectIbu = _ibuPd.GetEffectPercent(ibuConc);
-            return effectPara + effectIbu;
+            double sum = effectPara + effectIbu;
+            return 100.0 * sum / _maxCombinedEffect;
         }
 
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime time)
@@ -83,13 +107,14 @@ namespace MoleculeEfficienceTracker.Core.Services
             for (int i = 0; i <= points; i++)
             {
                 DateTime t = startTime.AddMinutes(i * interval);
-                double paraConc = _paraCalc.CalculateTotalConcentration(Filter(doses, "paracetamol").ToList(), t);
-                double ibuConc = _ibuCalc.CalculateTotalConcentration(Filter(doses, "ibuprofen").ToList(), t);
+                double paraConc = _paraCalc.CalculateTotalConcentration(FilterPara(doses).ToList(), t);
+                double ibuConc = _ibuCalc.CalculateTotalConcentration(FilterIbu(doses).ToList(), t);
                 double effectPara = _paraPd.GetEffectPercent(paraConc);
                 double effectIbu = _ibuPd.GetEffectPercent(ibuConc);
                 paraList.Add((t, effectPara));
                 ibuList.Add((t, effectIbu));
-                totalList.Add((t, effectPara + effectIbu));
+                double sum = effectPara + effectIbu;
+                totalList.Add((t, 100.0 * sum / _maxCombinedEffect));
             }
             return (paraList, ibuList, totalList);
         }

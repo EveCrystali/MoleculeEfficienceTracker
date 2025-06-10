@@ -71,7 +71,7 @@
                                 </chart:DateTimeAxis>
                             </chart:SfCartesianChart.XAxes>
                             <chart:SfCartesianChart.YAxes>
-                                <chart:NumericalAxis Minimum="0" Maximum="200">
+                                <chart:NumericalAxis Minimum="0" Maximum="110">
                                     <chart:NumericalAxis.LabelStyle>
                                         <chart:ChartAxisLabelStyle FontSize="10" TextColor="#31465D" />
                                     </chart:NumericalAxis.LabelStyle>
