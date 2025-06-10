@@ -111,10 +111,10 @@ namespace MoleculeEfficienceTracker
                 Doses.Add(dose);
             }
 
-            UpdateAllDisplays();
+            await UpdateAllDisplays();
         }
 
-        private async void UpdateAllDisplays()
+        protected virtual async Task UpdateAllDisplays()
         {
             UpdateConcentrationDisplay();
             await UpdateChart(); // Rendre asynchrone si UpdateChart l'est
@@ -218,7 +218,7 @@ namespace MoleculeEfficienceTracker
             return null;
         }
 
-        protected async Task UpdateChart()
+        protected virtual async Task UpdateChart()
         {
             var chart = ChartControl; // Utiliser la propriété abstraite
 

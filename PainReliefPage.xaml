@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<local:BaseMoleculePage x:Class="MoleculeEfficienceTracker.PainReliefPage"
+             xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:MoleculeEfficienceTracker"
+             xmlns:coreServices="clr-namespace:MoleculeEfficienceTracker.Core.Services"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+             x:TypeArguments="coreServices:CombinedPainReliefCalculator"
+             Title="Anti-douleur">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Color x:Key="MainBgColor">#F0F4F8</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Background>
+        <SolidColorBrush Color="{StaticResource MainBgColor}" />
+    </ContentPage.Background>
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}"
+                             BackgroundColor="{StaticResource MainBgColor}">
+            <!-- ADD DOSE -->
+            <Frame Style="{StaticResource CardFrameStyle}" Margin="0,0,0,0">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="💊 Ajouter une dose" FontSize="16" FontAttributes="Bold" TextColor="#3182CE" />
+                    <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto" ColumnSpacing="12" RowSpacing="12">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Molécule:" VerticalOptions="Center" />
+                        <Picker x:Name="MoleculePicker" Grid.Row="0" Grid.Column="1">
+                            <Picker.Items>
+                                <x:String>paracetamol</x:String>
+                                <x:String>ibuprofen</x:String>
+                            </Picker.Items>
+                        </Picker>
+                        <Label Grid.Row="1" Grid.Column="0" Text="Dose (mg):" VerticalOptions="Center" />
+                        <Frame Grid.Row="1" Grid.Column="1" CornerRadius="8" Padding="0" BackgroundColor="#EBF8FF" HasShadow="False" VerticalOptions="Center" HeightRequest="32">
+                            <Entry x:Name="DoseEntry" Placeholder="500" Keyboard="Numeric" BackgroundColor="Transparent" HeightRequest="32" VerticalOptions="Center" />
+                        </Frame>
+                        <Label Grid.Row="2" Grid.Column="0" Text="Date/Heure:" VerticalOptions="Center" />
+                        <HorizontalStackLayout Grid.Row="2" Grid.Column="1" Spacing="8">
+                            <DatePicker x:Name="DatePicker" />
+                            <TimePicker x:Name="TimePicker" Format="HH:mm" />
+                        </HorizontalStackLayout>
+                    </Grid>
+                    <Button Text="Ajouter la dose" Clicked="OnAddPainDoseClicked" Style="{StaticResource PrimaryButtonStyle}" />
+                </VerticalStackLayout>
+            </Frame>
+            <!-- GRAPH -->
+            <Frame Style="{StaticResource CardFrameStyle}" BackgroundColor="#E6FFFA">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Effet estimé" FontSize="20" FontAttributes="Bold" TextColor="#319795" />
+                    <Label x:Name="ConcentrationLabel" FontSize="32" FontAttributes="Bold" TextColor="#22543D" HorizontalOptions="Center" />
+                    <Label x:Name="LastUpdateLabel" FontSize="14" TextColor="#718096" HorizontalOptions="Center" />
+                    <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" Margin="0,8,0,0" HeightRequest="320">
+                        <chart:SfCartesianChart x:Name="ConcentrationChart">
+                            <chart:SfCartesianChart.TrackballBehavior>
+                                <chart:ChartTrackballBehavior ShowLabel="True" ShowMarkers="True" ShowLine="True" DisplayMode="FloatAllPoints" />
+                            </chart:SfCartesianChart.TrackballBehavior>
+                            <chart:SfCartesianChart.ZoomPanBehavior>
+                                <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True" />
+                            </chart:SfCartesianChart.ZoomPanBehavior>
+                            <chart:SfCartesianChart.XAxes>
+                                <chart:DateTimeAxis ShowMajorGridLines="True" ShowMinorGridLines="False" EdgeLabelsDrawingMode="Fit" LabelCreated="ChartXAxis_LabelCreated">
+                                    <chart:DateTimeAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH:mm" FontSize="10" TextColor="#31465D" />
+                                    </chart:DateTimeAxis.LabelStyle>
+                                    <chart:DateTimeAxis.MajorGridLineStyle>
+                                        <chart:ChartLineStyle Stroke="#E5E7EB" StrokeWidth="1" />
+                                    </chart:DateTimeAxis.MajorGridLineStyle>
+                                </chart:DateTimeAxis>
+                            </chart:SfCartesianChart.XAxes>
+                            <chart:SfCartesianChart.YAxes>
+                                <chart:NumericalAxis Minimum="0" Maximum="200">
+                                    <chart:NumericalAxis.LabelStyle>
+                                        <chart:ChartAxisLabelStyle FontSize="10" TextColor="#31465D" />
+                                    </chart:NumericalAxis.LabelStyle>
+                                    <chart:NumericalAxis.MajorGridLineStyle>
+                                        <chart:ChartLineStyle Stroke="#E5E7EB" StrokeWidth="1" />
+                                    </chart:NumericalAxis.MajorGridLineStyle>
+                                </chart:NumericalAxis>
+                            </chart:SfCartesianChart.YAxes>
+                            <chart:SplineSeries ItemsSource="{Binding ParacetamolChartData}" XBindingPath="Time" YBindingPath="Concentration" Stroke="Blue" StrokeWidth="1.5" />
+                            <chart:SplineSeries ItemsSource="{Binding IbuprofenChartData}" XBindingPath="Time" YBindingPath="Concentration" Stroke="Black" StrokeWidth="1.5" />
+                            <chart:SplineSeries ItemsSource="{Binding TotalChartData}" XBindingPath="Time" YBindingPath="Concentration" Stroke="Green" StrokeWidth="1.5" />
+                        </chart:SfCartesianChart>
+                    </Frame>
+                </VerticalStackLayout>
+            </Frame>
+            <!-- DOSES LISTES -->
+            <Frame Style="{StaticResource CardFrameStyle}" BackgroundColor="#FFFDE7">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Paracétamol" FontSize="20" FontAttributes="Bold" TextColor="#B7791F" />
+                    <CollectionView x:Name="ParacetamolCollection" ItemsSource="{Binding ParacetamolDoses}" MaximumHeightRequest="150">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame BackgroundColor="#FAF5FF" CornerRadius="8" Padding="10,6" Margin="0,3" HasShadow="False">
+                                    <Grid ColumnDefinitions="*,*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}" VerticalOptions="Center" TextColor="Black" />
+                                        <Label Grid.Column="1" Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter=mg}" VerticalOptions="Center" HorizontalOptions="Center" TextColor="Black" />
+                                        <Button Grid.Column="2" Text="❌" CommandParameter="{Binding Id}" Clicked="OnDeleteDoseClickedCustom" Style="{StaticResource DeleteButtonStyle}" WidthRequest="38" HeightRequest="28" />
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Label Text="Ibuprofène" FontSize="20" FontAttributes="Bold" TextColor="#B7791F" />
+                    <CollectionView x:Name="IbuprofenCollection" ItemsSource="{Binding IbuprofenDoses}" MaximumHeightRequest="150">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Frame BackgroundColor="#FAF5FF" CornerRadius="8" Padding="10,6" Margin="0,3" HasShadow="False">
+                                    <Grid ColumnDefinitions="*,*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding TimeTaken, StringFormat='{0:dd/MM HH:mm}'}" VerticalOptions="Center" TextColor="Black" />
+                                        <Label Grid.Column="1" Text="{Binding DoseMg, Converter={StaticResource DoseDisplayConverter}, ConverterParameter=mg}" VerticalOptions="Center" HorizontalOptions="Center" TextColor="Black" />
+                                        <Button Grid.Column="2" Text="❌" CommandParameter="{Binding Id}" Clicked="OnDeleteDoseClickedCustom" Style="{StaticResource DeleteButtonStyle}" WidthRequest="38" HeightRequest="28" />
+                                    </Grid>
+                                </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                    <Label x:Name="EmptyDosesLabel" Text="Aucune dose enregistrée 💤" IsVisible="False" Style="{StaticResource EmptyLabelStyle}" />
+                </VerticalStackLayout>
+            </Frame>
+            <Frame Style="{StaticResource CardFrameStyle}" Padding="12" BackgroundColor="#EDF2F7">
+                <HorizontalStackLayout Spacing="22" HorizontalOptions="Center">
+                    <Button Text="💾 Exporter" Clicked="OnExportDataClicked" Style="{StaticResource PrimaryButtonStyle}" />
+                    <Button Text="🗑️ Effacer tout" Clicked="OnClearAllDataClicked" Style="{StaticResource DeleteButtonStyle}" />
+                </HorizontalStackLayout>
+            </Frame>
+        </VerticalStackLayout>
+    </ScrollView>
+</local:BaseMoleculePage>
