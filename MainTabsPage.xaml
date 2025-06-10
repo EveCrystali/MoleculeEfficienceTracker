@@ -14,6 +14,8 @@
     <local:ParacetamolPage Title="Paracétamol" IconImageSource="💊" />
     <!-- Onglet Ibuprofène -->
     <local:IbuprofenePage Title="Ibuprofène" IconImageSource="💊" />
+    <!-- Onglet Anti-douleur -->
+    <local:PainReliefPage Title="Anti-douleur" IconImageSource="💊" />
 
     <!-- Onglet Alcool -->
     <local:AlcoholPage Title="Alcool" IconImageSource="🍾" />

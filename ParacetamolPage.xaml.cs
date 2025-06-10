@@ -28,6 +28,7 @@ namespace MoleculeEfficienceTracker
         private Label EffectPowerLabel => EffectPower;
 
         private readonly PharmacodynamicModel _pdModel = new PharmacodynamicModel(ParacetamolCalculator.STRONG_THRESHOLD);
+        private readonly DataPersistenceService _painService = new("pain_relief");
         
 
         protected override string DoseAnnotationIcon => "💊";
@@ -46,9 +47,59 @@ namespace MoleculeEfficienceTracker
             base.InitializePageUI();
         }
 
+        private async Task SyncPainReliefAsync()
+        {
+            var combined = await _painService.LoadDosesAsync();
+            combined.RemoveAll(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase));
+            combined.AddRange(Doses.Select(d => { if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "paracetamol"; return d; }));
+            combined = combined.GroupBy(d => d.Id).Select(g => g.First()).OrderByDescending(d => d.TimeTaken).ToList();
+            await _painService.SaveDosesAsync(combined);
+        }
+
+        private new async void OnAddDoseClicked(object sender, EventArgs e)
+        {
+            base.OnAddDoseClicked(sender, e);
+            await SyncPainReliefAsync();
+        }
+
+        private new async void OnDeleteDoseClicked(object sender, EventArgs e)
+        {
+            base.OnDeleteDoseClicked(sender, e);
+            await SyncPainReliefAsync();
+        }
+
+        private new async void OnClearAllDataClicked(object sender, EventArgs e)
+        {
+            base.OnClearAllDataClicked(sender, e);
+            await _painService.DeleteAllDataAsync();
+        }
+
         protected override async Task OnBeforeLoadDataAsync()
         {
-            await base.OnBeforeLoadDataAsync(); // Appel à l'implémentation de base (facultatif ici car vide)
+            await base.OnBeforeLoadDataAsync();
+
+            var own = await PersistenceService.LoadDosesAsync();
+            var combined = await _painService.LoadDosesAsync();
+
+            foreach (var d in own)
+            {
+                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "paracetamol";
+            }
+
+            var fromCombined = combined.Where(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            var merged = own
+                .Concat(fromCombined)
+                .GroupBy(d => d.Id)
+                .Select(g => g.First())
+                .OrderByDescending(d => d.TimeTaken)
+                .ToList();
+
+            await PersistenceService.SaveDosesAsync(merged);
+            combined.RemoveAll(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase));
+            combined.AddRange(merged);
+            combined = combined.GroupBy(d => d.Id).Select(g => g.First()).OrderByDescending(d => d.TimeTaken).ToList();
+            await _painService.SaveDosesAsync(combined);
         }
 
         protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
@@ -65,10 +116,10 @@ namespace MoleculeEfficienceTracker
 
                 string text = level switch
                 {
-                    EffectLevel.Strong => "Effet fort",
-                    EffectLevel.Moderate => "Effet modéré",
-                    EffectLevel.Light => "Effet léger",
-                    _ => "Effet négligeable"
+                    EffectLevel.Strong => "Fort",
+                    EffectLevel.Moderate => "Net",
+                    EffectLevel.Light => "Léger",
+                    _ => "Négligeable"
                 };
 
                 Color color = level switch
@@ -98,7 +149,7 @@ namespace MoleculeEfficienceTracker
                     if (endTime.HasValue && endTime.Value > currentTime)
                     {
                         var remaining = endTime.Value - currentTime;
-                        EffectEndPredictionLabel.Text = $"Effet négligeable estimé dans {remaining.TotalHours:F1} heures";
+                        EffectEndPredictionLabel.Text = $"Effet négligeable dans {remaining.TotalHours:F1} heures";
                     }
                     else
                     {
@@ -137,8 +188,8 @@ namespace MoleculeEfficienceTracker
         {
             if (Calculator is ParacetamolCalculator calc && ChartControl != null)
             {
-                AddThresholdAnnotation(ParacetamolCalculator.STRONG_THRESHOLD, "Fort (1g)", Colors.Orange);
-                AddThresholdAnnotation(ParacetamolCalculator.MODERATE_THRESHOLD, "Modéré", Colors.YellowGreen);
+                AddThresholdAnnotation(ParacetamolCalculator.STRONG_THRESHOLD, "Fort", Colors.Orange);
+                AddThresholdAnnotation(ParacetamolCalculator.MODERATE_THRESHOLD, "Net", Colors.YellowGreen);
                 AddThresholdAnnotation(ParacetamolCalculator.LIGHT_THRESHOLD, "Léger", Colors.Green);
                 AddThresholdAnnotation(ParacetamolCalculator.NEGLIGIBLE_THRESHOLD, "Imperceptible", Colors.Grey);
             }
