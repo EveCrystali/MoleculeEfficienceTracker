@@ -31,7 +31,7 @@ namespace MoleculeEfficienceTracker
         protected override string DoseAnnotationIcon => "🍾"; // Icône pour l'alcool
         protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-3); // Par exemple, afficher 3 jours avant
         protected override TimeSpan GraphDataEndOffset => TimeSpan.FromDays(1);     // Et 1 jour après
-        protected override int GraphDataNumberOfPoints => 4 * 24 * 8; // 4 jours au total, 4 points par heure
+        protected override int GraphDataNumberOfPoints => 4 * 24 * 8; // 4 jours au total, 8 points par heure
         protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-4); // Vue initiale de -6h
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(6);   // Vue initiale de +6h
 

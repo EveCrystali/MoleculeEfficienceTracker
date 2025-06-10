@@ -6,19 +6,16 @@
     xmlns:local="clr-namespace:MoleculeEfficienceTracker">
   
     <!-- Onglet Caféine -->
-    <local:CaffeinePage Title="Caféine" IconImageSource="🍵" />
+    <local:CaffeinePage Title="🍵"  />
     
     <!-- Onglet Bromazépam -->
-    <local:BromazepamPage Title="Bromazépam" IconImageSource="💊" />
-    <!-- Onglet Paracétamol -->
-    <local:ParacetamolPage Title="Paracétamol" IconImageSource="💊" />
-    <!-- Onglet Ibuprofène -->
-    <local:IbuprofenePage Title="Ibuprofène" IconImageSource="💊" />
+    <local:BromazepamPage Title="🧠"  />
     <!-- Onglet Anti-douleur -->
-    <local:PainReliefPage Title="Anti-douleur" IconImageSource="💊" />
+    <local:PainReliefPage Title="🩹" />
 
     <!-- Onglet Alcool -->
-    <local:AlcoholPage Title="Alcool" IconImageSource="🍾" />
+    <local:AlcoholPage Title="🍾" />
     <!-- Onglet Paramètres -->
-    <local:SettingsPage Title="Réglages" IconImageSource="⚙️" />
+
+    <local:SettingsPage Title="⚙️" IconImageSource="⚙️" />
 </TabbedPage>
