@@ -52,6 +52,9 @@
                     <Label Text="Effet estimé" FontSize="20" FontAttributes="Bold" TextColor="#319795" />
                     <Label x:Name="ConcentrationLabel" FontSize="32" FontAttributes="Bold" TextColor="#22543D" HorizontalOptions="Center" />
                     <Label x:Name="LastUpdateLabel" FontSize="14" TextColor="#718096" HorizontalOptions="Center" />
+                    <Label x:Name="EffectPower" FontSize="14" TextColor="#22543D" HorizontalOptions="Center" />
+                    <Label x:Name="EffectStatus" FontSize="14" HorizontalOptions="Center" TextColor="Green" Text="" />
+                    <Label x:Name="EffectPrediction" FontSize="12" HorizontalOptions="Center" TextColor="Red" Text="" />
                     <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" Margin="0,8,0,0" HeightRequest="320">
                         <chart:SfCartesianChart x:Name="ConcentrationChart">
                             <chart:SfCartesianChart.TrackballBehavior>

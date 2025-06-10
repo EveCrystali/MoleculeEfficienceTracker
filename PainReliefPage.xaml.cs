@@ -21,6 +21,10 @@ namespace MoleculeEfficienceTracker
         protected override CollectionView DosesDisplayCollection => ParacetamolCollection;
         protected override Label EmptyStateIndicatorLabel => EmptyDosesLabel;
 
+        private Label EffectStatusLabel => EffectStatus;
+        private Label EffectEndPredictionLabel => EffectPrediction;
+        private Label EffectPowerLabel => EffectPower;
+
         protected override string DoseAnnotationIcon => "💊";
         protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
         protected override TimeSpan GraphDataEndOffset => TimeSpan.FromDays(3);
@@ -115,6 +119,48 @@ namespace MoleculeEfficienceTracker
         {
             double effect = Calculator.CalculateTotalConcentration(doses, currentTime);
             ConcentrationOutputLabel.Text = $"Effet total : {effect:F0} %";
+            if (EffectPowerLabel != null)
+            {
+                EffectPowerLabel.Text = $"Saturation : {effect:F0} %";
+                EffectPowerLabel.IsVisible = true;
+            }
+
+            EffectLevel level = Calculator.GetCombinedEffectLevel(doses, currentTime);
+            if (EffectStatusLabel != null)
+            {
+                string text = level switch
+                {
+                    EffectLevel.Strong => "Effet fort",
+                    EffectLevel.Moderate => "Effet modéré",
+                    EffectLevel.Light => "Effet léger",
+                    _ => "Effet négligeable"
+                };
+                Color color = level switch
+                {
+                    EffectLevel.Strong => Colors.Red,
+                    EffectLevel.Moderate => Colors.Green,
+                    EffectLevel.Light => Colors.Orange,
+                    _ => Colors.Gray
+                };
+                EffectStatusLabel.Text = text;
+                EffectStatusLabel.TextColor = color;
+                EffectStatusLabel.IsVisible = true;
+            }
+
+            DateTime? endTime = Calculator.PredictEffectEndTime(doses, currentTime);
+            if (EffectEndPredictionLabel != null)
+            {
+                if (endTime.HasValue && endTime.Value > currentTime)
+                {
+                    var remaining = endTime.Value - currentTime;
+                    EffectEndPredictionLabel.Text = $"Effet négligeable estimé dans {remaining.TotalHours:F1} heures";
+                }
+                else
+                {
+                    EffectEndPredictionLabel.Text = "Effet actuellement négligeable";
+                }
+                EffectEndPredictionLabel.IsVisible = true;
+            }
         }
 
         private async void OnDeleteDoseClickedCustom(object sender, EventArgs e)
@@ -140,6 +186,44 @@ namespace MoleculeEfficienceTracker
                 }
             }
             UpdateEmptyState();
+        }
+
+        private void AddThresholdAnnotation(double yValue, string text, Color color)
+        {
+            var annotation = new HorizontalLineAnnotation
+            {
+                Y1 = yValue,
+                Stroke = new SolidColorBrush(color),
+                StrokeWidth = 2,
+                StrokeDashArray = new DoubleCollection { 5, 5 },
+                Text = text,
+                LabelStyle = new ChartAnnotationLabelStyle
+                {
+                    FontSize = 10,
+                    TextColor = color,
+                    Background = Brush.White,
+                    CornerRadius = 3,
+                    HorizontalTextAlignment = ChartLabelAlignment.Start,
+                    VerticalTextAlignment = ChartLabelAlignment.Center,
+                    Margin = new Thickness(5, 0, 0, 0)
+                }
+            };
+
+            ChartControl.Annotations.Add(annotation);
+        }
+
+        protected override void AddMoleculeSpecificChartAnnotations()
+        {
+            if (ChartControl == null) return;
+            AddThresholdAnnotation(Calculator.ParacetamolStrongPercent, "PCT fort", Colors.Orange);
+            AddThresholdAnnotation(Calculator.ParacetamolModeratePercent, "PCT modéré", Colors.YellowGreen);
+            AddThresholdAnnotation(Calculator.ParacetamolLightPercent, "PCT léger", Colors.Green);
+            AddThresholdAnnotation(Calculator.ParacetamolNegligiblePercent, "PCT imperceptible", Colors.Grey);
+
+            AddThresholdAnnotation(Calculator.IbuprofenStrongPercent, "IBU fort", Colors.Orange);
+            AddThresholdAnnotation(Calculator.IbuprofenModeratePercent, "IBU modéré", Colors.YellowGreen);
+            AddThresholdAnnotation(Calculator.IbuprofenLightPercent, "IBU léger", Colors.Green);
+            AddThresholdAnnotation(Calculator.IbuprofenNegligiblePercent, "IBU imperceptible", Colors.Grey);
         }
 
         protected override async Task UpdateChart()

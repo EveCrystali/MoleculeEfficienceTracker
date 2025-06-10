@@ -23,6 +23,17 @@ namespace MoleculeEfficienceTracker.Core.Services
         private readonly PharmacodynamicModel _ibuPd = new(12.0);
         private readonly double _maxCombinedEffect;
 
+        // Threshold percentages on the normalised 0-100 % scale
+        public double ParacetamolStrongPercent { get; }
+        public double ParacetamolModeratePercent { get; }
+        public double ParacetamolLightPercent { get; }
+        public double ParacetamolNegligiblePercent { get; }
+
+        public double IbuprofenStrongPercent { get; }
+        public double IbuprofenModeratePercent { get; }
+        public double IbuprofenLightPercent { get; }
+        public double IbuprofenNegligiblePercent { get; }
+
         public CombinedPainReliefCalculator()
         {
             // Calculer l'effet maximal attendu pour 1 g de paracétamol et 400 mg d'ibuprofène
@@ -37,7 +48,23 @@ namespace MoleculeEfficienceTracker.Core.Services
             double effectIbu = _ibuPd.GetEffectPercent(ibuPeak);
             _maxCombinedEffect = effectPara + effectIbu;
             if (_maxCombinedEffect <= 0) _maxCombinedEffect = 100.0; // Sécurité
+
+            ParacetamolStrongPercent = ComputeParaPercent(ParacetamolCalculator.STRONG_THRESHOLD);
+            ParacetamolModeratePercent = ComputeParaPercent(ParacetamolCalculator.MODERATE_THRESHOLD);
+            ParacetamolLightPercent = ComputeParaPercent(ParacetamolCalculator.LIGHT_THRESHOLD);
+            ParacetamolNegligiblePercent = ComputeParaPercent(ParacetamolCalculator.NEGLIGIBLE_THRESHOLD);
+
+            IbuprofenStrongPercent = ComputeIbuPercent(IbuprofeneCalculator.STRONG_THRESHOLD);
+            IbuprofenModeratePercent = ComputeIbuPercent(IbuprofeneCalculator.MODERATE_THRESHOLD);
+            IbuprofenLightPercent = ComputeIbuPercent(IbuprofeneCalculator.LIGHT_THRESHOLD);
+            IbuprofenNegligiblePercent = ComputeIbuPercent(IbuprofeneCalculator.NEGLIGIBLE_THRESHOLD);
         }
+
+        private double ComputeParaPercent(double concentration)
+            => 100.0 * _paraPd.GetEffectPercent(concentration) / _maxCombinedEffect;
+
+        private double ComputeIbuPercent(double concentration)
+            => 100.0 * _ibuPd.GetEffectPercent(concentration) / _maxCombinedEffect;
 
         private bool IsParacetamol(DoseEntry d) =>
             string.Equals(d.MoleculeKey, "paracetamol", StringComparison.OrdinalIgnoreCase);
@@ -117,6 +144,29 @@ namespace MoleculeEfficienceTracker.Core.Services
                 totalList.Add((t, 100.0 * sum / _maxCombinedEffect));
             }
             return (paraList, ibuList, totalList);
+        }
+
+        public EffectLevel GetCombinedEffectLevel(List<DoseEntry> doses, DateTime time)
+        {
+            double paraConc = _paraCalc.CalculateTotalConcentration(FilterPara(doses).ToList(), time);
+            double ibuConc = _ibuCalc.CalculateTotalConcentration(FilterIbu(doses).ToList(), time);
+            EffectLevel levelPara = _paraCalc.GetEffectLevel(paraConc);
+            EffectLevel levelIbu = _ibuCalc.GetEffectLevel(ibuConc);
+            return (EffectLevel)Math.Max((int)levelPara, (int)levelIbu);
+        }
+
+        public DateTime? PredictEffectEndTime(List<DoseEntry> doses, DateTime currentTime)
+        {
+            if (!doses.Any()) return currentTime;
+            for (int minutes = 0; minutes <= 24 * 60; minutes += 15)
+            {
+                DateTime t = currentTime.AddMinutes(minutes);
+                double para = _paraCalc.CalculateTotalConcentration(FilterPara(doses).ToList(), t);
+                double ibu = _ibuCalc.CalculateTotalConcentration(FilterIbu(doses).ToList(), t);
+                if (_paraCalc.IsEffectNegligible(para) && _ibuCalc.IsEffectNegligible(ibu))
+                    return t;
+            }
+            return null;
         }
     }
 }
