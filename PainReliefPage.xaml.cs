@@ -13,30 +13,19 @@ using Microsoft.Maui.Graphics;
 namespace MoleculeEfficienceTracker
 {
     public partial class PainReliefPage : BaseMoleculePage<CombinedPainReliefCalculator>
-        private readonly DataPersistenceService _paraService = new("paracetamol");
-        private readonly DataPersistenceService _ibuService = new("ibuprofene");
+    {
+        protected override Entry DoseInputControl => DoseEntry;
+        protected override DatePicker DatePickerControl => DatePicker;
+        protected override TimePicker TimePickerControl => TimePicker;
+        protected override Label ConcentrationOutputLabel => ConcentrationLabel;
+        protected override Label LastUpdateOutputLabel => LastUpdateLabel;
+        protected override SfCartesianChart ChartControl => ConcentrationChart;
+        protected override CollectionView DosesDisplayCollection => ParacetamolCollection;
+        protected override Label EmptyStateIndicatorLabel => EmptyDosesLabel;
 
-            // Charger toutes les données existantes
-            var own = await PersistenceService.LoadDosesAsync();
-            var para = await _paraService.LoadDosesAsync();
-            var ibu = await _ibuService.LoadDosesAsync();
-            foreach (var d in own)
-            {
-                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "pain_relief";
-            }
-            var merged = own
-                .Concat(para)
-                .Concat(ibu)
-                .GroupBy(d => d.Id)
-                .Select(g => g.First())
-                .OrderByDescending(d => d.TimeTaken)
-                .ToList();
-
-            await PersistenceService.SaveDosesAsync(merged);
-            await _paraService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase)).ToList());
-            await _ibuService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase)).ToList());
-                await SaveAllDataAsync();
-
+        private Label EffectStatusLabel => EffectStatus;
+        private Label EffectEndPredictionLabel => EffectPrediction;
+        
         protected override string DoseAnnotationIcon => "💊";
         protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
         protected override TimeSpan GraphDataEndOffset => TimeSpan.FromDays(3);
@@ -50,6 +39,9 @@ namespace MoleculeEfficienceTracker
         public ObservableRangeCollection<ChartDataPoint> IbuprofenChartData { get; } = new();
         public ObservableRangeCollection<ChartDataPoint> TotalChartData { get; } = new();
 
+        private readonly DataPersistenceService _paraService = new("paracetamol");
+        private readonly DataPersistenceService _ibuService = new("ibuprofene");
+
         public PainReliefPage() : base("pain_relief")
         {
             InitializeComponent();
@@ -62,28 +54,35 @@ namespace MoleculeEfficienceTracker
         {
             await base.OnBeforeLoadDataAsync();
 
-            // Charger les données existantes des pages individuelles
-            DataPersistenceService paraService = new DataPersistenceService("paracetamol");
-            DataPersistenceService ibuService = new DataPersistenceService("ibuprofene");
+            // Charger toutes les données existantes
+            var own = await PersistenceService.LoadDosesAsync();
+            var para = await _paraService.LoadDosesAsync();
+            var ibu = await _ibuService.LoadDosesAsync();
 
-            var para = await paraService.LoadDosesAsync();
+            foreach (var d in own)
+            {
+                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "pain_relief";
+            }
             foreach (var d in para)
             {
                 if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "paracetamol";
-                if (!Doses.Any(x => x.Id == d.Id)) Doses.Add(d);
             }
-
-            var ibu = await ibuService.LoadDosesAsync();
             foreach (var d in ibu)
             {
                 if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "ibuprofene";
-                if (!Doses.Any(x => x.Id == d.Id)) Doses.Add(d);
             }
 
-            // Trier par date décroissante
-            var ordered = Doses.OrderByDescending(d => d.TimeTaken).ToList();
-            Doses.Clear();
-            foreach (var d in ordered) Doses.Add(d);
+            var merged = own
+                .Concat(para)
+                .Concat(ibu)
+                .GroupBy(d => d.Id)
+                .Select(g => g.First())
+                .OrderByDescending(d => d.TimeTaken)
+                .ToList();
+
+            await PersistenceService.SaveDosesAsync(merged);
+            await _paraService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase)).ToList());
+            await _ibuService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase)).ToList());
         }
 
         private void RefreshDoseGroups()
@@ -115,7 +114,7 @@ namespace MoleculeEfficienceTracker
                 UpdateConcentrationDisplay();
                 await UpdateChart();
                 UpdateDoseAnnotations();
-                await SaveDataAsync();
+                await SaveAllDataAsync();
                 await AlertService.ShowAlertAsync("✅", $"Dose {doseMg}mg {molecule} ajoutée pour {dateTime:dd/MM HH:mm}");
             }
             else
