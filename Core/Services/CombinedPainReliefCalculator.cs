@@ -29,6 +29,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         public double StrongPercent { get; }
         public double ModeratePercent { get; }
         public double LightPercent { get; }
+        public double NegligibleEffect { get; }
 
         public CombinedPainReliefCalculator()
         {
@@ -54,6 +55,9 @@ namespace MoleculeEfficienceTracker.Core.Services
             LightPercent = ComputeUnifiedPercent(
                 ParacetamolCalculator.LIGHT_THRESHOLD,
                 IbuprofeneCalculator.LIGHT_THRESHOLD);
+            NegligibleEffect = ComputeUnifiedPercent(
+            ParacetamolCalculator.NEGLIGIBLE_THRESHOLD,
+            IbuprofeneCalculator.NEGLIGIBLE_THRESHOLD);
         }
 
         private double ComputeUnifiedPercent(double paraConcentration, double ibuConcentration)

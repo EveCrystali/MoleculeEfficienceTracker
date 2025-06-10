@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Syncfusion.Maui.Charts;
 using Microsoft.Maui.Graphics;
 
-
 namespace MoleculeEfficienceTracker
 {
     public partial class PainReliefPage : BaseMoleculePage<CombinedPainReliefCalculator>
@@ -129,7 +128,7 @@ namespace MoleculeEfficienceTracker
         protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
         {
             double effect = Calculator.CalculateTotalConcentration(doses, currentTime);
-            ConcentrationOutputLabel.Text = $"Saturation : {effect:F0} %";
+            ConcentrationOutputLabel.Text = $"Effet : {effect:F0} %";
 
             EffectLevel level = Calculator.GetCombinedEffectLevel(doses, currentTime);
             if (EffectStatusLabel != null)
@@ -139,7 +138,7 @@ namespace MoleculeEfficienceTracker
                     EffectLevel.Strong => "Effet fort",
                     EffectLevel.Moderate => "Effet net",
                     EffectLevel.Light => "Effet léger",
-                    _ => "Négligeable"
+                    _ => "Effet négligeable"
                 };
                 Color color = level switch
                 {
@@ -248,9 +247,10 @@ namespace MoleculeEfficienceTracker
         protected override void AddMoleculeSpecificChartAnnotations()
         {
             if (ChartControl == null) return;
-            AddThresholdAnnotation(Calculator.StrongPercent, "Effet fort", Colors.Orange);
-            AddThresholdAnnotation(Calculator.ModeratePercent, "Effet modéré", Colors.YellowGreen);
-            AddThresholdAnnotation(Calculator.LightPercent, "Effet léger", Colors.Green);
+            AddThresholdAnnotation(Calculator.StrongPercent, "Fort", Colors.Orange);
+            AddThresholdAnnotation(Calculator.ModeratePercent, "Net", Colors.YellowGreen);
+            AddThresholdAnnotation(Calculator.LightPercent, "Léger", Colors.Green);
+            AddThresholdAnnotation(Calculator.NegligibleEffect, "Négligeable", Colors.Gray);
         }
 
         protected override async Task UpdateChart()
