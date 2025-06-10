@@ -29,12 +29,24 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double FAST_FRACTION = 0.3;
         private const double SLOW_FRACTION = 1.0 - FAST_FRACTION;
 
+
+        // Seuils d'effet subjectif exprimés en mg/L pour le nouveau modèle
+        // Ces valeurs correspondent à une dose de 4.5 mg (effet fort) ingérée par
+        // défaut chez un patient de 72 kg avec un Vd de 1 L/kg et une
+        // biodisponibilité de 84 %.
+        public const double BAC_STRONG_THRESHOLD = 0.0525;    // ≈ 4,5 mg
+        public const double BAC_MODERATE_THRESHOLD = 0.035;  // ≈ 3 mg
+        public const double BAC_LIGHT_THRESHOLD = 0.0175;     // ≈ 1,5 mg
+        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.00583; // ≈ 0,5 mg
+
+
+
         // Absorption time depending on beverage type
         private static readonly Dictionary<string, double> _absorptionTimes = new()
         {
             ["cocktail"] = 2.0,
-            ["vin"]      = 1.0,
-            ["biere"]    = 0.5
+            ["vin"] = 1.0,
+            ["biere"] = 0.5
         };
 
         /// <summary>
