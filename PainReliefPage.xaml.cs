@@ -13,19 +13,29 @@ using Microsoft.Maui.Graphics;
 namespace MoleculeEfficienceTracker
 {
     public partial class PainReliefPage : BaseMoleculePage<CombinedPainReliefCalculator>
-    {
-        protected override Entry DoseInputControl => DoseEntry;
-        protected override DatePicker DatePickerControl => DatePicker;
-        protected override TimePicker TimePickerControl => TimePicker;
-        protected override Label ConcentrationOutputLabel => ConcentrationLabel;
-        protected override Label LastUpdateOutputLabel => LastUpdateLabel;
-        protected override SfCartesianChart ChartControl => ConcentrationChart;
-        protected override CollectionView DosesDisplayCollection => ParacetamolCollection;
-        protected override Label EmptyStateIndicatorLabel => EmptyDosesLabel;
+        private readonly DataPersistenceService _paraService = new("paracetamol");
+        private readonly DataPersistenceService _ibuService = new("ibuprofene");
 
-        private Label EffectStatusLabel => EffectStatus;
-        private Label EffectEndPredictionLabel => EffectPrediction;
-        
+            // Charger toutes les données existantes
+            var own = await PersistenceService.LoadDosesAsync();
+            var para = await _paraService.LoadDosesAsync();
+            var ibu = await _ibuService.LoadDosesAsync();
+            foreach (var d in own)
+            {
+                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "pain_relief";
+            }
+            var merged = own
+                .Concat(para)
+                .Concat(ibu)
+                .GroupBy(d => d.Id)
+                .Select(g => g.First())
+                .OrderByDescending(d => d.TimeTaken)
+                .ToList();
+
+            await PersistenceService.SaveDosesAsync(merged);
+            await _paraService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase)).ToList());
+            await _ibuService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase)).ToList());
+                await SaveAllDataAsync();
 
         protected override string DoseAnnotationIcon => "💊";
         protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
@@ -178,11 +188,38 @@ namespace MoleculeEfficienceTracker
                         UpdateConcentrationDisplay();
                         await UpdateChart();
                         UpdateDoseAnnotations();
-                        await SaveDataAsync();
+                        await SaveAllDataAsync();
                     }
                 }
             }
             UpdateEmptyState();
+        }
+
+        private async Task SaveAllDataAsync()
+        {
+            await PersistenceService.SaveDosesAsync(Doses.ToList());
+            await _paraService.SaveDosesAsync(Doses.Where(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase)).ToList());
+            await _ibuService.SaveDosesAsync(Doses.Where(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase)).ToList());
+        }
+
+        private async void OnClearAllDataClicked(object sender, EventArgs e)
+        {
+            bool confirm = await DisplayAlert("⚠️ Attention",
+                "Supprimer toutes les données ?\nCette action est irréversible.",
+                "Oui", "Annuler");
+
+            if (confirm)
+            {
+                Doses.Clear();
+                await PersistenceService.DeleteAllDataAsync();
+                await _paraService.DeleteAllDataAsync();
+                await _ibuService.DeleteAllDataAsync();
+                UpdateConcentrationDisplay();
+                await UpdateChart();
+                UpdateDoseAnnotations();
+                UpdateEmptyState();
+                await DisplayAlert("✅", "Toutes les données ont été supprimées", "OK");
+            }
         }
 
         private void AddThresholdAnnotation(double yValue, string text, Color color)

@@ -28,6 +28,7 @@ namespace MoleculeEfficienceTracker
         private Label EffectPowerLabel => EffectPower;
 
         private readonly PharmacodynamicModel _pdModel = new PharmacodynamicModel(12.0);
+        private readonly DataPersistenceService _painService = new("pain_relief");
 
         protected override string DoseAnnotationIcon => "💊";
         protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
@@ -41,6 +42,33 @@ namespace MoleculeEfficienceTracker
         {
             InitializeComponent();
             base.InitializePageUI();
+        }
+
+        private async Task SyncPainReliefAsync()
+        {
+            var combined = await _painService.LoadDosesAsync();
+            combined.RemoveAll(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase));
+            combined.AddRange(Doses.Select(d => { if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "ibuprofene"; return d; }));
+            combined = combined.GroupBy(d => d.Id).Select(g => g.First()).OrderByDescending(d => d.TimeTaken).ToList();
+            await _painService.SaveDosesAsync(combined);
+        }
+
+        private new async void OnAddDoseClicked(object sender, EventArgs e)
+        {
+            base.OnAddDoseClicked(sender, e);
+            await SyncPainReliefAsync();
+        }
+
+        private new async void OnDeleteDoseClicked(object sender, EventArgs e)
+        {
+            base.OnDeleteDoseClicked(sender, e);
+            await SyncPainReliefAsync();
+        }
+
+        private new async void OnClearAllDataClicked(object sender, EventArgs e)
+        {
+            base.OnClearAllDataClicked(sender, e);
+            await _painService.DeleteAllDataAsync();
         }
 
         protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
@@ -99,7 +127,30 @@ namespace MoleculeEfficienceTracker
 
         protected override async Task OnBeforeLoadDataAsync()
         {
-            await base.OnBeforeLoadDataAsync(); // Appel à l'implémentation de base (facultatif ici car vide)
+            await base.OnBeforeLoadDataAsync();
+
+            var own = await PersistenceService.LoadDosesAsync();
+            var combined = await _painService.LoadDosesAsync();
+
+            foreach (var d in own)
+            {
+                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "ibuprofene";
+            }
+
+            var fromCombined = combined.Where(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase)).ToList();
+
+            var merged = own
+                .Concat(fromCombined)
+                .GroupBy(d => d.Id)
+                .Select(g => g.First())
+                .OrderByDescending(d => d.TimeTaken)
+                .ToList();
+
+            await PersistenceService.SaveDosesAsync(merged);
+            combined.RemoveAll(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase));
+            combined.AddRange(merged);
+            combined = combined.GroupBy(d => d.Id).Select(g => g.First()).OrderByDescending(d => d.TimeTaken).ToList();
+            await _painService.SaveDosesAsync(combined);
         }
 
         private void AddThresholdAnnotation(double yValue, string text, Color color)
