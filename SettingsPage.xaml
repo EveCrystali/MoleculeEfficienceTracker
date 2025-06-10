@@ -6,7 +6,7 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <Color x:Key="MainBgColor">#F0F4F8</Color>
         </ResourceDictionary>
@@ -14,9 +14,29 @@
     <ContentPage.Background>
         <SolidColorBrush Color="{StaticResource MainBgColor}"/>
     </ContentPage.Background>
-    <VerticalStackLayout Spacing="20" Padding="20">
-        <Label Text="Poids (kg)" FontAttributes="Bold" />
-        <Entry x:Name="WeightEntry" Keyboard="Numeric" Placeholder="72" />
-        <Button Text="Enregistrer" Clicked="OnSaveClicked" Style="{StaticResource PrimaryButtonStyle}" />
+    <VerticalStackLayout Spacing="20"
+                         Padding="20">
+        <Label Text="Poids (kg)"
+               FontAttributes="Bold"/>
+        <Entry x:Name="WeightEntry"
+               Keyboard="Numeric"
+               Placeholder="72"/>
+        <Label Text="Sex"
+               FontAttributes="Bold"/>
+        <Picker x:Name="SexPicker"
+                Grid.Row="0"
+                Grid.Column="1"
+                Title="Homme/Femme">
+            <Picker.Items>
+                <x:String>Homme</x:String>
+                <x:String>Femme</x:String>
+            </Picker.Items>
+        </Picker>
+
+
+        <Button Text="Enregistrer"
+                Clicked="OnSaveClicked"
+                Style="{StaticResource PrimaryButtonStyle}"/>
+
     </VerticalStackLayout>
 </ContentPage>
