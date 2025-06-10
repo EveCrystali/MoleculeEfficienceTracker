@@ -49,10 +49,8 @@
             <!-- GRAPH -->
             <Frame Style="{StaticResource CardFrameStyle}" BackgroundColor="#E6FFFA">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Effet estimé" FontSize="20" FontAttributes="Bold" TextColor="#319795" />
                     <Label x:Name="ConcentrationLabel" FontSize="32" FontAttributes="Bold" TextColor="#22543D" HorizontalOptions="Center" />
                     <Label x:Name="LastUpdateLabel" FontSize="14" TextColor="#718096" HorizontalOptions="Center" />
-                    <Label x:Name="EffectPower" FontSize="14" TextColor="#22543D" HorizontalOptions="Center" />
                     <Label x:Name="EffectStatus" FontSize="14" HorizontalOptions="Center" TextColor="Green" Text="" />
                     <Label x:Name="EffectPrediction" FontSize="12" HorizontalOptions="Center" TextColor="Red" Text="" />
                     <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" Margin="0,8,0,0" HeightRequest="320">
@@ -69,7 +67,7 @@
                                         <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH:mm" FontSize="10" TextColor="#31465D" />
                                     </chart:DateTimeAxis.LabelStyle>
                                     <chart:DateTimeAxis.MajorGridLineStyle>
-                                        <chart:ChartLineStyle Stroke="#E5E7EB" StrokeWidth="1" />
+                                        <chart:ChartLineStyle  StrokeWidth="1" />
                                     </chart:DateTimeAxis.MajorGridLineStyle>
                                 </chart:DateTimeAxis>
                             </chart:SfCartesianChart.XAxes>
@@ -79,13 +77,13 @@
                                         <chart:ChartAxisLabelStyle FontSize="10" TextColor="#31465D" />
                                     </chart:NumericalAxis.LabelStyle>
                                     <chart:NumericalAxis.MajorGridLineStyle>
-                                        <chart:ChartLineStyle Stroke="#E5E7EB" StrokeWidth="1" />
+                                        <chart:ChartLineStyle StrokeWidth="1" />
                                     </chart:NumericalAxis.MajorGridLineStyle>
                                 </chart:NumericalAxis>
                             </chart:SfCartesianChart.YAxes>
-                            <chart:SplineSeries ItemsSource="{Binding ParacetamolChartData}" XBindingPath="Time" YBindingPath="Concentration" Stroke="Blue" StrokeWidth="1.5" />
-                            <chart:SplineSeries ItemsSource="{Binding IbuprofenChartData}" XBindingPath="Time" YBindingPath="Concentration" Stroke="Black" StrokeWidth="1.5" />
-                            <chart:SplineSeries ItemsSource="{Binding TotalChartData}" XBindingPath="Time" YBindingPath="Concentration" Stroke="Green" StrokeWidth="1.5" />
+                            <chart:SplineSeries ItemsSource="{Binding ParacetamolChartData}" XBindingPath="Time" YBindingPath="Concentration"  StrokeWidth="1.5" />
+                            <chart:SplineSeries ItemsSource="{Binding IbuprofenChartData}" XBindingPath="Time" YBindingPath="Concentration"  StrokeWidth="1.5" />
+                            <chart:SplineSeries ItemsSource="{Binding TotalChartData}" XBindingPath="Time" YBindingPath="Concentration"  StrokeWidth="1.5" />
                         </chart:SfCartesianChart>
                     </Frame>
                 </VerticalStackLayout>

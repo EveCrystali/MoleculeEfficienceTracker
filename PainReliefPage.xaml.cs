@@ -1,5 +1,6 @@
 using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
+using MoleculeEfficienceTracker.Core.Extensions;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Syncfusion.Maui.Charts;
 using Microsoft.Maui.Graphics;
+
 
 namespace MoleculeEfficienceTracker
 {
@@ -23,7 +25,7 @@ namespace MoleculeEfficienceTracker
 
         private Label EffectStatusLabel => EffectStatus;
         private Label EffectEndPredictionLabel => EffectPrediction;
-        private Label EffectPowerLabel => EffectPower;
+        
 
         protected override string DoseAnnotationIcon => "💊";
         protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
@@ -118,12 +120,7 @@ namespace MoleculeEfficienceTracker
         protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
         {
             double effect = Calculator.CalculateTotalConcentration(doses, currentTime);
-            ConcentrationOutputLabel.Text = $"Effet total : {effect:F0} %";
-            if (EffectPowerLabel != null)
-            {
-                EffectPowerLabel.Text = $"Saturation : {effect:F0} %";
-                EffectPowerLabel.IsVisible = true;
-            }
+            ConcentrationOutputLabel.Text = $"Saturation : {effect:F0} %";
 
             EffectLevel level = Calculator.GetCombinedEffectLevel(doses, currentTime);
             if (EffectStatusLabel != null)
@@ -131,9 +128,9 @@ namespace MoleculeEfficienceTracker
                 string text = level switch
                 {
                     EffectLevel.Strong => "Effet fort",
-                    EffectLevel.Moderate => "Effet modéré",
+                    EffectLevel.Moderate => "Effet net",
                     EffectLevel.Light => "Effet léger",
-                    _ => "Effet négligeable"
+                    _ => "Négligeable"
                 };
                 Color color = level switch
                 {
@@ -153,7 +150,7 @@ namespace MoleculeEfficienceTracker
                 if (endTime.HasValue && endTime.Value > currentTime)
                 {
                     var remaining = endTime.Value - currentTime;
-                    EffectEndPredictionLabel.Text = $"Effet négligeable estimé dans {remaining.TotalHours:F1} heures";
+                    EffectEndPredictionLabel.Text = $"Effet négligeable dans {remaining.TotalHours:F1} heures";
                 }
                 else
                 {

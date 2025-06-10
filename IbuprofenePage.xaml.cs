@@ -53,10 +53,10 @@ namespace MoleculeEfficienceTracker
 
                 string text = level switch
                 {
-                    EffectLevel.Strong => "Effet fort",
-                    EffectLevel.Moderate => "Effet modéré",
-                    EffectLevel.Light => "Effet léger",
-                    _ => "Effet négligeable"
+                    EffectLevel.Strong => "Fort",
+                    EffectLevel.Moderate => "Net",
+                    EffectLevel.Light => "Léger",
+                    _ => "Négligeable"
                 };
 
                 Color color = level switch
@@ -131,7 +131,7 @@ namespace MoleculeEfficienceTracker
             if (Calculator is IbuprofeneCalculator calc && ChartControl != null)
             {
                 AddThresholdAnnotation(IbuprofeneCalculator.STRONG_THRESHOLD, "Fort", Colors.Orange);
-                AddThresholdAnnotation(IbuprofeneCalculator.MODERATE_THRESHOLD, "Modéré", Colors.YellowGreen);
+                AddThresholdAnnotation(IbuprofeneCalculator.MODERATE_THRESHOLD, "Net", Colors.YellowGreen);
                 AddThresholdAnnotation(IbuprofeneCalculator.LIGHT_THRESHOLD, "Léger", Colors.Green);
                 AddThresholdAnnotation(IbuprofeneCalculator.NEGLIGIBLE_THRESHOLD, "Imperceptible", Colors.Grey);
             }

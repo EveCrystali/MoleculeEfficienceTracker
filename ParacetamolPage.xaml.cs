@@ -65,10 +65,10 @@ namespace MoleculeEfficienceTracker
 
                 string text = level switch
                 {
-                    EffectLevel.Strong => "Effet fort",
-                    EffectLevel.Moderate => "Effet modéré",
-                    EffectLevel.Light => "Effet léger",
-                    _ => "Effet négligeable"
+                    EffectLevel.Strong => "Fort",
+                    EffectLevel.Moderate => "Net",
+                    EffectLevel.Light => "Léger",
+                    _ => "Négligeable"
                 };
 
                 Color color = level switch
@@ -98,7 +98,7 @@ namespace MoleculeEfficienceTracker
                     if (endTime.HasValue && endTime.Value > currentTime)
                     {
                         var remaining = endTime.Value - currentTime;
-                        EffectEndPredictionLabel.Text = $"Effet négligeable estimé dans {remaining.TotalHours:F1} heures";
+                        EffectEndPredictionLabel.Text = $"Effet négligeable dans {remaining.TotalHours:F1} heures";
                     }
                     else
                     {
@@ -137,8 +137,8 @@ namespace MoleculeEfficienceTracker
         {
             if (Calculator is ParacetamolCalculator calc && ChartControl != null)
             {
-                AddThresholdAnnotation(ParacetamolCalculator.STRONG_THRESHOLD, "Fort (1g)", Colors.Orange);
-                AddThresholdAnnotation(ParacetamolCalculator.MODERATE_THRESHOLD, "Modéré", Colors.YellowGreen);
+                AddThresholdAnnotation(ParacetamolCalculator.STRONG_THRESHOLD, "Fort", Colors.Orange);
+                AddThresholdAnnotation(ParacetamolCalculator.MODERATE_THRESHOLD, "Net", Colors.YellowGreen);
                 AddThresholdAnnotation(ParacetamolCalculator.LIGHT_THRESHOLD, "Léger", Colors.Green);
                 AddThresholdAnnotation(ParacetamolCalculator.NEGLIGIBLE_THRESHOLD, "Imperceptible", Colors.Grey);
             }
