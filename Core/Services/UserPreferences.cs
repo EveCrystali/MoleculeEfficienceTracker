@@ -6,6 +6,8 @@ namespace MoleculeEfficienceTracker.Core.Services
     {
         private const string WeightKey = "user_weight_kg";
         private const double DefaultWeight = 72.0;
+        private const string SexKey = "user_sex";
+        private const string DefaultSex = "homme";
 
         public static double GetWeightKg()
         {
@@ -16,5 +18,16 @@ namespace MoleculeEfficienceTracker.Core.Services
         {
             Preferences.Set(WeightKey, weightKg);
         }
+
+        public static string GetSex()
+        {
+            return Preferences.Get(SexKey, DefaultSex);
+        }
+
+         public static void SetSex(string sex)
+        {
+            Preferences.Set(SexKey, sex);
+        }
+
     }
 }
