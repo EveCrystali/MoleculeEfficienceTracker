@@ -121,23 +121,27 @@ namespace MoleculeEfficienceTracker.Core.Services
             double eliminationRate = DEFAULT_ELIMINATION_BAC_RATE * volume; // g/h
 
             double dt = 1.0 / 60.0; // 1 minute steps
-            int steps = (int)Math.Ceiling(totalHours / dt);
             double grams = 0.0;
             double prevAbs = 0.0;
+            double prevTime = 0.0;
 
-            for (int i = 1; i <= steps; i++)
+            while (prevTime < totalHours)
             {
-                double t = Math.Min(i * dt, totalHours);
+                double nextTime = Math.Min(prevTime + dt, totalHours);
                 double absorbed = totalGrams * (
-                    FAST_FRACTION * (1.0 - Math.Exp(-kFast * t)) +
-                    SLOW_FRACTION * (1.0 - Math.Exp(-kSlow * t)));
+                    FAST_FRACTION * (1.0 - Math.Exp(-kFast * nextTime)) +
+                    SLOW_FRACTION * (1.0 - Math.Exp(-kSlow * nextTime)));
                 double deltaAbs = absorbed - prevAbs;
-                if (deltaAbs < 0) deltaAbs = 0;
-                grams += deltaAbs;
+                if (deltaAbs > 0)
+                    grams += deltaAbs;
                 prevAbs = absorbed;
 
-                grams -= eliminationRate * dt;
+                double step = nextTime - prevTime;
+                double elimination = eliminationRate * step;
+                grams -= elimination;
                 if (grams < 0) grams = 0;
+
+                prevTime = nextTime;
             }
 
             return grams;
