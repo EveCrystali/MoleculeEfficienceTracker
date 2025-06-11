@@ -15,7 +15,7 @@ namespace MoleculeEfficienceTracker
     public partial class AlcoholPage : BaseMoleculePage<AlcoholCalculator>
     {
         // Implémentation des propriétés abstraites pour les contrôles UI
-        protected override Entry DoseInputControl => DoseEntry;
+        protected override Entry DoseInputControl => VolumeEntry;
         protected override DatePicker DatePickerControl => DatePicker;
         protected override TimePicker TimePickerControl => TimePicker;
         protected override Label ConcentrationOutputLabel => ConcentrationLabel;
@@ -49,6 +49,41 @@ namespace MoleculeEfficienceTracker
             {
                 Calculator.BeverageType = BeverageOptions[0];
             }
+        }
+
+        // Ajout personnalisé pour convertir volume et pourcentage en unités
+        protected async new void OnAddDoseClicked(object sender, EventArgs e)
+        {
+            if (double.TryParse(VolumeEntry.Text, out double volume) &&
+                double.TryParse(DegreeEntry.Text, out double percent) &&
+                volume > 0 && percent > 0)
+            {
+                double units = AlcoholCalculator.VolumePercentToUnits(volume, percent);
+                DateTime selectedDate = DatePicker.Date;
+                TimeSpan selectedTime = TimePicker.Time;
+                DateTime dateTime = selectedDate.Add(selectedTime);
+
+                double weight = UserPreferences.GetWeightKg();
+                DoseEntry dose = new DoseEntry(dateTime, units, weight, MoleculeKey);
+
+                Doses.Insert(0, dose);
+                VolumeEntry.Text = string.Empty;
+                DegreeEntry.Text = string.Empty;
+
+                UpdateConcentrationDisplay();
+                await UpdateChart();
+                UpdateDoseAnnotations();
+
+                await SaveDataAsync();
+                await AlertService.ShowAlertAsync("✅", $"Dose de {units:F2} u ajoutée pour {dateTime:dd/MM HH:mm}");
+            }
+            else
+            {
+                await AlertService.ShowAlertAsync("❌", "Veuillez entrer un volume et un % valides");
+            }
+
+            if (sender is Button btn) AnimateButton(btn);
+            UpdateEmptyState();
         }
 
         protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
