@@ -8,6 +8,7 @@ using System.Text.Json;
 using CommunityToolkit.Maui.Storage;
 using System.Text;
 using System.IO;
+using System.Linq;
 
 namespace MoleculeEfficienceTracker
 {
@@ -35,10 +36,19 @@ namespace MoleculeEfficienceTracker
         protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-4); // Vue initiale de -6h
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(6);   // Vue initiale de +6h
 
+        /// <summary>
+        /// Items displayed in the beverage picker.
+        /// </summary>
+        public List<string> BeverageOptions => AlcoholCalculator.KnownBeverageTypes.ToList();
+
         public AlcoholPage() : base("alcohol")
         {
             InitializeComponent();
             base.InitializePageUI();
+            if (BeverageOptions.Count > 0 && string.IsNullOrEmpty(Calculator.BeverageType))
+            {
+                Calculator.BeverageType = BeverageOptions[0];
+            }
         }
 
         protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)

@@ -29,10 +29,24 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double FAST_FRACTION = 0.3;
         private const double SLOW_FRACTION = 1.0 - FAST_FRACTION;
 
+        // Subjective effect thresholds for BAC expressed in g/L
+        // Values correspond to ~4.5 mg (strong effect) with default parameters
+        public const double BAC_STRONG_THRESHOLD = 0.0525;    // ≈ 4.5 mg
+        public const double BAC_MODERATE_THRESHOLD = 0.035;   // ≈ 3 mg
+        public const double BAC_LIGHT_THRESHOLD = 0.0175;     // ≈ 1.5 mg
+        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.00583; // ≈ 0.5 mg
 
-        // Seuils d'effet subjectif exprimés en mg/L pour le nouveau modèle
-        // Ces valeurs correspondent à une dose de 4.5 mg (effet fort) ingérée par
-        // défaut chez un patient de 72 kg avec un Vd de 1 L/kg et une
+        // Absorption time depending on beverage type (hours)
+            ["cocktail"]   = 2.0,
+            ["vin"]        = 1.0,
+            ["biere"]      = 0.5,
+            ["cidre"]      = 0.75,
+            ["spiritueux"] = 1.5
+        /// <summary>
+        /// List of supported beverage types exposed for the UI.
+        /// </summary>
+        public static IEnumerable<string> KnownBeverageTypes => _absorptionTimes.Keys;
+
         // biodisponibilité de 84 %.
         public const double BAC_STRONG_THRESHOLD = 0.0525;    // ≈ 4,5 mg
         public const double BAC_MODERATE_THRESHOLD = 0.035;  // ≈ 3 mg
@@ -115,9 +129,10 @@ namespace MoleculeEfficienceTracker.Core.Services
         // --- IMoleculeCalculator implementation ---
         public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime time)
         {
-            return doses.Sum(d => CalculateSingleDoseBAC(d, time));
-        }
-
+            if (bac >= BAC_STRONG_THRESHOLD) return EffectLevel.Strong;
+            if (bac >= BAC_MODERATE_THRESHOLD) return EffectLevel.Moderate;
+            if (bac >= BAC_LIGHT_THRESHOLD) return EffectLevel.Light;
+            if (bac >= BAC_NEGLIGIBLE_THRESHOLD) return EffectLevel.Light;
         public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime time)
         {
             return CalculateSingleDoseBAC(dose, time);
