@@ -75,7 +75,7 @@ namespace MoleculeEfficienceTracker
                 UpdateDoseAnnotations();
 
                 await SaveDataAsync();
-                await AlertService.ShowAlertAsync("✅", $"Dose de {units:F2} u ajoutée pour {dateTime:dd/MM HH:mm}");
+                // await AlertService.ShowAlertAsync("✅", $"Dose de {units:F2} u ajoutée pour {dateTime:dd/MM HH:mm}");
             }
             else
             {

@@ -156,7 +156,7 @@ namespace MoleculeEfficienceTracker
                 UpdateDoseAnnotations(); // Mettre à jour les annotations après l'ajout
 
                 await SaveDataAsync();
-                await AlertService.ShowAlertAsync("✅", $"Dose de {doseMg}mg ajoutée pour {dateTime:dd/MM HH:mm}");
+                // await AlertService.ShowAlertAsync("✅", $"Dose de {doseMg}mg ajoutée pour {dateTime:dd/MM HH:mm}");
             }
             else
             {
@@ -175,7 +175,7 @@ namespace MoleculeEfficienceTracker
                 if (dose != null)
                 {
                     bool confirm = await DisplayAlert("Supprimer",
-                        $"Supprimer la dose de {dose.DoseMg}mg du {dose.TimeTaken:dd/MM HH:mm} ?",
+                        $"Supprimer la dose de {dose.DoseMg} du {dose.TimeTaken:dd/MM HH:mm} ?",
                         "Oui", "Non");
 
                     if (confirm)
