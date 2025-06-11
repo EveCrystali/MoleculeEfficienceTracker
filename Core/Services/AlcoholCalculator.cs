@@ -16,131 +16,83 @@ namespace MoleculeEfficienceTracker.Core.Services
         public string DoseUnit => "u";
         public string ConcentrationUnit => "g/L";
 
-        // Elimination rate of blood alcohol concentration (g/L per hour)
-        private const double DEFAULT_ELIMINATION_BAC_RATE = 0.15;
+        // Volume de distribution
+        private const double DIFFUSION_HOMME = 0.7;
+        private const double DIFFUSION_FEMME = 0.6;
 
-        // Default absorption time used when no beverage type is provided (hours)
-        private const double DEFAULT_ABSORPTION_TIME = 0.75;
+        // Élimination (zéro-ordre)
+        private const double ELIMINATION_RATE = 0.15; // g/L·h
 
-        // Conversion constants
-        private const double GRAMS_PER_UNIT = 10.0; // 1 unit = 10 g
-
-        // Fractions for the fast and slow absorption compartments
-        private const double FAST_FRACTION = 0.3;
-        private const double SLOW_FRACTION = 1.0 - FAST_FRACTION;
-
-        // Subjective effect thresholds for BAC expressed in g/L
-        // These values reflect increasing behavioral and cognitive impairment
-        // and align with French legal thresholds and clinical observations
-
-        public const double BAC_STRONG_THRESHOLD = 1.2;   // Effets nets : Altérations nettes, ivresse visible, incoordination, parole pâteuse
-        public const double BAC_MODERATE_THRESHOLD = 0.5; // Légèrement euphorique, réflexes ralentis (limite légale FR)
-        public const double BAC_LIGHT_THRESHOLD = 0.2;    // Début de désinhibition, légers effets cognitifs
-        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.1; // Effet quasi-nul, seuil physiologique bas
+        // Seuils d'effet
+        public const double BAC_STRONG_THRESHOLD = 1.2;  // g/L
+        public const double BAC_MODERATE_THRESHOLD = 0.5;  // g/L
+        public const double BAC_LIGHT_THRESHOLD = 0.2;  // g/L
+        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.1;  // g/L
 
 
-        // Absorption time depending on beverage type (hours)
-        private static readonly Dictionary<string, double> _absorptionTimes = new()
+        // Conversion dose → grammes
+        private const double GRAMS_PER_UNIT = 10.0;
+
+        // Temps d’absorption par boisson (h)
+        private static readonly Dictionary<string, double> AbsTime = new()
         {
-            ["cocktail"] = 2.0,
-            ["vin"] = 1.0,
-            ["biere"] = 0.5,
-            ["cidre"] = 0.75,
-            ["spiritueux"] = 1.5
+            ["biere"] = 0.33,
+            ["cidre"] = 0.4,
+            ["vin"] = 0.5,
+            ["spiritueux"] = 0.25,
+            ["cocktail"] = 0.5,
+            ["champagne"] = 0.45, 
+            ["liqueur"] = 0.25
         };
 
-        /// <summary>
-        /// List of supported beverage types exposed for the UI.
-        /// </summary>
-        public static IEnumerable<string> KnownBeverageTypes => _absorptionTimes.Keys;
 
-        /// <summary>
-        /// Default beverage type used for all doses. UI does not expose this yet
-        /// so the same value is applied to every entry.
-        /// </summary>
-        public string BeverageType { get; set; } = string.Empty;
+        // Liste exposée à l’UI
+        public static IEnumerable<string> KnownBeverageTypes => AbsTime.Keys;
 
-        private double GetAbsorptionTime()
+        // Propriété choisie par l’utilisateur
+        public string BeverageType { get; set; } = KnownBeverageTypes.First();
+
+        private double GetAbsorptionTime(string bev)
+            => AbsTime.TryGetValue(bev.ToLower(), out var t) ? t : 0.5;
+
+        private double GetDiffCoeff()
         {
-            return _absorptionTimes.TryGetValue(BeverageType?.ToLowerInvariant() ?? string.Empty, out var t)
-                ? t
-                : DEFAULT_ABSORPTION_TIME;
+            var s = UserPreferences.GetSex()?.ToLower();
+            return s == "femme" ? DIFFUSION_FEMME : DIFFUSION_HOMME;
         }
 
-        private static double GetDiffusionCoefficient()
+        private double SingleDoseBAC(DoseEntry d, DateTime now)
         {
-            var sex = UserPreferences.GetSex()?.ToLowerInvariant();
-            return sex switch
-            {
-                "homme" => 0.7,
-                "femme" => 0.6,
-                _ => 0.68
-            };
-        }
-
-        private double CalculateAbsorbedGrams(double totalGrams, double timeHours)
-        {
-            double tAbs = GetAbsorptionTime();
-            // Two-compartment first order absorption
-            double kFast = Math.Log(2) / (tAbs * 0.5);
-            double kSlow = Math.Log(2) / tAbs;
-            double absorbed = totalGrams * (
-                FAST_FRACTION * (1.0 - Math.Exp(-kFast * timeHours)) +
-                SLOW_FRACTION * (1.0 - Math.Exp(-kSlow * timeHours))
-            );
-            return Math.Min(absorbed, totalGrams);
-        }
-
-        private double CalculateRemainingUnits(DoseEntry dose, DateTime time)
-        {
-            double t = (time - dose.TimeTaken).TotalHours;
+            double t = (now - d.TimeTaken).TotalHours;
             if (t <= 0) return 0;
-            double volume = dose.WeightKg * GetDiffusionCoefficient();
-            double totalGrams = dose.DoseMg * GRAMS_PER_UNIT;
-            double absorbed = CalculateAbsorbedGrams(totalGrams, t);
-            double eliminationRate = DEFAULT_ELIMINATION_BAC_RATE * volume; // g/h
-            double eliminated = eliminationRate * t;
-            double gramsLeft = Math.Max(0, absorbed - eliminated);
-            return gramsLeft / GRAMS_PER_UNIT;
+
+            double D = d.DoseMg * GRAMS_PER_UNIT; // en g
+            double V = d.WeightKg * GetDiffCoeff(); // en L
+            double T_abs = GetAbsorptionTime(BeverageType);
+
+            // montée linéaire
+            if (t < T_abs)
+                return (D / V) * (t / T_abs);
+
+            // élimination zéro-ordre
+            double C_peak = D / V;
+            double C = C_peak - ELIMINATION_RATE * (t - T_abs);
+            return Math.Max(0, C);
         }
 
-        private double CalculateSingleDoseBAC(DoseEntry dose, DateTime time)
-        {
-            double t = (time - dose.TimeTaken).TotalHours;
-            if (t <= 0) return 0;
-            double volume = dose.WeightKg * GetDiffusionCoefficient();
-            double totalGrams = dose.DoseMg * GRAMS_PER_UNIT;
-            double absorbed = CalculateAbsorbedGrams(totalGrams, t);
-            double eliminationRate = DEFAULT_ELIMINATION_BAC_RATE * volume; // g/h
-            double eliminated = eliminationRate * t;
-            double gramsLeft = Math.Max(0, absorbed - eliminated);
-            return volume > 0 ? gramsLeft / volume : 0;
-        }
+        public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime now)
+            => doses.Sum(d => SingleDoseBAC(d, now));
 
-        // --- IMoleculeCalculator implementation ---
-        public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime time)
-        {
-            return doses.Sum(d => CalculateSingleDoseBAC(d, time));
-        }
-
-        public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime time)
-        {
-            return CalculateSingleDoseBAC(dose, time);
-        }
-
-        public List<(DateTime Time, double Concentration)> GenerateGraph(List<DoseEntry> doses, DateTime startTime, DateTime endTime, int points = 200)
+        public List<(DateTime Time, double Concentration)> GenerateGraph(
+            List<DoseEntry> doses, DateTime start, DateTime end, int points = 200)
         {
             var list = new List<(DateTime, double)>();
-            var span = endTime - startTime;
-            double step = span.TotalMinutes / points;
-
+            var span = (end - start).TotalMinutes / points;
             for (int i = 0; i <= points; i++)
             {
-                var t = startTime.AddMinutes(i * step);
-                var bac = CalculateTotalConcentration(doses, t);
-                list.Add((t, bac));
+                var t = start.AddMinutes(i * span);
+                list.Add((t, CalculateTotalConcentration(doses, t)));
             }
-
             return list;
         }
 
@@ -148,8 +100,12 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime time)
         {
-            return doses.Sum(d => CalculateRemainingUnits(d, time));
+            return doses.Sum(d => CalculateSingleDoseConcentration(d, time));
         }
+
+        public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime time)
+    => SingleDoseBAC(dose, time);
+
 
         // --- Additional helpers specific to alcohol ---
         public double CalculateTotalBloodAlcohol(List<DoseEntry> doses, DateTime time) => CalculateTotalConcentration(doses, time);

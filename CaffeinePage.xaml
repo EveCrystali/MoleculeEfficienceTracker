@@ -60,7 +60,7 @@
                                    VerticalOptions="Center"/>
                         </Frame>
                     </Grid>
-                    <Label Text="Exemples: Nespresso = 80 mg, Lungo = 95 mg, Tasse = 95 mg, Coca-Cola = 35 mg, Thé = 47 mg"
+                    <Label Text="Nespresso = 80 mg, Lungo = 95 mg, Tasse = 95 mg, Coca-Cola = 35 mg, Thé = 47 mg"
                            FontSize="10"
                            TextColor="#718096"
                            Margin="70,-20,0,0"/>
