@@ -8,7 +8,7 @@ namespace MoleculeEfficienceTracker.Core.Services
     /// <summary>
     /// Calculator implementing a simple alcohol pharmacokinetic model with
     /// bicompartmental absorption and zero order elimination.
-    /// Dose values are expressed in "units" (1 unit = 10 g of pure alcohol).
+    /// Dose values are expressed in "units" (1 unit = 10 g of pure alcohol).
     /// </summary>
     public class AlcoholCalculator : IMoleculeCalculator
     {
@@ -30,38 +30,29 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double SLOW_FRACTION = 1.0 - FAST_FRACTION;
 
         // Subjective effect thresholds for BAC expressed in g/L
-        // Values correspond to ~4.5 mg (strong effect) with default parameters
-        public const double BAC_STRONG_THRESHOLD = 0.0525;    // ≈ 4.5 mg
-        public const double BAC_MODERATE_THRESHOLD = 0.035;   // ≈ 3 mg
-        public const double BAC_LIGHT_THRESHOLD = 0.0175;     // ≈ 1.5 mg
-        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.00583; // ≈ 0.5 mg
+        // These values reflect increasing behavioral and cognitive impairment
+        // and align with French legal thresholds and clinical observations
+
+        public const double BAC_STRONG_THRESHOLD = 1.2;   // Effets nets : Altérations nettes, ivresse visible, incoordination, parole pâteuse
+        public const double BAC_MODERATE_THRESHOLD = 0.5; // Légèrement euphorique, réflexes ralentis (limite légale FR)
+        public const double BAC_LIGHT_THRESHOLD = 0.2;    // Début de désinhibition, légers effets cognitifs
+        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.1; // Effet quasi-nul, seuil physiologique bas
+
 
         // Absorption time depending on beverage type (hours)
-            ["cocktail"]   = 2.0,
-            ["vin"]        = 1.0,
-            ["biere"]      = 0.5,
-            ["cidre"]      = 0.75,
-            ["spiritueux"] = 1.5
-        /// <summary>
-        /// List of supported beverage types exposed for the UI.
-        /// </summary>
-        public static IEnumerable<string> KnownBeverageTypes => _absorptionTimes.Keys;
-
-        // biodisponibilité de 84 %.
-        public const double BAC_STRONG_THRESHOLD = 0.0525;    // ≈ 4,5 mg
-        public const double BAC_MODERATE_THRESHOLD = 0.035;  // ≈ 3 mg
-        public const double BAC_LIGHT_THRESHOLD = 0.0175;     // ≈ 1,5 mg
-        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.00583; // ≈ 0,5 mg
-
-
-
-        // Absorption time depending on beverage type
         private static readonly Dictionary<string, double> _absorptionTimes = new()
         {
             ["cocktail"] = 2.0,
             ["vin"] = 1.0,
-            ["biere"] = 0.5
+            ["biere"] = 0.5,
+            ["cidre"] = 0.75,
+            ["spiritueux"] = 1.5
         };
+
+        /// <summary>
+        /// List of supported beverage types exposed for the UI.
+        /// </summary>
+        public static IEnumerable<string> KnownBeverageTypes => _absorptionTimes.Keys;
 
         /// <summary>
         /// Default beverage type used for all doses. UI does not expose this yet
@@ -129,10 +120,9 @@ namespace MoleculeEfficienceTracker.Core.Services
         // --- IMoleculeCalculator implementation ---
         public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime time)
         {
-            if (bac >= BAC_STRONG_THRESHOLD) return EffectLevel.Strong;
-            if (bac >= BAC_MODERATE_THRESHOLD) return EffectLevel.Moderate;
-            if (bac >= BAC_LIGHT_THRESHOLD) return EffectLevel.Light;
-            if (bac >= BAC_NEGLIGIBLE_THRESHOLD) return EffectLevel.Light;
+            return doses.Sum(d => CalculateSingleDoseBAC(d, time));
+        }
+
         public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime time)
         {
             return CalculateSingleDoseBAC(dose, time);
@@ -166,9 +156,10 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         public EffectLevel GetEffectLevelFromBAC(double bac)
         {
-            if (bac >= 1.0) return EffectLevel.Strong;
-            if (bac >= 0.5) return EffectLevel.Moderate;
-            if (bac >= 0.2) return EffectLevel.Light;
+            if (bac >= BAC_STRONG_THRESHOLD) return EffectLevel.Strong;
+            if (bac >= BAC_MODERATE_THRESHOLD) return EffectLevel.Moderate;
+            if (bac >= BAC_LIGHT_THRESHOLD) return EffectLevel.Light;
+            if (bac >= BAC_NEGLIGIBLE_THRESHOLD) return EffectLevel.Light;
             return EffectLevel.None;
         }
 
