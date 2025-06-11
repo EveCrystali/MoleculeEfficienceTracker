@@ -32,6 +32,7 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         // Conversion dose → grammes
         private const double GRAMS_PER_UNIT = 10.0;
+        private const double ALCOHOL_DENSITY = 0.8; // g/mL
 
         // Temps d’absorption par boisson (h)
         private static readonly Dictionary<string, double> AbsTime = new()
@@ -51,6 +52,16 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         // Propriété choisie par l’utilisateur
         public string BeverageType { get; set; } = KnownBeverageTypes.First();
+
+        /// <summary>
+        /// Convert volume (mL) and alcohol percentage into standard units (10 g of pure alcohol).
+        /// </summary>
+        public static double VolumePercentToUnits(double volumeMl, double percent)
+        {
+            if (volumeMl <= 0 || percent <= 0) return 0;
+            double grams = volumeMl * (percent / 100.0) * ALCOHOL_DENSITY;
+            return grams / GRAMS_PER_UNIT;
+        }
 
         private double GetAbsorptionTime(string bev)
             => AbsTime.TryGetValue(bev.ToLower(), out var t) ? t : 0.5;

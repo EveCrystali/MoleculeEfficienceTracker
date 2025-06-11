@@ -43,14 +43,14 @@
 
                     <!-- Le Grid corrigé avec 4 lignes et fermeture après le Picker -->
                     <Grid ColumnDefinitions="Auto,*"
-                          RowDefinitions="Auto,Auto,Auto,Auto"
+                          RowDefinitions="Auto,Auto,Auto,Auto,Auto"
                           ColumnSpacing="12"
                           RowSpacing="12">
 
-                        <!-- Dose -->
+                        <!-- Volume -->
                         <Label Grid.Row="0"
                                Grid.Column="0"
-                               Text="Dose (u):"
+                               Text="Volume (ml):"
                                VerticalOptions="Center"/>
                         <Frame Grid.Row="0"
                                Grid.Column="1"
@@ -60,8 +60,29 @@
                                HasShadow="False"
                                VerticalOptions="Center"
                                HeightRequest="32">
-                            <Entry x:Name="DoseEntry"
-                                   Placeholder="3.0"
+                            <Entry x:Name="VolumeEntry"
+                                   Placeholder="330"
+                                   Keyboard="Numeric"
+                                   BackgroundColor="Transparent"
+                                   HeightRequest="32"
+                                   VerticalOptions="Center"/>
+                        </Frame>
+
+                        <!-- Degré -->
+                        <Label Grid.Row="1"
+                               Grid.Column="0"
+                               Text="% alcool:"
+                               VerticalOptions="Center"/>
+                        <Frame Grid.Row="1"
+                               Grid.Column="1"
+                               CornerRadius="8"
+                               Padding="0"
+                               BackgroundColor="#EBF8FF"
+                               HasShadow="False"
+                               VerticalOptions="Center"
+                               HeightRequest="32">
+                            <Entry x:Name="DegreeEntry"
+                                   Placeholder="5"
                                    Keyboard="Numeric"
                                    BackgroundColor="Transparent"
                                    HeightRequest="32"
@@ -69,19 +90,19 @@
                         </Frame>
 
                         <!-- Exemples de doses typiques -->
-                        <Label Grid.Row="1"
+                        <Label Grid.Row="2"
                                Grid.Column="1"
-                               Text="Bière (33cl, 5%) = 1.3 u, Vin (12cl, 12%) = 1.2 u, Spiritueux (4cl, 40%) = 1.3 u, Champagne (10cl, 12%) = 0.9 u, Cidre (25cl, 5%) = 1.0 u, Liqueur (3cl, 30%) = 0.7 u"
+                               Text="Bière 330ml 5%, Vin 120ml 12%, Spiritueux 40ml 40%, Champagne 100ml 12%, Cidre 250cl 5%, Liqueur 30ml 30%"
                                FontSize="10"
                                TextColor="#718096"
                                Margin="0,-10,0,0"/>
 
                         <!-- Date/Heure -->
-                        <Label Grid.Row="2"
+                        <Label Grid.Row="3"
                                Grid.Column="0"
                                Text="Date/Heure:"
                                VerticalOptions="Center"/>
-                        <HorizontalStackLayout Grid.Row="2"
+                        <HorizontalStackLayout Grid.Row="3"
                                                Grid.Column="1"
                                                Spacing="8">
                             <DatePicker x:Name="DatePicker"/>
@@ -90,12 +111,12 @@
                         </HorizontalStackLayout>
 
                         <!-- Type de boisson -->
-                        <Label Grid.Row="3"
+                        <Label Grid.Row="4"
                                Grid.Column="0"
                                Text="Type:"
                                VerticalOptions="Center"/>
                         <Picker x:Name="BeveragePicker"
-                                Grid.Row="3"
+                                Grid.Row="4"
                                 Grid.Column="1"
                                 ItemsSource="{Binding BeverageOptions}"
                                 SelectedItem="{Binding BeverageType, Mode=TwoWay}"/>
