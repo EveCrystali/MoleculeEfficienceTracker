@@ -19,7 +19,12 @@ namespace MoleculeEfficienceTracker
     public abstract partial class BaseMoleculePage<TCalculator> : ContentPage
     where TCalculator : IMoleculeCalculator, new()
     {
-        protected readonly TCalculator Calculator;
+        /// <summary>
+        /// Calculator instance used for all computations. Exposed as a public
+        /// property so XAML bindings such as "Calculator.BeverageType" work
+        /// correctly.
+        /// </summary>
+        public TCalculator Calculator { get; } = new TCalculator();
         protected readonly DataPersistenceService PersistenceService;
         protected readonly IAlertService AlertService;
         protected readonly string MoleculeKey;
@@ -55,7 +60,6 @@ namespace MoleculeEfficienceTracker
         protected BaseMoleculePage(string moleculeKey)
         {
             MoleculeKey = moleculeKey;
-            Calculator = new TCalculator();
             PersistenceService = new DataPersistenceService(MoleculeKey);
             AlertService = new AlertService(); // Ou injectez si vous préférez
 
