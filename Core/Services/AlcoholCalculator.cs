@@ -40,7 +40,9 @@ namespace MoleculeEfficienceTracker.Core.Services
             ["cidre"] = 0.4,
             ["vin"] = 0.5,
             ["spiritueux"] = 0.25,
-            ["cocktail"] = 0.5
+            ["cocktail"] = 0.5,
+            ["champagne"] = 0.45, 
+            ["liqueur"] = 0.25
         };
 
 
