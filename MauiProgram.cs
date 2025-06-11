@@ -21,6 +21,7 @@ namespace MoleculeEfficienceTracker
             builder.Services.AddSingleton<AlcoholCalculator>();
             builder.Services.AddSingleton<ParacetamolCalculator>();
             builder.Services.AddSingleton<IbuprofeneCalculator>();
+            builder.Services.AddSingleton<CombinedPainReliefCalculator>();
 
             
 #if DEBUG
