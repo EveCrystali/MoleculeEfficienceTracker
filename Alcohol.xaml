@@ -41,7 +41,7 @@
                            FontAttributes="Bold"
                            TextColor="#3182CE"/>
                     <Grid ColumnDefinitions="Auto,*"
-                          RowDefinitions="Auto,Auto"
+                          RowDefinitions="Auto,Auto,Auto"
                           ColumnSpacing="12"
                           RowSpacing="12">
                         <Label Grid.Row="0"
@@ -74,6 +74,15 @@
                             <TimePicker x:Name="TimePicker"
                                         Format="HH:mm"/>
                         </HorizontalStackLayout>
+                        <Label Grid.Row="2"
+                               Grid.Column="0"
+                               Text="Type:"
+                               VerticalOptions="Center"/>
+                        <Picker x:Name="BeveragePicker"
+                                Grid.Row="2"
+                                Grid.Column="1"
+                                ItemsSource="{Binding BeverageOptions}"
+                                SelectedItem="{Binding Calculator.BeverageType}"/>
                     </Grid>
                     <Button x:Name="AddDoseBtn"
                             Text="Ajouter la dose"
