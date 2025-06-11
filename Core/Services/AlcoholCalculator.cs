@@ -93,28 +93,54 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         private double CalculateRemainingUnits(DoseEntry dose, DateTime time)
         {
-            double t = (time - dose.TimeTaken).TotalHours;
-            if (t <= 0) return 0;
-            double volume = dose.WeightKg * GetDiffusionCoefficient();
-            double totalGrams = dose.DoseMg * GRAMS_PER_UNIT;
-            double absorbed = CalculateAbsorbedGrams(totalGrams, t);
-            double eliminationRate = DEFAULT_ELIMINATION_BAC_RATE * volume; // g/h
-            double eliminated = eliminationRate * t;
-            double gramsLeft = Math.Max(0, absorbed - eliminated);
+            double gramsLeft = CalculateRemainingGrams(dose, time);
             return gramsLeft / GRAMS_PER_UNIT;
         }
 
         private double CalculateSingleDoseBAC(DoseEntry dose, DateTime time)
         {
-            double t = (time - dose.TimeTaken).TotalHours;
-            if (t <= 0) return 0;
+            double gramsLeft = CalculateRemainingGrams(dose, time);
             double volume = dose.WeightKg * GetDiffusionCoefficient();
-            double totalGrams = dose.DoseMg * GRAMS_PER_UNIT;
-            double absorbed = CalculateAbsorbedGrams(totalGrams, t);
-            double eliminationRate = DEFAULT_ELIMINATION_BAC_RATE * volume; // g/h
-            double eliminated = eliminationRate * t;
-            double gramsLeft = Math.Max(0, absorbed - eliminated);
             return volume > 0 ? gramsLeft / volume : 0;
+        }
+
+        /// <summary>
+        /// Numerically integrates absorbed grams and linear elimination to avoid
+        /// negative concentrations when absorption is slow.
+        /// </summary>
+        private double CalculateRemainingGrams(DoseEntry dose, DateTime time)
+        {
+            double totalHours = (time - dose.TimeTaken).TotalHours;
+            if (totalHours <= 0) return 0;
+
+            double tAbs = GetAbsorptionTime();
+            double kFast = Math.Log(2) / (tAbs * 0.5);
+            double kSlow = Math.Log(2) / tAbs;
+            double totalGrams = dose.DoseMg * GRAMS_PER_UNIT;
+            double volume = dose.WeightKg * GetDiffusionCoefficient();
+            double eliminationRate = DEFAULT_ELIMINATION_BAC_RATE * volume; // g/h
+
+            double dt = 1.0 / 60.0; // 1 minute steps
+            int steps = (int)Math.Ceiling(totalHours / dt);
+            double grams = 0.0;
+            double prevAbs = 0.0;
+
+            for (int i = 1; i <= steps; i++)
+            {
+                double t = Math.Min(i * dt, totalHours);
+                double absorbed = totalGrams * (
+                    FAST_FRACTION * (1.0 - Math.Exp(-kFast * t)) +
+                    SLOW_FRACTION * (1.0 - Math.Exp(-kSlow * t)));
+                double deltaAbs = absorbed - prevAbs;
+                if (deltaAbs < 0) deltaAbs = 0;
+                grams += deltaAbs;
+                prevAbs = absorbed;
+
+                grams -= eliminationRate * dt;
+                if (grams < 0) grams = 0;
+            }
+
+            return grams;
         }
 
         // --- IMoleculeCalculator implementation ---
