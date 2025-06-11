@@ -44,7 +44,7 @@ namespace MoleculeEfficienceTracker
         public AlcoholPage() : base("alcohol")
         {
             InitializeComponent();
-            base.InitializePageUI();
+            InitializePageUI();
             if (BeverageOptions.Count > 0 && string.IsNullOrEmpty(Calculator.BeverageType))
             {
                 Calculator.BeverageType = BeverageOptions[0];
