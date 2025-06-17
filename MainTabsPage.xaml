@@ -2,5 +2,20 @@
 <TabbedPage
     x:Class="MoleculeEfficienceTracker.MainTabsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MoleculeEfficienceTracker">
+  
+    <!-- Onglet Caféine -->
+    <local:CaffeinePage Title="🍵"  />
+    
+    <!-- Onglet Bromazépam -->
+    <local:BromazepamPage Title="🧠"  />
+    <!-- Onglet Anti-douleur -->
+    <local:PainReliefPage Title="🩹" />
+
+    <!-- Onglet Alcool -->
+    <local:AlcoholPage Title="🍾" />
+    <!-- Onglet Paramètres -->
+
+    <local:SettingsPage Title="⚙️" IconImageSource="⚙️" />
 </TabbedPage>

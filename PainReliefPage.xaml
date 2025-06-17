@@ -56,7 +56,7 @@
                     <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" Margin="0,8,0,0" HeightRequest="320">
                         <chart:SfCartesianChart x:Name="ConcentrationChart">
                             <chart:SfCartesianChart.TrackballBehavior>
-                                <chart:ChartTrackballBehavior ShowLabel="True" ShowMarkers="True" ShowLine="True" DisplayMode="FloatAllPoints" />
+                                <chart:ChartTrackballBehavior ShowLabel="True" ShowMarkers="False" ShowLine="True" DisplayMode="FloatAllPoints" />
                             </chart:SfCartesianChart.TrackballBehavior>
                             <chart:SfCartesianChart.ZoomPanBehavior>
                                 <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True" />
