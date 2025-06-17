@@ -91,6 +91,7 @@ namespace MoleculeEfficienceTracker
             base.OnAppearing();
             await LoadDataAsyncInternal();
             UpdateEmptyState();
+            _ = UpdateAllDisplays(); // heavy work async to avoid blocking UI
         }
 
         protected virtual async Task OnBeforeLoadDataAsync()
@@ -110,8 +111,6 @@ namespace MoleculeEfficienceTracker
             {
                 Doses.Add(dose);
             }
-
-            await UpdateAllDisplays();
         }
 
         protected virtual async Task UpdateAllDisplays()
@@ -333,9 +332,20 @@ namespace MoleculeEfficienceTracker
             };
             chart.Annotations.Add(nowLine);
 
+            var xAxis = chart.XAxes?.FirstOrDefault() as DateTimeAxis;
+            DateTime? min = xAxis?.Minimum;
+            DateTime? max = xAxis?.Maximum;
+
             List<DoseEntry> currentDoses = Doses.ToList();
+            int displayed = 0;
             foreach (DoseEntry dose in Doses)
             {
+                if (min.HasValue && max.HasValue && (dose.TimeTaken < min.Value || dose.TimeTaken > max.Value))
+                    continue;
+
+                if (displayed++ > 50)
+                    break;
+
                 double concentrationAtDoseTime = Calculator.CalculateTotalConcentration(currentDoses, dose.TimeTaken);
                 double displayValue = Calculator.GetDoseDisplayValueInConcentrationUnit(dose);
                 string unit = UseConcentrationUnitForDoseAnnotation ? Calculator.ConcentrationUnit : Calculator.DoseUnit;
