@@ -136,7 +136,7 @@ namespace MoleculeEfficienceTracker
                     YBindingPath = "Concentration",
                     StrokeWidth = 1.5,
                     Label = ToDisplayName(m),
-                    Stroke = _colors[m]
+                    Fill = _colors[m]
                 });
             }
         }
@@ -173,7 +173,7 @@ namespace MoleculeEfficienceTracker
                     XBindingPath = "Time",
                     YBindingPath = "Concentration",
                     StrokeWidth = 1,
-                    Stroke = _colors[m],
+                    Fill = _colors[m],
                     Label = ToDisplayName(m) + " trend",
                     IsVisibleOnLegend = false
                 });
