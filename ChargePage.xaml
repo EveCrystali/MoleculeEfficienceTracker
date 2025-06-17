@@ -32,7 +32,11 @@
             <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="300">
                 <chart:SfCartesianChart x:Name="LoadChart">
                     <chart:SfCartesianChart.XAxes>
-                        <chart:DateTimeAxis LabelFormat="dd/MM HH" />
+                        <chart:DateTimeAxis>
+                            <chart:DateTimeAxis.LabelStyle>
+                                <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH" />
+                            </chart:DateTimeAxis.LabelStyle>
+                        </chart:DateTimeAxis>
                     </chart:SfCartesianChart.XAxes>
                     <chart:SfCartesianChart.YAxes>
                         <chart:NumericalAxis Minimum="0" />
