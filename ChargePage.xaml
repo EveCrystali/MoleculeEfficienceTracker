@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    x:Class="MoleculeEfficienceTracker.ChargePage"
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+    Title="Charge">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Color x:Key="MainBgColor">#F0F4F8</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Background>
+        <SolidColorBrush Color="{StaticResource MainBgColor}" />
+    </ContentPage.Background>
+    <ScrollView>
+        <VerticalStackLayout Spacing="16" Padding="10">
+            <chart:SfCartesianChart x:Name="LoadChart" HeightRequest="300" />
+            <CollectionView x:Name="AverageCollection" />
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
