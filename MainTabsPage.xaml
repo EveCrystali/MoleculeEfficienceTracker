@@ -13,6 +13,9 @@
     <!-- Onglet Anti-douleur -->
     <local:PainReliefPage Title="🩹" />
 
+<!-- Onglet Charge -->
+    <local:ChargePage Title="⚡" />
+
     <!-- Onglet Alcool -->
     <local:AlcoholPage Title="🍾" />
     <!-- Onglet Paramètres -->
