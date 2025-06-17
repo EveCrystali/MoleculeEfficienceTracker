@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+    xmlns:local="clr-namespace:MoleculeEfficienceTracker"
+    xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+    x:Class="MoleculeEfficienceTracker.ChargePage"
+    Title="Charge">
+    <ContentPage.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Color x:Key="MainBgColor">#F0F4F8</Color>
+        </ResourceDictionary>
+    </ContentPage.Resources>
+    <ContentPage.Background>
+        <SolidColorBrush Color="{StaticResource MainBgColor}" />
+    </ContentPage.Background>
+
+    <ScrollView>
+        <VerticalStackLayout Padding="10" Spacing="12">
+            <Label Text="Charge sur 24h" FontAttributes="Bold" />
+            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
+                <chart:SfCartesianChart x:Name="Chart24h">
+                    <chart:SfCartesianChart.XAxes>
+                        <chart:DateTimeAxis>
+                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="HH:mm"/></chart:DateTimeAxis.LabelStyle>
+                        </chart:DateTimeAxis>
+                    </chart:SfCartesianChart.XAxes>
+                    <chart:SfCartesianChart.YAxes>
+                        <chart:NumericalAxis Minimum="0" />
+                    </chart:SfCartesianChart.YAxes>
+                </chart:SfCartesianChart>
+            </Frame>
+
+             <Label Text="Moyenne journalière (24h)" FontAttributes="Bold" />
+            <CollectionView x:Name="AverageCollection24h" HeightRequest="180">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,Auto" Padding="5">
+                            <Label Grid.Column="0" Text="{Binding MoleculeName}" />
+                            <Label Grid.Column="1" Text="{Binding Average, StringFormat='{0:F1} mg'}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="Charge sur 7 jours" FontAttributes="Bold" />
+            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
+                <chart:SfCartesianChart x:Name="Chart7d">
+                    <chart:SfCartesianChart.XAxes>
+                        <chart:DateTimeAxis>
+                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="dd/MM"/></chart:DateTimeAxis.LabelStyle>
+                        </chart:DateTimeAxis>
+                    </chart:SfCartesianChart.XAxes>
+                    <chart:SfCartesianChart.YAxes>
+                        <chart:NumericalAxis Minimum="0" />
+                    </chart:SfCartesianChart.YAxes>
+                </chart:SfCartesianChart>
+            </Frame>
+
+            <Label Text="Moyenne journalière (7j)" FontAttributes="Bold" />
+            <CollectionView x:Name="AverageCollection7j" HeightRequest="180">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,Auto" Padding="5">
+                            <Label Grid.Column="0" Text="{Binding MoleculeName}" />
+                            <Label Grid.Column="1" Text="{Binding Average, StringFormat='{0:F1} mg'}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
