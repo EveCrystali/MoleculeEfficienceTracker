@@ -61,11 +61,10 @@
                             <chart:SfCartesianChart.ZoomPanBehavior>
                                 <chart:ChartZoomPanBehavior ZoomMode="X"
                                                               EnablePanning="True"
-                                                              EnableDeferredZooming="True"
-                                                              EnableDeferredPanning="True" />
+                                                              />
                             </chart:SfCartesianChart.ZoomPanBehavior>
                             <chart:SfCartesianChart.XAxes>
-                                <chart:DateTimeAxis ShowMajorGridLines="True" ShowMinorGridLines="False" EdgeLabelsDrawingMode="Fit" LabelCreated="ChartXAxis_LabelCreated">
+                                <chart:DateTimeAxis ShowMajorGridLines="True" ShowMinorGridLines="False" EdgeLabelsDrawingMode="Fit" EnableAutoIntervalOnZooming="False" LabelCreated="ChartXAxis_LabelCreated">
                                     <chart:DateTimeAxis.LabelStyle>
                                         <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH:mm" FontSize="10" TextColor="#31465D" />
                                     </chart:DateTimeAxis.LabelStyle>
@@ -84,9 +83,9 @@
                                     </chart:NumericalAxis.MajorGridLineStyle>
                                 </chart:NumericalAxis>
                             </chart:SfCartesianChart.YAxes>
-                            <chart:SplineSeries ItemsSource="{Binding ParacetamolChartData}" XBindingPath="Time" YBindingPath="Concentration"  StrokeWidth="1.5" />
-                            <chart:SplineSeries ItemsSource="{Binding IbuprofenChartData}" XBindingPath="Time" YBindingPath="Concentration"  StrokeWidth="1.5" />
-                            <chart:SplineSeries ItemsSource="{Binding TotalChartData}" XBindingPath="Time" YBindingPath="Concentration"  StrokeWidth="1.5" />
+                            <chart:SplineSeries ItemsSource="{Binding ParacetamolChartData}" XBindingPath="Time" YBindingPath="Concentration" StrokeWidth="1.5" EnableAnimation="False" />
+                            <chart:SplineSeries ItemsSource="{Binding IbuprofenChartData}" XBindingPath="Time" YBindingPath="Concentration" StrokeWidth="1.5" EnableAnimation="False" />
+                            <chart:SplineSeries ItemsSource="{Binding TotalChartData}" XBindingPath="Time" YBindingPath="Concentration" StrokeWidth="1.5" EnableAnimation="False" />
                         </chart:SfCartesianChart>
                     </Frame>
                 </VerticalStackLayout>
