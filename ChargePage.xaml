@@ -71,6 +71,51 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
+            <Label Text="Totaux quotidiens (7j)" FontAttributes="Bold" />
+            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
+                <chart:SfCartesianChart x:Name="DailyTotalsChart7d">
+                    <chart:SfCartesianChart.XAxes>
+                        <chart:DateTimeAxis>
+                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="dd/MM"/></chart:DateTimeAxis.LabelStyle>
+                        </chart:DateTimeAxis>
+                    </chart:SfCartesianChart.XAxes>
+                    <chart:SfCartesianChart.YAxes>
+                        <chart:NumericalAxis Minimum="0" />
+                    </chart:SfCartesianChart.YAxes>
+                </chart:SfCartesianChart>
+            </Frame>
+
+            <Label Text="Totaux quotidiens (30j)" FontAttributes="Bold" />
+            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
+                <chart:SfCartesianChart x:Name="DailyTotalsChart30d">
+                    <chart:SfCartesianChart.XAxes>
+                        <chart:DateTimeAxis>
+                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="dd/MM"/></chart:DateTimeAxis.LabelStyle>
+                        </chart:DateTimeAxis>
+                    </chart:SfCartesianChart.XAxes>
+                    <chart:SfCartesianChart.YAxes>
+                        <chart:NumericalAxis Minimum="0" />
+                    </chart:SfCartesianChart.YAxes>
+                </chart:SfCartesianChart>
+            </Frame>
+
+            <Label Text="Statistiques (30j)" FontAttributes="Bold" />
+            <CollectionView x:Name="StatsCollection30d" HeightRequest="180">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto" Padding="5">
+                            <Label Grid.Column="0" Text="{Binding MoleculeName}" />
+                            <Label Grid.Column="1" Text="{Binding AvgDose, StringFormat='{0:F1}'}" />
+                            <Label Grid.Column="2" Text="{Binding StdDose, StringFormat='{0:F1}'}" />
+                            <Label Grid.Column="3" Text="{Binding MinDose, StringFormat='{0:F1}'}" />
+                            <Label Grid.Column="4" Text="{Binding MaxDose, StringFormat='{0:F1}'}" />
+                            <Label Grid.Column="5" Text="{Binding AvgCount, StringFormat='{0:F1}'}" />
+                            <Label Grid.Column="6" Text="{Binding AvgInterval, StringFormat='{0:F1} h'}" />
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
