@@ -173,7 +173,7 @@
                                 YAxisName="ConcentrationAxis"
                                 Fill="Blue"
                                 StrokeWidth="1.5"
-                                EnableTooltip="False"
+                                EnableTooltip="True"
                                 ShowMarkers="False">
                                 <chart:SplineSeries.MarkerSettings>
                                     <chart:ChartMarkerSettings
