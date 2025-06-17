@@ -15,16 +15,24 @@ namespace MoleculeEfficienceTracker
     {
         private readonly IResidualLoadService _service = new ResidualLoadService();
 
-        public ObservableRangeCollection<ChartDataPoint> CaffeineData { get; } = new();
-        public ObservableRangeCollection<ChartDataPoint> BromazepamData { get; } = new();
-        public ObservableCollection<AverageEntry> Averages { get; } = new();
+        private readonly string[] _molecules = new[] { "caffeine", "bromazepam", "paracetamol", "ibuprofene", "alcool" };
+
+        private readonly Dictionary<string, ObservableRangeCollection<ChartDataPoint>> _data24h = new();
+        private readonly Dictionary<string, ObservableRangeCollection<ChartDataPoint>> _data7d = new();
+
+        public ObservableCollection<AverageEntry> Averages7j { get; } = new();
+        public ObservableCollection<AverageEntry> Averages24h { get; } = new();
 
         public ChargePage()
         {
             InitializeComponent();
             BindingContext = this;
-            PeriodPicker.SelectedIndex = 1; // default 7j
-            PeriodPicker.SelectedIndexChanged += async (s, e) => await RefreshAsync();
+
+            foreach (var m in _molecules)
+            {
+                _data24h[m] = new ObservableRangeCollection<ChartDataPoint>();
+                _data7d[m] = new ObservableRangeCollection<ChartDataPoint>();
+            }
         }
 
         protected override async void OnAppearing()
@@ -35,28 +43,67 @@ namespace MoleculeEfficienceTracker
 
         private async Task RefreshAsync()
         {
-            var days = PeriodPicker.SelectedIndex == 0 ? 1 : 7;
-            var end = DateTime.Now;
-            var start = end.AddDays(-days);
-            TimeSpan interval = days == 1 ? TimeSpan.FromHours(1) : TimeSpan.FromHours(6);
+            var now = DateTime.Now;
 
-            var caffeine = await _service.GetSnapshots("caffeine", start, end, interval);
-            var broma = await _service.GetSnapshots("bromazepam", start, end, interval);
+            await LoadPeriodAsync(now.AddDays(-1), now, TimeSpan.FromHours(1), _data24h);
+            await LoadPeriodAsync(now.AddDays(-7), now, TimeSpan.FromHours(6), _data7d);
 
-            CaffeineData.ReplaceRange(caffeine.Select(s => new ChartDataPoint(s.Timestamp, s.ResidualAmount)));
-            BromazepamData.ReplaceRange(broma.Select(s => new ChartDataPoint(s.Timestamp, s.ResidualAmount)));
+            UpdateChart(Chart24h, _data24h);
+            UpdateChart(Chart7d, _data7d);
 
-            LoadChart.Series.Clear();
-            LoadChart.Series.Add(new SplineSeries { ItemsSource = CaffeineData, XBindingPath = "Time", YBindingPath = "Concentration", StrokeWidth = 1.5, Label="Caféine" });
-            LoadChart.Series.Add(new SplineSeries { ItemsSource = BromazepamData, XBindingPath = "Time", YBindingPath = "Concentration", StrokeWidth = 1.5, Label="Bromazépam" });
+            Averages24h.Clear();
+            Averages7j.Clear();
 
-            Averages.Clear();
-            double avgCafe = await _service.GetAverageLoadPerDay("caffeine", days);
-            double avgBroma = await _service.GetAverageLoadPerDay("bromazepam", days);
-            Averages.Add(new AverageEntry { MoleculeName = "Caféine", Average = avgCafe });
-            Averages.Add(new AverageEntry { MoleculeName = "Bromazépam", Average = avgBroma });
-            AverageCollection.ItemsSource = Averages;
+            foreach (var m in _molecules)
+            {
+                double avg = await _service.GetAverageLoadPerDay(m, 1);
+                Averages24h.Add(new AverageEntry { MoleculeName = ToDisplayName(m), Average = avg });
+            }
+            foreach (var m in _molecules)
+            {
+                double avg = await _service.GetAverageLoadPerDay(m, 7);
+                Averages7j.Add(new AverageEntry { MoleculeName = ToDisplayName(m), Average = avg });
+            }
+
+            AverageCollection24h.ItemsSource = Averages24h;
+            AverageCollection7j.ItemsSource = Averages7j;
         }
+
+        private async Task LoadPeriodAsync(DateTime from, DateTime to, TimeSpan interval,
+            Dictionary<string, ObservableRangeCollection<ChartDataPoint>> target)
+        {
+            foreach (var m in _molecules)
+            {
+                var data = await _service.GetSnapshots(m, from, to, interval);
+                target[m].ReplaceRange(data.Select(s => new ChartDataPoint(s.Timestamp, s.ResidualAmount)));
+            }
+        }
+
+        private void UpdateChart(SfCartesianChart chart, Dictionary<string, ObservableRangeCollection<ChartDataPoint>> source)
+        {
+            chart.Series.Clear();
+            foreach (var m in _molecules)
+            {
+                chart.Series.Add(new SplineSeries
+                {
+                    ItemsSource = source[m],
+                    XBindingPath = "Time",
+                    YBindingPath = "Concentration",
+                    StrokeWidth = 1.5,
+                    Label = ToDisplayName(m)
+                });
+            }
+        }
+
+        private static string ToDisplayName(string key) => key switch
+        {
+            "caffeine" => "Caféine",
+            "bromazepam" => "Bromazépam",
+            "paracetamol" => "Paracétamol",
+            "ibuprofene" or "ibuprofen" => "Ibuprofène",
+            "alcool" => "Alcool",
+            _ => key
+        };
 
         public class AverageEntry
         {

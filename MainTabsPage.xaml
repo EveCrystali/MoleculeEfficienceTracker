@@ -4,6 +4,9 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MoleculeEfficienceTracker">
+
+    <!-- Onglet Charge -->
+    <local:ChargePage Title="⚡" />
   
     <!-- Onglet Caféine -->
     <local:CaffeinePage Title="🍵"  />
@@ -13,8 +16,7 @@
     <!-- Onglet Anti-douleur -->
     <local:PainReliefPage Title="🩹" />
 
-<!-- Onglet Charge -->
-    <local:ChargePage Title="⚡" />
+    
 
     <!-- Onglet Alcool -->
     <local:AlcoholPage Title="🍾" />
