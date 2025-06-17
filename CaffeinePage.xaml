@@ -125,7 +125,7 @@
 
                             <chart:SfCartesianChart.TrackballBehavior>
                                 <chart:ChartTrackballBehavior ShowLabel="True"
-                                                              ShowMarkers="True"
+                                                              ShowMarkers="False"
                                                               ShowLine="True"
                                                               DisplayMode="FloatAllPoints"/>
                             </chart:SfCartesianChart.TrackballBehavior>
@@ -174,7 +174,7 @@
                                 Fill="Blue"
                                 StrokeWidth="1.5"
                                 EnableTooltip="True"
-                                ShowMarkers="True">
+                                ShowMarkers="False">
                                 <chart:SplineSeries.MarkerSettings>
                                     <chart:ChartMarkerSettings
                                         Type="Circle"
