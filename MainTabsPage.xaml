@@ -15,6 +15,9 @@
 
     <!-- Onglet Alcool -->
     <local:AlcoholPage Title="🍾" />
+
+    <!-- Onglet Charge -->
+    <local:ChargePage Title="⚖️" />
     <!-- Onglet Paramètres -->
 
     <local:SettingsPage Title="⚙️" IconImageSource="⚙️" />
