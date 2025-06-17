@@ -17,6 +17,15 @@ namespace MoleculeEfficienceTracker
 
         private readonly string[] _molecules = new[] { "caffeine", "bromazepam", "paracetamol", "ibuprofene", "alcool" };
 
+        private readonly Dictionary<string, Color> _colors = new()
+        {
+            ["caffeine"] = Color.FromArgb("#ff7f0e"),
+            ["bromazepam"] = Color.FromArgb("#1f77b4"),
+            ["paracetamol"] = Color.FromArgb("#2ca02c"),
+            ["ibuprofene"] = Color.FromArgb("#9467bd"),
+            ["alcool"] = Color.FromArgb("#d62728")
+        };
+
         private readonly Dictionary<string, ObservableRangeCollection<ChartDataPoint>> _data24h = new();
         private readonly Dictionary<string, ObservableRangeCollection<ChartDataPoint>> _data7d = new();
         private readonly Dictionary<string, ObservableRangeCollection<ChartDataPoint>> _dailyTotals7d = new();
@@ -126,7 +135,8 @@ namespace MoleculeEfficienceTracker
                     XBindingPath = "Time",
                     YBindingPath = "Concentration",
                     StrokeWidth = 1.5,
-                    Label = ToDisplayName(m)
+                    Label = ToDisplayName(m),
+                    Stroke = _colors[m]
                 });
             }
         }
@@ -152,7 +162,8 @@ namespace MoleculeEfficienceTracker
                     XBindingPath = "Time",
                     YBindingPath = "Concentration",
                     Label = ToDisplayName(m),
-                    StrokeWidth = 1
+                    StrokeWidth = 1,
+                    Fill = _colors[m]
                 });
 
                 var avgPoints = CalculateMovingAverage(source[m].Select(p => p.Concentration).ToList(), 3);
@@ -162,6 +173,7 @@ namespace MoleculeEfficienceTracker
                     XBindingPath = "Time",
                     YBindingPath = "Concentration",
                     StrokeWidth = 1,
+                    Stroke = _colors[m],
                     Label = ToDisplayName(m) + " trend",
                     IsVisibleOnLegend = false
                 });
