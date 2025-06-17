@@ -132,7 +132,9 @@
 
                             <chart:SfCartesianChart.ZoomPanBehavior>
                                 <chart:ChartZoomPanBehavior ZoomMode="X"
-                                                            EnablePanning="True"/>
+                                                            EnablePanning="True"
+                                                            EnableDeferredZooming="True"
+                                                            EnableDeferredPanning="True"/>
                             </chart:SfCartesianChart.ZoomPanBehavior>
 
                             <chart:SfCartesianChart.XAxes>

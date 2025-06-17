@@ -59,7 +59,10 @@
                                 <chart:ChartTrackballBehavior ShowLabel="True" ShowMarkers="False" ShowLine="True" DisplayMode="FloatAllPoints" />
                             </chart:SfCartesianChart.TrackballBehavior>
                             <chart:SfCartesianChart.ZoomPanBehavior>
-                                <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True" />
+                                <chart:ChartZoomPanBehavior ZoomMode="X"
+                                                              EnablePanning="True"
+                                                              EnableDeferredZooming="True"
+                                                              EnableDeferredPanning="True" />
                             </chart:SfCartesianChart.ZoomPanBehavior>
                             <chart:SfCartesianChart.XAxes>
                                 <chart:DateTimeAxis ShowMajorGridLines="True" ShowMinorGridLines="False" EdgeLabelsDrawingMode="Fit" LabelCreated="ChartXAxis_LabelCreated">
