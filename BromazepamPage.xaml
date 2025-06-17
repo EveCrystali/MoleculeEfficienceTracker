@@ -132,6 +132,7 @@
                                 <chart:DateTimeAxis ShowMajorGridLines="True"
                                                     ShowMinorGridLines="False"
                                                     EdgeLabelsDrawingMode="Fit"
+                                                    EnableAutoIntervalOnZooming="False"
                                                     LabelCreated="ChartXAxis_LabelCreated">
                                     <chart:DateTimeAxis.LabelStyle>
                                         <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH:mm"
@@ -172,6 +173,7 @@
                                 YBindingPath="Concentration"
                                 YAxisName="ConcentrationAxis"
                                 Fill="Blue"
+                                EnableAnimation="False"
                                 StrokeWidth="1.5"
                                 EnableTooltip="True"
                                 ShowMarkers="False">
@@ -211,6 +213,7 @@
                                 
                                 StrokeWidth="1.5"
                                 EnableTooltip="True"
+                                EnableAnimation="False"
                                 ShowMarkers="False">
                                 <chart:SplineSeries.TooltipTemplate>
                                     <DataTemplate>

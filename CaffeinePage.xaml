@@ -139,6 +139,7 @@
                                 <chart:DateTimeAxis ShowMajorGridLines="True"
                                                     ShowMinorGridLines="False"
                                                     EdgeLabelsDrawingMode="Fit"
+                                                    EnableAutoIntervalOnZooming="False"
                                                     LabelCreated="ChartXAxis_LabelCreated">
                                     <chart:DateTimeAxis.LabelStyle>
                                         <chart:ChartAxisLabelStyle LabelFormat="dd/MM HH:mm"
@@ -172,6 +173,7 @@
                                 XBindingPath="Time"
                                 YBindingPath="Concentration"
                                 Fill="Blue"
+                                EnableAnimation="False"
                                 StrokeWidth="1.5"
                                 EnableTooltip="True"
                                 ShowMarkers="False">
