@@ -19,92 +19,148 @@
     </ContentPage.Background>
 
     <ScrollView>
-        <VerticalStackLayout Padding="10"
-                             Spacing="12">
+        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
             <Label Text="Moyennes journalières"
-                   FontAttributes="Bold"/>
+                   Style="{StaticResource CompactHeaderStyle}"/>
 
             <Label Text="24h"
-                   FontAttributes="Bold"/>
+                   Style="{StaticResource CompactHeaderStyle}"/>
             <CollectionView x:Name="StatsCollection1d"
+                            SelectionMode="Single"
                             HeightRequest="220">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto"
-                              ColumnSpacing="8"
-                              Padding="6">
-                            <Label Grid.Column="0"
-                                   Text="{Binding MoleculeName}"
-                                   FontAttributes="Bold"/>
-                            <Label Grid.Column="1"
-                                   Text="{Binding AvgDose, StringFormat='{}{0:F1}mg'}"/>
-                            <Label Grid.Column="2"
-                                   Text="{Binding AvgCount, StringFormat='{}{0:F1}prises'}"/>
-                            <Label Grid.Column="3"
-                                   Text="{Binding VariationText}"
-                                   FontAttributes="Bold"/>
-                            <!-- Optionnel : -->
-                            <!-- <Label Grid.Column="4"
-                                   Text="{Binding PeakInfoText}"
-                                   FontSize="10"/> -->
-                        </Grid>
+                    <DataTemplate x:DataType="local:ChargePage.StatsEntry">
+                        <Frame Style="{StaticResource CardFrameStyle}"
+                               Margin="0,4"
+                               Padding="10">
+                            <Grid ColumnDefinitions="Auto,2*,Auto,Auto,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Label Grid.RowSpan="2"
+                                       Text="{Binding Emoji}"
+                                       FontSize="20"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="{Binding MoleculeName}"
+                                       FontAttributes="Bold"
+                                       FontSize="16"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="2"
+                                       Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="3"
+                                       Text="{Binding AvgCount, StringFormat='{0:F1} prises'}"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="4"
+                                       Text="{Binding VariationText}"
+                                       TextColor="{Binding VariationColor}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <ProgressBar Grid.Row="1"
+                                             Grid.Column="1"
+                                             Grid.ColumnSpan="4"
+                                             Progress="{Binding VariationProgress}"
+                                             ProgressColor="{Binding VariationColor}"
+                                             HeightRequest="4"
+                                             Margin="0,4,0,0"/>
+                            </Grid>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
             <Label Text="7 jours"
-                   FontAttributes="Bold"/>
+                   Style="{StaticResource CompactHeaderStyle}"/>
             <CollectionView x:Name="StatsCollection7d"
+                            SelectionMode="Single"
                             HeightRequest="220">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto"
-                              ColumnSpacing="8"
-                              Padding="6">
-                            <Label Grid.Column="0"
-                                   Text="{Binding MoleculeName}"
-                                   FontAttributes="Bold"/>
-                            <Label Grid.Column="1"
-                                   Text="{Binding AvgDose, StringFormat='{}{0:F1}mg'}"/>
-                            <Label Grid.Column="2"
-                                   Text="{Binding AvgCount, StringFormat='{}{0:F1}prises'}"/>
-                            <Label Grid.Column="3"
-                                   Text="{Binding VariationText}"
-                                   FontAttributes="Bold"/>
-                            <!-- Optionnel : -->
-                            <!-- <Label Grid.Column="4"
-                                   Text="{Binding PeakInfoText}"
-                                   FontSize="10"/> -->
-                        </Grid>
+                    <DataTemplate x:DataType="local:ChargePage.StatsEntry">
+                        <Frame Style="{StaticResource CardFrameStyle}"
+                               Margin="0,4"
+                               Padding="10">
+                            <Grid ColumnDefinitions="Auto,2*,Auto,Auto,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Label Grid.RowSpan="2"
+                                       Text="{Binding Emoji}"
+                                       FontSize="20"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="{Binding MoleculeName}"
+                                       FontAttributes="Bold"
+                                       FontSize="16"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="2"
+                                       Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="3"
+                                       Text="{Binding AvgCount, StringFormat='{0:F1} prises'}"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="4"
+                                       Text="{Binding VariationText}"
+                                       TextColor="{Binding VariationColor}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <ProgressBar Grid.Row="1"
+                                             Grid.Column="1"
+                                             Grid.ColumnSpan="4"
+                                             Progress="{Binding VariationProgress}"
+                                             ProgressColor="{Binding VariationColor}"
+                                             HeightRequest="4"
+                                             Margin="0,4,0,0"/>
+                            </Grid>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
 
             <Label Text="30 jours"
-                   FontAttributes="Bold"/>
+                   Style="{StaticResource CompactHeaderStyle}"/>
             <CollectionView x:Name="StatsCollection30d"
+                            SelectionMode="Single"
                             HeightRequest="220">
                 <CollectionView.ItemTemplate>
-                    <DataTemplate>
-                        <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto"
-                              ColumnSpacing="8"
-                              Padding="6">
-                            <Label Grid.Column="0"
-                                   Text="{Binding MoleculeName}"
-                                   FontAttributes="Bold"/>
-                            <Label Grid.Column="1"
-                                   Text="{Binding AvgDose, StringFormat='{}{0:F1}mg'}"/>
-                            <Label Grid.Column="2"
-                                   Text="{Binding AvgCount, StringFormat='{}{0:F1}prises'}"/>
-                            <Label Grid.Column="3"
-                                   Text="{Binding VariationText}"
-                                   FontAttributes="Bold"/>
-                            <!-- Optionnel : -->
-                            <!-- <Label Grid.Column="4"
-                                    Text="{Binding PeakInfoText}"
-                                    FontSize="10"/> -->
-                        </Grid>
+                    <DataTemplate x:DataType="local:ChargePage.StatsEntry">
+                        <Frame Style="{StaticResource CardFrameStyle}"
+                               Margin="0,4"
+                               Padding="10">
+                            <Grid ColumnDefinitions="Auto,2*,Auto,Auto,Auto"
+                                  RowDefinitions="Auto,Auto"
+                                  ColumnSpacing="8">
+                                <Label Grid.RowSpan="2"
+                                       Text="{Binding Emoji}"
+                                       FontSize="20"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="1"
+                                       Text="{Binding MoleculeName}"
+                                       FontAttributes="Bold"
+                                       FontSize="16"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="2"
+                                       Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="3"
+                                       Text="{Binding AvgCount, StringFormat='{0:F1} prises'}"
+                                       VerticalOptions="Center"/>
+                                <Label Grid.Column="4"
+                                       Text="{Binding VariationText}"
+                                       TextColor="{Binding VariationColor}"
+                                       FontAttributes="Bold"
+                                       VerticalOptions="Center"/>
+                                <ProgressBar Grid.Row="1"
+                                             Grid.Column="1"
+                                             Grid.ColumnSpan="4"
+                                             Progress="{Binding VariationProgress}"
+                                             ProgressColor="{Binding VariationColor}"
+                                             HeightRequest="4"
+                                             Margin="0,4,0,0"/>
+                            </Grid>
+                        </Frame>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
