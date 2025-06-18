@@ -167,9 +167,9 @@
                                    Text="{Binding MoleculeName}"
                                    FontAttributes="Bold"/>
                             <Label Grid.Column="1"
-                                   Text="{Binding AvgDose, StringFormat='{}{0:F0} mg'}"/>
+                                   Text="{Binding AvgDose, StringFormat='{}{0:F1}mg'}"/>
                             <Label Grid.Column="2"
-                                   Text="{Binding AvgCount, StringFormat='{}{0:F1} prises'}"/>
+                                   Text="{Binding AvgCount, StringFormat='{}{0:F1}prises'}"/>
                             <Label Grid.Column="3"
                                    Text="{Binding VariationText}"
                                    FontAttributes="Bold"/>
@@ -195,9 +195,9 @@
                                    Text="{Binding MoleculeName}"
                                    FontAttributes="Bold"/>
                             <Label Grid.Column="1"
-                                   Text="{Binding AvgDose, StringFormat='{}{0:F0} mg'}"/>
+                                   Text="{Binding AvgDose, StringFormat='{}{0:F1}mg'}"/>
                             <Label Grid.Column="2"
-                                   Text="{Binding AvgCount, StringFormat='{}{0:F1} prises'}"/>
+                                   Text="{Binding AvgCount, StringFormat='{}{0:F1}prises'}"/>
                             <Label Grid.Column="3"
                                    Text="{Binding VariationText}"
                                    FontAttributes="Bold"/>
@@ -224,9 +224,9 @@
                                    Text="{Binding MoleculeName}"
                                    FontAttributes="Bold"/>
                             <Label Grid.Column="1"
-                                   Text="{Binding AvgDose, StringFormat='{}{0:F0} mg'}"/>
+                                   Text="{Binding AvgDose, StringFormat='{}{0:F1}mg'}"/>
                             <Label Grid.Column="2"
-                                   Text="{Binding AvgCount, StringFormat='{}{0:F1} prises'}"/>
+                                   Text="{Binding AvgCount, StringFormat='{}{0:F1}prises'}"/>
                             <Label Grid.Column="3"
                                    Text="{Binding VariationText}"
                                    FontAttributes="Bold"/>
