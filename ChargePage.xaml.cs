@@ -3,6 +3,7 @@ using MoleculeEfficienceTracker.Core.Services;
 using MoleculeEfficienceTracker.Core.Extensions;
 using Syncfusion.Maui.Charts;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -24,6 +25,15 @@ namespace MoleculeEfficienceTracker
             ["paracetamol"] = Color.FromArgb("#2ca02c"),
             ["ibuprofene"] = Color.FromArgb("#9467bd"),
             ["alcool"] = Color.FromArgb("#d62728")
+        };
+
+        private readonly Dictionary<string, string> _icons = new()
+        {
+            ["caffeine"] = "🍵",
+            ["bromazepam"] = "💊",
+            ["paracetamol"] = "💊",
+            ["ibuprofene"] = "💊",
+            ["alcool"] = "🍾"
         };
 
         private readonly Dictionary<string, double> _lightThresholds = new()
@@ -241,6 +251,7 @@ namespace MoleculeEfficienceTracker
             return new StatsEntry
             {
                 MoleculeName = ToDisplayName(molecule),
+                Icon = _icons[molecule],
                 PeriodDays = days,
                 AvgDose = doseStats.mean,      // ← devient moyenne journalière
                 StdDose = doseStats.stdDev,
@@ -277,6 +288,7 @@ namespace MoleculeEfficienceTracker
 
         public class StatsEntry
         {
+            public string Icon { get; set; } = string.Empty;
             public string MoleculeName { get; set; } = string.Empty;
             public int PeriodDays { get; set; }
             public double AvgDose { get; set; }
@@ -297,6 +309,11 @@ namespace MoleculeEfficienceTracker
                 : VariationPercent > 0 ? $"▲ {VariationPercent:F1}%"
                 : VariationPercent < 0 ? $"▼ {Math.Abs(VariationPercent):F1}%"
                 : "➖ 0%";
+            public Color VariationColor => double.IsNaN(VariationPercent)
+                ? Colors.Gray
+                : VariationPercent > 0 ? Colors.Red
+                : VariationPercent < 0 ? Colors.Green
+                : Colors.Gray;
             public string PeakInfoText =>
                 $"Pic {Peak:F1} le {PeakTime:dd/MM HH:mm}, {HoursAboveThreshold:F1} h > seuil";
         }
