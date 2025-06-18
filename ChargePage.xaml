@@ -112,19 +112,50 @@
                 </chart:SfCartesianChart>
             </Frame>
 
-            <Label Text="Statistiques (30j)" FontAttributes="Bold" />
-            <CollectionView x:Name="StatsCollection30d" HeightRequest="180">
+            <Label Text="Statistiques (7j)" FontAttributes="Bold" />
+            <CollectionView x:Name="StatsCollection7d" HeightRequest="220">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto" Padding="5">
-                            <Label Grid.Column="0" Text="{Binding MoleculeName}" />
-                            <Label Grid.Column="1" Text="{Binding AvgDose, StringFormat='{0:F1}'}" />
-                            <Label Grid.Column="2" Text="{Binding StdDose, StringFormat='{0:F1}'}" />
-                            <Label Grid.Column="3" Text="{Binding MinDose, StringFormat='{0:F1}'}" />
-                            <Label Grid.Column="4" Text="{Binding MaxDose, StringFormat='{0:F1}'}" />
-                            <Label Grid.Column="5" Text="{Binding AvgCount, StringFormat='{0:F1}'}" />
-                            <Label Grid.Column="6" Text="{Binding AvgInterval, StringFormat='{0:F1} h'}" />
-                        </Grid>
+                        <StackLayout Padding="5">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                <Label Grid.Column="0" Text="{Binding MoleculeName}" />
+                                <Label Grid.Column="1" Text="{Binding AvgDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="2" Text="{Binding StdDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="3" Text="{Binding MinDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="4" Text="{Binding MaxDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="5" Text="{Binding AvgCount, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="6" Text="{Binding StdCount, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="7" Text="{Binding MinCount}" />
+                                <Label Grid.Column="8" Text="{Binding MaxCount}" />
+                                <Label Grid.Column="9" Text="{Binding AvgInterval, StringFormat='{0:F1} h'}" />
+                                <Label Grid.Column="10" Text="{Binding VariationText}" />
+                            </Grid>
+                            <Label Text="{Binding PeakInfoText}" FontSize="10" />
+                        </StackLayout>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+
+            <Label Text="Statistiques (30j)" FontAttributes="Bold" />
+            <CollectionView x:Name="StatsCollection30d" HeightRequest="220">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <StackLayout Padding="5">
+                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                <Label Grid.Column="0" Text="{Binding MoleculeName}" />
+                                <Label Grid.Column="1" Text="{Binding AvgDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="2" Text="{Binding StdDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="3" Text="{Binding MinDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="4" Text="{Binding MaxDose, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="5" Text="{Binding AvgCount, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="6" Text="{Binding StdCount, StringFormat='{0:F1}'}" />
+                                <Label Grid.Column="7" Text="{Binding MinCount}" />
+                                <Label Grid.Column="8" Text="{Binding MaxCount}" />
+                                <Label Grid.Column="9" Text="{Binding AvgInterval, StringFormat='{0:F1} h'}" />
+                                <Label Grid.Column="10" Text="{Binding VariationText}" />
+                            </Grid>
+                            <Label Text="{Binding PeakInfoText}" FontSize="10" />
+                        </StackLayout>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
