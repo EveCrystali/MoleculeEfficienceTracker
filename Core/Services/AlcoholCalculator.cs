@@ -42,9 +42,20 @@ namespace MoleculeEfficienceTracker.Core.Services
             ["vin"] = 0.5,
             ["spiritueux"] = 0.25,
             ["cocktail"] = 0.5,
-            ["champagne"] = 0.45, 
+            ["champagne"] = 0.45,
             ["liqueur"] = 0.25
         };
+
+        // Volume de distribution "standard" (L/kg)
+        public const double VOLUME_DISTRIBUTION_L_PER_KG_MALE = 0.7;
+        public const double VOLUME_DISTRIBUTION_L_PER_KG_FEMALE = 0.6;
+        // Pour conversion rapide sans le sexe
+        public static double GetVdLPerKg()
+        {
+            if (UserPreferences.GetSex().ToLower() == "femme") return VOLUME_DISTRIBUTION_L_PER_KG_FEMALE;
+            return VOLUME_DISTRIBUTION_L_PER_KG_MALE;
+        }
+
 
 
         // Liste exposée à l’UI

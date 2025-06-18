@@ -14,7 +14,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double HALF_LIFE_HOURS = 2.0; // Demi-vie moyenne
         private const double ABSORPTION_TIME_HOURS = 0.5; // Temps d'absorption
         private const double BIOAVAILABILITY = 0.90; // Fraction absorbée
-        private const double VOLUME_DISTRIBUTION_L_PER_KG = 0.15; // Volume de distribution
+        public const double VOLUME_DISTRIBUTION_L_PER_KG = 0.15; // Volume de distribution
 
         // Seuils d'effet exprimés en mg/L
         public const double STRONG_THRESHOLD = 25.0;      // mg/L : effet fort, pic après 400mg

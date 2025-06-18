@@ -9,156 +9,236 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml" />
+                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <Color x:Key="MainBgColor">#F0F4F8</Color>
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Background>
-        <SolidColorBrush Color="{StaticResource MainBgColor}" />
+        <SolidColorBrush Color="{StaticResource MainBgColor}"/>
     </ContentPage.Background>
 
     <ScrollView>
-        <VerticalStackLayout Padding="10" Spacing="12">
-            <Label Text="Charge sur 24h" FontAttributes="Bold" />
-            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
+        <VerticalStackLayout Padding="10"
+                             Spacing="12">
+            <!-- <Label Text="Charge sur 24h"
+                   FontAttributes="Bold"/>
+            <Frame Padding="10"
+                   CornerRadius="10"
+                   BackgroundColor="White"
+                   HasShadow="True"
+                   HeightRequest="290">
                 <chart:SfCartesianChart x:Name="Chart24h">
                     <chart:SfCartesianChart.Legend>
-                        <chart:ChartLegend Placement="Bottom" />
+                        <chart:ChartLegend Placement="Bottom"/>
                     </chart:SfCartesianChart.Legend>
                     <chart:SfCartesianChart.XAxes>
                         <chart:DateTimeAxis>
-                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="HH:mm"/></chart:DateTimeAxis.LabelStyle>
+                            <chart:DateTimeAxis.LabelStyle>
+                                <chart:ChartAxisLabelStyle LabelFormat="HH:mm"/>
+                            </chart:DateTimeAxis.LabelStyle>
                         </chart:DateTimeAxis>
                     </chart:SfCartesianChart.XAxes>
                     <chart:SfCartesianChart.YAxes>
-                        <chart:NumericalAxis Minimum="0" />
+                        <chart:NumericalAxis Minimum="0"/>
                     </chart:SfCartesianChart.YAxes>
                 </chart:SfCartesianChart>
-            </Frame>
+            </Frame> -->
 
-             <Label Text="Moyenne journalière (24h)" FontAttributes="Bold" />
-            <CollectionView x:Name="AverageCollection24h" HeightRequest="180">
+            <!-- <Label Text="Moyennes journalières sur 1 jour"
+                   FontAttributes="Bold"/>
+            <CollectionView x:Name="AverageCollection24h"
+                            HeightRequest="180">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid ColumnDefinitions="*,Auto" Padding="5">
-                            <Label Grid.Column="0" Text="{Binding MoleculeName}" />
-                            <Label Grid.Column="1" Text="{Binding Average, StringFormat='{0:F1} mg'}" />
+                        <Grid ColumnDefinitions="*,Auto"
+                              Padding="5">
+                            <Label Grid.Column="0"
+                                   Text="{Binding MoleculeName}"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Average, StringFormat='{0:F1} mg'}"/>
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
-            </CollectionView>
+            </CollectionView> -->
 
-            <Label Text="Charge sur 7 jours" FontAttributes="Bold" />
-            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
+            <!-- <Label Text="Charge sur 7 jours"
+                   FontAttributes="Bold"/>
+            <Frame Padding="10"
+                   CornerRadius="10"
+                   BackgroundColor="White"
+                   HasShadow="True"
+                   HeightRequest="290">
                 <chart:SfCartesianChart x:Name="Chart7d">
                     <chart:SfCartesianChart.Legend>
-                        <chart:ChartLegend Placement="Bottom" />
+                        <chart:ChartLegend Placement="Bottom"/>
                     </chart:SfCartesianChart.Legend>
                     <chart:SfCartesianChart.XAxes>
                         <chart:DateTimeAxis>
-                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="dd/MM"/></chart:DateTimeAxis.LabelStyle>
+                            <chart:DateTimeAxis.LabelStyle>
+                                <chart:ChartAxisLabelStyle LabelFormat="dd/MM"/>
+                            </chart:DateTimeAxis.LabelStyle>
                         </chart:DateTimeAxis>
                     </chart:SfCartesianChart.XAxes>
                     <chart:SfCartesianChart.YAxes>
-                        <chart:NumericalAxis Minimum="0" />
+                        <chart:NumericalAxis Minimum="0"/>
                     </chart:SfCartesianChart.YAxes>
                 </chart:SfCartesianChart>
-            </Frame>
+            </Frame> -->
 
-            <Label Text="Moyenne journalière (7j)" FontAttributes="Bold" />
-            <CollectionView x:Name="AverageCollection7j" HeightRequest="180">
+            <!-- <Label Text="Moyenne journalière (7j)"
+                   FontAttributes="Bold"/>
+            <CollectionView x:Name="AverageCollection7j"
+                            HeightRequest="180">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Grid ColumnDefinitions="*,Auto" Padding="5">
-                            <Label Grid.Column="0" Text="{Binding MoleculeName}" />
-                            <Label Grid.Column="1" Text="{Binding Average, StringFormat='{0:F1} mg'}" />
+                        <Grid ColumnDefinitions="*,Auto"
+                              Padding="5">
+                            <Label Grid.Column="0"
+                                   Text="{Binding MoleculeName}"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding Average, StringFormat='{0:F1} mg'}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView> -->
+
+            <!-- <Label Text="Totaux quotidiens (7j)"
+                   FontAttributes="Bold"/>
+            <Frame Padding="10"
+                   CornerRadius="10"
+                   BackgroundColor="White"
+                   HasShadow="True"
+                   HeightRequest="290">
+                <chart:SfCartesianChart x:Name="DailyTotalsChart7d">
+                    <chart:SfCartesianChart.Legend>
+                        <chart:ChartLegend Placement="Bottom"/>
+                    </chart:SfCartesianChart.Legend>
+                    <chart:SfCartesianChart.XAxes>
+                        <chart:DateTimeAxis>
+                            <chart:DateTimeAxis.LabelStyle>
+                                <chart:ChartAxisLabelStyle LabelFormat="dd/MM"/>
+                            </chart:DateTimeAxis.LabelStyle>
+                        </chart:DateTimeAxis>
+                    </chart:SfCartesianChart.XAxes>
+                    <chart:SfCartesianChart.YAxes>
+                        <chart:NumericalAxis Minimum="0"/>
+                    </chart:SfCartesianChart.YAxes>
+                </chart:SfCartesianChart>
+            </Frame> -->
+
+            <!-- <Label Text="Totaux quotidiens (30j)"
+                   FontAttributes="Bold"/>
+            <Frame Padding="10"
+                   CornerRadius="10"
+                   BackgroundColor="White"
+                   HasShadow="True"
+                   HeightRequest="290">
+                <chart:SfCartesianChart x:Name="DailyTotalsChart30d">
+                    <chart:SfCartesianChart.Legend>
+                        <chart:ChartLegend Placement="Bottom"/>
+                    </chart:SfCartesianChart.Legend>
+                    <chart:SfCartesianChart.XAxes>
+                        <chart:DateTimeAxis>
+                            <chart:DateTimeAxis.LabelStyle>
+                                <chart:ChartAxisLabelStyle LabelFormat="dd/MM"/>
+                            </chart:DateTimeAxis.LabelStyle>
+                        </chart:DateTimeAxis>
+                    </chart:SfCartesianChart.XAxes>
+                    <chart:SfCartesianChart.YAxes>
+                        <chart:NumericalAxis Minimum="0"/>
+                    </chart:SfCartesianChart.YAxes>
+                </chart:SfCartesianChart>
+            </Frame> -->
+
+            <Label Text="Moyennes journalières"
+                   FontAttributes="Bold"/>
+
+            <Label Text="24h"
+                   FontAttributes="Bold"/>
+            <CollectionView x:Name="StatsCollection1d"
+                            HeightRequest="220">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto"
+                              ColumnSpacing="8"
+                              Padding="6">
+                            <Label Grid.Column="0"
+                                   Text="{Binding MoleculeName}"
+                                   FontAttributes="Bold"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding AvgDose, StringFormat='{}{0:F0} mg'}"/>
+                            <Label Grid.Column="2"
+                                   Text="{Binding AvgCount, StringFormat='{}{0:F1} prises'}"/>
+                            <Label Grid.Column="3"
+                                   Text="{Binding VariationText}"
+                                   FontAttributes="Bold"/>
+                            <!-- Optionnel : -->
+                            <!-- <Label Grid.Column="4"
+                                   Text="{Binding PeakInfoText}"
+                                   FontSize="10"/> -->
                         </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Label Text="Totaux quotidiens (7j)" FontAttributes="Bold" />
-            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
-                <chart:SfCartesianChart x:Name="DailyTotalsChart7d">
-                    <chart:SfCartesianChart.Legend>
-                        <chart:ChartLegend Placement="Bottom" />
-                    </chart:SfCartesianChart.Legend>
-                    <chart:SfCartesianChart.XAxes>
-                        <chart:DateTimeAxis>
-                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="dd/MM"/></chart:DateTimeAxis.LabelStyle>
-                        </chart:DateTimeAxis>
-                    </chart:SfCartesianChart.XAxes>
-                    <chart:SfCartesianChart.YAxes>
-                        <chart:NumericalAxis Minimum="0" />
-                    </chart:SfCartesianChart.YAxes>
-                </chart:SfCartesianChart>
-            </Frame>
-
-            <Label Text="Totaux quotidiens (30j)" FontAttributes="Bold" />
-            <Frame Padding="10" CornerRadius="10" BackgroundColor="White" HasShadow="True" HeightRequest="290">
-                <chart:SfCartesianChart x:Name="DailyTotalsChart30d">
-                    <chart:SfCartesianChart.Legend>
-                        <chart:ChartLegend Placement="Bottom" />
-                    </chart:SfCartesianChart.Legend>
-                    <chart:SfCartesianChart.XAxes>
-                        <chart:DateTimeAxis>
-                            <chart:DateTimeAxis.LabelStyle><chart:ChartAxisLabelStyle LabelFormat="dd/MM"/></chart:DateTimeAxis.LabelStyle>
-                        </chart:DateTimeAxis>
-                    </chart:SfCartesianChart.XAxes>
-                    <chart:SfCartesianChart.YAxes>
-                        <chart:NumericalAxis Minimum="0" />
-                    </chart:SfCartesianChart.YAxes>
-                </chart:SfCartesianChart>
-            </Frame>
-
-            <Label Text="Statistiques (7j)" FontAttributes="Bold" />
-            <CollectionView x:Name="StatsCollection7d" HeightRequest="220">
+            <Label Text="7 jours"
+                   FontAttributes="Bold"/>
+            <CollectionView x:Name="StatsCollection7d"
+                            HeightRequest="220">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <StackLayout Padding="5">
-                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                                <Label Grid.Column="0" Text="{Binding MoleculeName}" />
-                                <Label Grid.Column="1" Text="{Binding AvgDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="2" Text="{Binding StdDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="3" Text="{Binding MinDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="4" Text="{Binding MaxDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="5" Text="{Binding AvgCount, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="6" Text="{Binding StdCount, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="7" Text="{Binding MinCount}" />
-                                <Label Grid.Column="8" Text="{Binding MaxCount}" />
-                                <Label Grid.Column="9" Text="{Binding AvgInterval, StringFormat='{0:F1} h'}" />
-                                <Label Grid.Column="10" Text="{Binding VariationText}" />
-                            </Grid>
-                            <Label Text="{Binding PeakInfoText}" FontSize="10" />
-                        </StackLayout>
+                        <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto"
+                              ColumnSpacing="8"
+                              Padding="6">
+                            <Label Grid.Column="0"
+                                   Text="{Binding MoleculeName}"
+                                   FontAttributes="Bold"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding AvgDose, StringFormat='{}{0:F0} mg'}"/>
+                            <Label Grid.Column="2"
+                                   Text="{Binding AvgCount, StringFormat='{}{0:F1} prises'}"/>
+                            <Label Grid.Column="3"
+                                   Text="{Binding VariationText}"
+                                   FontAttributes="Bold"/>
+                            <!-- Optionnel : -->
+                            <!-- <Label Grid.Column="4"
+                                   Text="{Binding PeakInfoText}"
+                                   FontSize="10"/> -->
+                        </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
 
-            <Label Text="Statistiques (30j)" FontAttributes="Bold" />
-            <CollectionView x:Name="StatsCollection30d" HeightRequest="220">
+
+            <Label Text="30 jours"
+                   FontAttributes="Bold"/>
+            <CollectionView x:Name="StatsCollection30d"
+                            HeightRequest="220">
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <StackLayout Padding="5">
-                            <Grid ColumnDefinitions="*,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
-                                <Label Grid.Column="0" Text="{Binding MoleculeName}" />
-                                <Label Grid.Column="1" Text="{Binding AvgDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="2" Text="{Binding StdDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="3" Text="{Binding MinDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="4" Text="{Binding MaxDose, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="5" Text="{Binding AvgCount, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="6" Text="{Binding StdCount, StringFormat='{0:F1}'}" />
-                                <Label Grid.Column="7" Text="{Binding MinCount}" />
-                                <Label Grid.Column="8" Text="{Binding MaxCount}" />
-                                <Label Grid.Column="9" Text="{Binding AvgInterval, StringFormat='{0:F1} h'}" />
-                                <Label Grid.Column="10" Text="{Binding VariationText}" />
-                            </Grid>
-                            <Label Text="{Binding PeakInfoText}" FontSize="10" />
-                        </StackLayout>
+                        <Grid ColumnDefinitions="2*,Auto,Auto,Auto,Auto"
+                              ColumnSpacing="8"
+                              Padding="6">
+                            <Label Grid.Column="0"
+                                   Text="{Binding MoleculeName}"
+                                   FontAttributes="Bold"/>
+                            <Label Grid.Column="1"
+                                   Text="{Binding AvgDose, StringFormat='{}{0:F0} mg'}"/>
+                            <Label Grid.Column="2"
+                                   Text="{Binding AvgCount, StringFormat='{}{0:F1} prises'}"/>
+                            <Label Grid.Column="3"
+                                   Text="{Binding VariationText}"
+                                   FontAttributes="Bold"/>
+                            <!-- Optionnel : -->
+                            <!-- <Label Grid.Column="4"
+                                    Text="{Binding PeakInfoText}"
+                                    FontSize="10"/> -->
+                        </Grid>
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

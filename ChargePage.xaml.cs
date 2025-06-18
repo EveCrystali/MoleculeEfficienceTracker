@@ -40,8 +40,10 @@ namespace MoleculeEfficienceTracker
         private readonly Dictionary<string, ObservableRangeCollection<ChartDataPoint>> _dailyTotals7d = new();
         private readonly Dictionary<string, ObservableRangeCollection<ChartDataPoint>> _dailyTotals30d = new();
 
-        public ObservableCollection<AverageEntry> Averages7j { get; } = new();
-        public ObservableCollection<AverageEntry> Averages24h { get; } = new();
+        // public ObservableCollection<AverageEntry> Averages7j { get; } = new();
+        // public ObservableCollection<AverageEntry> Averages24h { get; } = new();
+
+        public ObservableCollection<StatsEntry> Stats1d { get; } = new();
         public ObservableCollection<StatsEntry> Stats7d { get; } = new();
         public ObservableCollection<StatsEntry> Stats30d { get; } = new();
 
@@ -79,35 +81,42 @@ namespace MoleculeEfficienceTracker
             await LoadDailyTotalsAsync(now.AddDays(-7).Date, now.Date, _dailyTotals7d);
             await LoadDailyTotalsAsync(now.AddDays(-30).Date, now.Date, _dailyTotals30d);
 
-            UpdateChart(Chart24h, _data24h);
-            UpdateChart(Chart7d, _data7d);
-            UpdateColumnChart(DailyTotalsChart7d, _dailyTotals7d);
-            UpdateColumnChart(DailyTotalsChart30d, _dailyTotals30d);
+            // UpdateChart(Chart24h, _data24h);
+            // UpdateChart(Chart7d, _data7d);
+            // UpdateColumnChart(DailyTotalsChart7d, _dailyTotals7d);
+            // UpdateColumnChart(DailyTotalsChart30d, _dailyTotals30d);
 
-            Averages24h.Clear();
-            Averages7j.Clear();
+            // Averages24h.Clear();
+            // Averages7j.Clear();
 
-            foreach (var m in _molecules)
-            {
-                double avg = await _service.GetAverageLoadPerDay(m, 1);
-                Averages24h.Add(new AverageEntry { MoleculeName = ToDisplayName(m), Average = avg });
-            }
-            foreach (var m in _molecules)
-            {
-                double avg = await _service.GetAverageLoadPerDay(m, 7);
-                Averages7j.Add(new AverageEntry { MoleculeName = ToDisplayName(m), Average = avg });
-            }
+            // foreach (var m in _molecules)
+            // {
+            //     double avg = await _service.GetAverageLoadPerDay(m, 7);
+            //     Averages7j.Add(new AverageEntry { MoleculeName = ToDisplayName(m), Average = avg });
+            // }
+            // foreach (var m in _molecules)
+            // {
+            //     double avg = await _service.GetAverageLoadPerDay(m, 1);
+            //     Averages24h.Add(new AverageEntry { MoleculeName = ToDisplayName(m), Average = avg });
+            // }
+            // foreach (var m in _molecules)
+            // {
+            //     double avg = await _service.GetAverageLoadPerDay(m, 7);
+            //     Averages7j.Add(new AverageEntry { MoleculeName = ToDisplayName(m), Average = avg });
+            // }
 
+            Stats1d.Clear();
             Stats7d.Clear();
             Stats30d.Clear();
             foreach (var m in _molecules)
             {
+                Stats1d.Add(await ComputeStatsForPeriod(m, 1));
                 Stats7d.Add(await ComputeStatsForPeriod(m, 7));
                 Stats30d.Add(await ComputeStatsForPeriod(m, 30));
             }
 
-            AverageCollection24h.ItemsSource = Averages24h;
-            AverageCollection7j.ItemsSource = Averages7j;
+            StatsCollection1d.ItemsSource = Stats1d;
+            // AverageCollection7j.ItemsSource = Averages7j;
             StatsCollection7d.ItemsSource = Stats7d;
             StatsCollection30d.ItemsSource = Stats30d;
         }
@@ -193,26 +202,47 @@ namespace MoleculeEfficienceTracker
         private async Task<StatsEntry> ComputeStatsForPeriod(string molecule, int days)
         {
             var now = DateTime.Now;
-            var daily = await _statsService.GetDailyStatsAsync(molecule, days);
-            var doses = await _statsService.GetDosesAsync(molecule, now.AddDays(-days), now);
 
-            var doseStats = UsageStatsService.ComputeStats(doses.Select(d => d.DoseMg));
-            var countStats = UsageStatsService.ComputeStats(daily.Select(d => (double)d.Count));
+            // 1) récupère les totaux journaliers
+            var dailyStats = await _statsService.GetDailyStatsAsync(molecule, days);
+
+            // 2) moyenne / écart-type / min / max des totaux journaliers
+            // Récupération des snapshots horaires
+            var snapshots = await _service.GetSnapshots(molecule, now.AddDays(-days), now, TimeSpan.FromHours(1));
+
+            // Moyenne journalière de residualAmount
+            var groups = snapshots
+                .GroupBy(s => s.Timestamp.Date)
+                .Select(g => g.Average(s => s.ResidualAmount))
+                .ToList();
+
+            var doseStats = UsageStatsService.ComputeStats(groups);
+
+            // 3) même logique pour le nombre de prises par jour
+            var countStats = UsageStatsService
+                .ComputeStats(dailyStats.Select(d => (double)d.Count));
+
+            // 4) intervalle moyen entre prises peut rester ou être retiré
+            var doses = await _statsService.GetDosesAsync(molecule, now.AddDays(-days), now);
             double avgInterval = UsageStatsService.ComputeAverageIntervalHours(doses);
 
+            // 5) calcul de la variation de semaine en semaine
             var history = await _statsService.GetDailyStatsAsync(molecule, days * 2);
             double prevAvg = history.Take(days).Average(d => d.TotalDose);
             double currAvg = history.Skip(days).Average(d => d.TotalDose);
-            double variation = prevAvg > 0 ? 100.0 * (currAvg - prevAvg) / prevAvg : double.NaN;
+            double variation = prevAvg > 0
+                ? 100.0 * (currAvg - prevAvg) / prevAvg
+                : double.NaN;
 
-            double threshold = _lightThresholds.TryGetValue(molecule, out var th) ? th : 0;
+            // 6) pic et heures > seuil — inchangé si tu l’as déjà corrigé
+            double threshold = _lightThresholds[molecule];
             var peak = await _statsService.GetPeakInfoAsync(molecule, now.AddDays(-days), now, threshold);
 
             return new StatsEntry
             {
                 MoleculeName = ToDisplayName(molecule),
                 PeriodDays = days,
-                AvgDose = doseStats.mean,
+                AvgDose = doseStats.mean,      // ← devient moyenne journalière
                 StdDose = doseStats.stdDev,
                 MinDose = doseStats.min,
                 MaxDose = doseStats.max,
@@ -227,6 +257,7 @@ namespace MoleculeEfficienceTracker
                 HoursAboveThreshold = peak.HoursAboveThreshold
             };
         }
+
 
         private static string ToDisplayName(string key) => key switch
         {
