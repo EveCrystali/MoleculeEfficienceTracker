@@ -71,4 +71,21 @@ namespace MoleculeEfficienceTracker.Core.Services
             return snapshots;
         }
     }
+
+    public static class PharmacokineticsUtils
+    {
+        /// <summary>
+        /// Convertit une charge résiduelle (mg) en concentration (mg/L)
+        /// </summary>
+        public static double ResidualMgToConcentration(
+            double residualMg,
+            double vdLperKg,
+            double weightKg)
+        {
+            if (vdLperKg <= 0 || weightKg <= 0)
+                return double.NaN;
+            return residualMg / (vdLperKg * weightKg);
+        }
+    }
+
 }

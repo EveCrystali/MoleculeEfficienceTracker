@@ -88,22 +88,60 @@ namespace MoleculeEfficienceTracker.Core.Services
             return intervals.Average();
         }
 
-        public async Task<PeakInfo> GetPeakInfoAsync(string key, DateTime from, DateTime to, double threshold)
+        public async Task<PeakInfo> GetPeakInfoAsync(
+    string key, DateTime from, DateTime to, double thresholdMgPerL)
         {
             var snapshots = await _residualService.GetSnapshots(key, from, to, TimeSpan.FromHours(1));
-            if (snapshots.Count == 0)
+            if (!snapshots.Any())
                 return new PeakInfo { PeakAmount = 0, PeakTime = from, HoursAboveThreshold = 0 };
 
+            // 1) Pic simple en mg
             var peak = snapshots.OrderByDescending(s => s.ResidualAmount).First();
+
+            // 2) Calcul des heures > seuil (mg/L) **uniquement si on a un Vd et un poids**
             double hours = 0;
-            for (int i = 1; i < snapshots.Count; i++)
+            // Exemple de récupération Vd et poids (à adapter) :
+            double vd = GetVdForMolecule(key);        // ex. ParacetamolCalculator.VOLUME_DISTRIBUTION_L_PER_KG
+            double wt = UserPreferences.GetWeightKg(); // à définir dans ta config utilisateur
+
+            if (vd > 0 && wt > 0 && thresholdMgPerL > 0)
             {
-                if (snapshots[i - 1].ResidualAmount >= threshold)
+                for (int i = 1; i < snapshots.Count; i++)
                 {
-                    hours += (snapshots[i].Timestamp - snapshots[i - 1].Timestamp).TotalHours;
+                    // concentration mg/L
+                    double concPrev = PharmacokineticsUtils
+                                         .ResidualMgToConcentration(
+                                             snapshots[i - 1].ResidualAmount,
+                                             vd, wt);
+                    if (concPrev >= thresholdMgPerL)
+                        hours += (snapshots[i].Timestamp - snapshots[i - 1].Timestamp).TotalHours;
                 }
             }
-            return new PeakInfo { PeakAmount = peak.ResidualAmount, PeakTime = peak.Timestamp, HoursAboveThreshold = hours };
+            else
+            {
+                hours = double.NaN; // on ne peut pas calculer
+            }
+
+            return new PeakInfo
+            {
+                PeakAmount = peak.ResidualAmount,
+                PeakTime = peak.Timestamp,
+                HoursAboveThreshold = hours
+            };
         }
+
+        public static double GetVdForMolecule(string molecule)
+        {
+            return molecule.ToLowerInvariant() switch
+            {
+                "paracetamol" => ParacetamolCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
+                "ibuprofen" => IbuprofeneCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
+                "caffeine" => CaffeineCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
+                "bromazepam" => BromazepamCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
+
+                _ => 1.0
+            };
+        }
+
     }
 }

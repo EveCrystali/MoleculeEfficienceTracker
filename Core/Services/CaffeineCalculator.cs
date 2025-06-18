@@ -16,7 +16,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         private const double ABSORPTION_TIME_HOURS = 0.75; // Temps pour atteindre le pic (45 min)
 
         public const double MG_PER_UNIT = 80.0; // 1 unité = 80mg (Nespresso standard)
-        private const double VOLUME_DISTRIBUTION_L_PER_KG = 0.6; // Volume de distribution moyen
+        public const double VOLUME_DISTRIBUTION_L_PER_KG = 0.65; // Volume de distribution moyen
         private const double BIOAVAILABILITY = 1.0; // Fraction absorbée (≈100 %)
 
         private readonly double eliminationConstant; // ke
