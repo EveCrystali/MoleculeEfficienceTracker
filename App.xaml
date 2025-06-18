@@ -12,6 +12,8 @@
             <converters:DoseDisplayConverter x:Key="DoseDisplayConverter"/>
             <converters:DoseLabelConverter x:Key="DoseLabelConverter"/>
             <converters:ConcentrationTooltipConverter x:Key="ConcentrationTooltipConverter"/>
+            <converters:VariationColorConverter x:Key="VariationColorConverter"/>
+            <converters:VariationProgressConverter x:Key="VariationProgressConverter"/>
             
             <!-- Styles globaux pour les graphiques Syncfusion -->
             <chart:ChartMarkerSettings x:Key="MarkerSettings" 
