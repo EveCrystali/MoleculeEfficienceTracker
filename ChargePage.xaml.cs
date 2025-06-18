@@ -6,6 +6,7 @@ using Microsoft.Maui.Controls;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Maui.Graphics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -110,9 +111,18 @@ namespace MoleculeEfficienceTracker
             Stats30d.Clear();
             foreach (var m in _molecules)
             {
-                Stats1d.Add(await ComputeStatsForPeriod(m, 1));
-                Stats7d.Add(await ComputeStatsForPeriod(m, 7));
-                Stats30d.Add(await ComputeStatsForPeriod(m, 30));
+                var e1 = await ComputeStatsForPeriod(m, 1);
+                var e7 = await ComputeStatsForPeriod(m, 7);
+                var e30 = await ComputeStatsForPeriod(m, 30);
+
+                if (_dailyTotals7d.TryGetValue(m, out var trend7))
+                    e7.TrendData = trend7;
+                if (_dailyTotals30d.TryGetValue(m, out var trend30))
+                    e30.TrendData = trend30;
+
+                Stats1d.Add(e1);
+                Stats7d.Add(e7);
+                Stats30d.Add(e30);
             }
 
             StatsCollection1d.ItemsSource = Stats1d;
@@ -292,13 +302,37 @@ namespace MoleculeEfficienceTracker
             public double Peak { get; set; }
             public DateTime PeakTime { get; set; }
             public double HoursAboveThreshold { get; set; }
+
             public string VariationText => double.IsNaN(VariationPercent)
                 ? "N/A"
                 : VariationPercent > 0 ? $"▲ {VariationPercent:F1}%"
                 : VariationPercent < 0 ? $"▼ {Math.Abs(VariationPercent):F1}%"
                 : "➖ 0%";
+
+            public Color VariationColor => double.IsNaN(VariationPercent)
+                ? Colors.Gray
+                : VariationPercent > 0 ? Colors.Red
+                : VariationPercent < 0 ? Colors.Green
+                : Colors.Gray;
+
+            public double VariationProgress => double.IsNaN(VariationPercent)
+                ? 0
+                : Math.Min(Math.Abs(VariationPercent) / 100.0, 1.0);
+
+            public string Emoji => MoleculeName switch
+            {
+                "Caféine" => "☕",
+                "Bromazépam" => "💊",
+                "Paracétamol" => "💊",
+                "Ibuprofène" => "💊",
+                "Alcool" => "🍺",
+                _ => "🔬"
+            };
+
             public string PeakInfoText =>
                 $"Pic {Peak:F1} le {PeakTime:dd/MM HH:mm}, {HoursAboveThreshold:F1} h > seuil";
+
+            public ObservableRangeCollection<ChartDataPoint>? TrendData { get; set; }
         }
     }
 }
