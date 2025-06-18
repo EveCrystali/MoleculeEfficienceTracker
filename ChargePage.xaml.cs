@@ -278,6 +278,15 @@ namespace MoleculeEfficienceTracker
         public class StatsEntry
         {
             public string MoleculeName { get; set; } = string.Empty;
+            public string Icon => MoleculeName switch
+            {
+                "Caféine" => "☕",
+                "Bromazépam" => "💊",
+                "Paracétamol" => "💊",
+                "Ibuprofène" => "💊",
+                "Alcool" => "🍺",
+                _ => "🔬"
+            };
             public int PeriodDays { get; set; }
             public double AvgDose { get; set; }
             public double StdDose { get; set; }
