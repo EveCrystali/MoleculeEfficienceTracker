@@ -11,7 +11,13 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
-            <Color x:Key="MainBgColor">#F0F4F8</Color>
+            <Color x:Key="MainBgColor">#F8FAFC</Color>
+            <Style x:Key="SectionHeaderStyle" TargetType="Label">
+                <Setter Property="FontSize" Value="22"/>
+                <Setter Property="FontAttributes" Value="Bold"/>
+                <Setter Property="TextColor" Value="{StaticResource Primary}"/>
+                <Setter Property="Margin" Value="0,4"/>
+            </Style>
         </ResourceDictionary>
     </ContentPage.Resources>
     <ContentPage.Background>
@@ -22,44 +28,51 @@
         <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}"
                              BackgroundColor="{StaticResource MainBgColor}">
             <Label Text="📊 Moyennes journalières"
-                   Style="{StaticResource CompactHeaderStyle}"/>
+                   Style="{StaticResource SectionHeaderStyle}"/>
 
             <!-- Bloc 24h -->
-            <Frame Style="{StaticResource CardFrameStyle}">
+            <Frame Style="{StaticResource CardFrameStyle}" Margin="0,0,0,12">
                 <VerticalStackLayout Spacing="6">
                     <Label Text="⏱️ Dernières 24h"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource Primary}"/>
+                           Style="{StaticResource SectionHeaderStyle}"/>
                     <CollectionView x:Name="StatsCollection1d"
                                     ItemsSource="{Binding Stats1d}"
                                     SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Frame CornerRadius="8"
-                                       Padding="8"
-                                       Margin="0,2"
+                                <Frame CornerRadius="12"
+                                       Padding="12"
+                                       Margin="0,6"
                                        BackgroundColor="White"
                                        HasShadow="True">
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                    <Grid RowDefinitions="Auto,Auto"
+                                          ColumnDefinitions="Auto,*,Auto,Auto"
                                           ColumnSpacing="10"
+                                          RowSpacing="8"
                                           VerticalOptions="Center">
-                                        <Label Grid.Column="0"
+                                        <Label Grid.Row="0" Grid.Column="0"
                                                Text="{Binding Icon}"
-                                               FontSize="18"
+                                               FontSize="20"
                                                VerticalOptions="Center"/>
-                                        <Label Grid.Column="1"
+                                        <Label Grid.Row="0" Grid.Column="1"
                                                Text="{Binding MoleculeName}"
                                                FontAttributes="Bold"
                                                VerticalOptions="Center"/>
-                                        <Label Grid.Column="2"
+                                        <Label Grid.Row="0" Grid.Column="2"
                                                Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
                                                HorizontalOptions="End"
                                                FontAttributes="Bold"/>
-                                        <Label Grid.Column="3"
+                                        <Label Grid.Row="0" Grid.Column="3"
                                                Text="{Binding VariationText}"
                                                TextColor="{Binding VariationColor}"
                                                HorizontalOptions="End"
                                                FontAttributes="Bold"/>
+                                        <ProgressBar Grid.Row="1" Grid.ColumnSpan="4"
+                                                     Progress="{Binding DoseRatio}"
+                                                     HeightRequest="6"
+                                                     BackgroundColor="#E5E5E5"
+                                                     ProgressColor="{Binding VariationColor}"
+                                                     CornerRadius="4"/>
                                     </Grid>
                                 </Frame>
                             </DataTemplate>
@@ -69,41 +82,48 @@
             </Frame>
 
             <!-- Bloc 7 jours -->
-            <Frame Style="{StaticResource CardFrameStyle}">
+            <Frame Style="{StaticResource CardFrameStyle}" Margin="0,0,0,12">
                 <VerticalStackLayout Spacing="6">
                     <Label Text="📅 7 derniers jours"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource Primary}"/>
+                           Style="{StaticResource SectionHeaderStyle}"/>
                     <CollectionView x:Name="StatsCollection7d"
                                     ItemsSource="{Binding Stats7d}"
                                     SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Frame CornerRadius="8"
-                                       Padding="8"
-                                       Margin="0,2"
+                                <Frame CornerRadius="12"
+                                       Padding="12"
+                                       Margin="0,6"
                                        BackgroundColor="White"
                                        HasShadow="True">
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                    <Grid RowDefinitions="Auto,Auto"
+                                          ColumnDefinitions="Auto,*,Auto,Auto"
                                           ColumnSpacing="10"
+                                          RowSpacing="8"
                                           VerticalOptions="Center">
-                                        <Label Grid.Column="0"
+                                        <Label Grid.Row="0" Grid.Column="0"
                                                Text="{Binding Icon}"
-                                               FontSize="18"
+                                               FontSize="20"
                                                VerticalOptions="Center"/>
-                                        <Label Grid.Column="1"
+                                        <Label Grid.Row="0" Grid.Column="1"
                                                Text="{Binding MoleculeName}"
                                                FontAttributes="Bold"
                                                VerticalOptions="Center"/>
-                                        <Label Grid.Column="2"
+                                        <Label Grid.Row="0" Grid.Column="2"
                                                Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
                                                HorizontalOptions="End"
                                                FontAttributes="Bold"/>
-                                        <Label Grid.Column="3"
+                                        <Label Grid.Row="0" Grid.Column="3"
                                                Text="{Binding VariationText}"
                                                TextColor="{Binding VariationColor}"
                                                HorizontalOptions="End"
                                                FontAttributes="Bold"/>
+                                        <ProgressBar Grid.Row="1" Grid.ColumnSpan="4"
+                                                     Progress="{Binding DoseRatio}"
+                                                     HeightRequest="6"
+                                                     BackgroundColor="#E5E5E5"
+                                                     ProgressColor="{Binding VariationColor}"
+                                                     CornerRadius="4"/>
                                     </Grid>
                                 </Frame>
                             </DataTemplate>
@@ -113,41 +133,48 @@
             </Frame>
 
             <!-- Bloc 30 jours -->
-            <Frame Style="{StaticResource CardFrameStyle}">
+            <Frame Style="{StaticResource CardFrameStyle}" Margin="0,0,0,12">
                 <VerticalStackLayout Spacing="6">
                     <Label Text="🗓️ 30 derniers jours"
-                           FontAttributes="Bold"
-                           TextColor="{StaticResource Primary}"/>
+                           Style="{StaticResource SectionHeaderStyle}"/>
                     <CollectionView x:Name="StatsCollection30d"
                                     ItemsSource="{Binding Stats30d}"
                                     SelectionMode="None">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Frame CornerRadius="8"
-                                       Padding="8"
-                                       Margin="0,2"
+                                <Frame CornerRadius="12"
+                                       Padding="12"
+                                       Margin="0,6"
                                        BackgroundColor="White"
                                        HasShadow="True">
-                                    <Grid ColumnDefinitions="Auto,*,Auto,Auto"
+                                    <Grid RowDefinitions="Auto,Auto"
+                                          ColumnDefinitions="Auto,*,Auto,Auto"
                                           ColumnSpacing="10"
+                                          RowSpacing="8"
                                           VerticalOptions="Center">
-                                        <Label Grid.Column="0"
+                                        <Label Grid.Row="0" Grid.Column="0"
                                                Text="{Binding Icon}"
-                                               FontSize="18"
+                                               FontSize="20"
                                                VerticalOptions="Center"/>
-                                        <Label Grid.Column="1"
+                                        <Label Grid.Row="0" Grid.Column="1"
                                                Text="{Binding MoleculeName}"
                                                FontAttributes="Bold"
                                                VerticalOptions="Center"/>
-                                        <Label Grid.Column="2"
+                                        <Label Grid.Row="0" Grid.Column="2"
                                                Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
                                                HorizontalOptions="End"
                                                FontAttributes="Bold"/>
-                                        <Label Grid.Column="3"
+                                        <Label Grid.Row="0" Grid.Column="3"
                                                Text="{Binding VariationText}"
                                                TextColor="{Binding VariationColor}"
                                                HorizontalOptions="End"
                                                FontAttributes="Bold"/>
+                                        <ProgressBar Grid.Row="1" Grid.ColumnSpan="4"
+                                                     Progress="{Binding DoseRatio}"
+                                                     HeightRequest="6"
+                                                     BackgroundColor="#E5E5E5"
+                                                     ProgressColor="{Binding VariationColor}"
+                                                     CornerRadius="4"/>
                                     </Grid>
                                 </Frame>
                             </DataTemplate>
