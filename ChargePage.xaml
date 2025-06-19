@@ -25,7 +25,7 @@
                    Style="{StaticResource CompactHeaderStyle}"/>
 
             <!-- Bloc 24h -->
-            <Frame Style="{StaticResource CardFrameStyle}">
+            <!-- <Frame Style="{StaticResource CardFrameStyle}">
                 <VerticalStackLayout Spacing="6">
                     <Label Text="⏱️ Dernières 24h"
                            FontAttributes="Bold"
@@ -66,10 +66,45 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
+            </Frame> -->
+
+            <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="🕑 Dernières 24h"
+                            Style="{StaticResource BigStatLabel}"/>
+                    <CollectionView x:Name="StatsCollection1d"
+                                    ItemsSource="{Binding Stats1d}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="30,*,Auto,Auto" ColumnSpacing="10" VerticalOptions="Center"
+                                        Padding="0,6">
+                                    <Label Text="{Binding Icon}"
+                                            Grid.Column="0"
+                                            FontSize="20"/>
+                                    <Label Text="{Binding MoleculeName}"
+                                            Grid.Column="1"
+                                            FontSize="16"
+                                            TextColor="#222"/>
+                                    <Label Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
+                                            Grid.Column="2"
+                                            FontSize="16"
+                                            FontAttributes="Bold"/>
+                                       <Label Grid.Column="3"
+                                               Text="{Binding VariationText}"
+                                               TextColor="{Binding VariationColor}"
+                                               HorizontalOptions="End"
+                                               FontAttributes="Bold"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
             </Frame>
 
+
             <!-- Bloc 7 jours -->
-            <Frame Style="{StaticResource CardFrameStyle}">
+            <!-- <Frame Style="{StaticResource CardFrameStyle}">
                 <VerticalStackLayout Spacing="6">
                     <Label Text="📅 7 derniers jours"
                            FontAttributes="Bold"
@@ -110,10 +145,44 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
+            </Frame> -->
+
+             <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="📅 7 derniers jours"
+                            Style="{StaticResource BigStatLabel}"/>
+                    <CollectionView x:Name="StatsCollection7d"
+                                    ItemsSource="{Binding Stats1d}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="30,*,Auto,Auto" ColumnSpacing="10" VerticalOptions="Center"
+                                        Padding="0,6">
+                                    <Label Text="{Binding Icon}"
+                                            Grid.Column="0"
+                                            FontSize="20"/>
+                                    <Label Text="{Binding MoleculeName}"
+                                            Grid.Column="1"
+                                            FontSize="16"
+                                            TextColor="#222"/>
+                                    <Label Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
+                                            Grid.Column="2"
+                                            FontSize="16"
+                                            FontAttributes="Bold"/>
+                                       <Label Grid.Column="3"
+                                               Text="{Binding VariationText}"
+                                               TextColor="{Binding VariationColor}"
+                                               HorizontalOptions="End"
+                                               FontAttributes="Bold"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
             </Frame>
 
             <!-- Bloc 30 jours -->
-            <Frame Style="{StaticResource CardFrameStyle}">
+            <!-- <Frame Style="{StaticResource CardFrameStyle}">
                 <VerticalStackLayout Spacing="6">
                     <Label Text="🗓️ 30 derniers jours"
                            FontAttributes="Bold"
@@ -150,6 +219,40 @@
                                                FontAttributes="Bold"/>
                                     </Grid>
                                 </Frame>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Frame> -->
+
+             <Frame Style="{StaticResource CardFrame}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="🗓️ 30 derniers jours"
+                            Style="{StaticResource BigStatLabel}"/>
+                    <CollectionView x:Name="StatsCollection30d"
+                                    ItemsSource="{Binding Stats30d}"
+                                    SelectionMode="None">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="30,*,Auto,Auto" ColumnSpacing="10" VerticalOptions="Center"
+                                        Padding="0,6">
+                                    <Label Text="{Binding Icon}"
+                                            Grid.Column="0"
+                                            FontSize="20"/>
+                                    <Label Text="{Binding MoleculeName}"
+                                            Grid.Column="1"
+                                            FontSize="16"
+                                            TextColor="#222"/>
+                                    <Label Text="{Binding AvgDose, StringFormat='{0:F1} mg'}"
+                                            Grid.Column="2"
+                                            FontSize="16"
+                                            FontAttributes="Bold"/>
+                                       <Label Grid.Column="3"
+                                               Text="{Binding VariationText}"
+                                               TextColor="{Binding VariationColor}"
+                                               HorizontalOptions="End"
+                                               FontAttributes="Bold"/>
+                                </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>

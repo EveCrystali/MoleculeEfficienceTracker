@@ -306,8 +306,8 @@ namespace MoleculeEfficienceTracker
             public double HoursAboveThreshold { get; set; }
             public string VariationText => double.IsNaN(VariationPercent)
                 ? "N/A"
-                : VariationPercent > 0 ? $"▲ {VariationPercent:F1}%"
-                : VariationPercent < 0 ? $"▼ {Math.Abs(VariationPercent):F1}%"
+                : VariationPercent > 0 ? $"▲ {VariationPercent:F0}%"
+                : VariationPercent < 0 ? $"▼ {Math.Abs(VariationPercent):F0}%"
                 : "➖ 0%";
             public Color VariationColor => double.IsNaN(VariationPercent)
                 ? Colors.Gray

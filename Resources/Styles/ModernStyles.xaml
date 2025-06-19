@@ -2,81 +2,157 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
                     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
                     xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts">
-    <Style x:Key="CardFrameStyle" TargetType="Frame">
-        <Setter Property="CornerRadius" Value="16"/>
-        <Setter Property="Padding" Value="16"/>
-        <Setter Property="HasShadow" Value="True"/>
+    <Style x:Key="CardFrameStyle"
+           TargetType="Frame">
+        <Setter Property="CornerRadius"
+                Value="16"/>
+        <Setter Property="Padding"
+                Value="16"/>
+        <Setter Property="HasShadow"
+                Value="True"/>
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Brush="{StaticResource PrimaryBrush}" Offset="0,6" Radius="18" Opacity="0.25"/>
+                <Shadow Brush="{StaticResource PrimaryBrush}"
+                        Offset="0,6"
+                        Radius="18"
+                        Opacity="0.25"/>
             </Setter.Value>
         </Setter>
         <Setter Property="Background">
-            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                <GradientStop Color="White" Offset="0"/>
-                <GradientStop Color="#F3F4F6" Offset="1"/>
+            <LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="0,1">
+                <GradientStop Color="White"
+                              Offset="0"/>
+                <GradientStop Color="#F3F4F6"
+                              Offset="1"/>
             </LinearGradientBrush>
         </Setter>
     </Style>
 
-    <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="TextColor" Value="White"/>
-        <Setter Property="FontAttributes" Value="Bold"/>
-        <Setter Property="CornerRadius" Value="18"/>
-        <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="FontSize" Value="16"/>
+    <Style x:Key="PrimaryButtonStyle"
+           TargetType="Button">
+        <Setter Property="TextColor"
+                Value="White"/>
+        <Setter Property="FontAttributes"
+                Value="Bold"/>
+        <Setter Property="CornerRadius"
+                Value="18"/>
+        <Setter Property="Padding"
+                Value="10,8"/>
+        <Setter Property="FontSize"
+                Value="16"/>
         <Setter Property="Background">
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
-                <GradientStop Color="{StaticResource Primary}" Offset="0"/>
-                <GradientStop Color="{StaticResource Tertiary}" Offset="1"/>
+            <LinearGradientBrush StartPoint="0,0"
+                                 EndPoint="1,0">
+                <GradientStop Color="{StaticResource Primary}"
+                              Offset="0"/>
+                <GradientStop Color="{StaticResource Tertiary}"
+                              Offset="1"/>
             </LinearGradientBrush>
         </Setter>
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Brush="{StaticResource PrimaryBrush}" Offset="0,4" Radius="12" Opacity="0.3"/>
+                <Shadow Brush="{StaticResource PrimaryBrush}"
+                        Offset="0,4"
+                        Radius="12"
+                        Opacity="0.3"/>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style x:Key="DeleteButtonStyle" TargetType="Button">
-        <Setter Property="TextColor" Value="White"/>
-        <Setter Property="FontAttributes" Value="Bold"/>
-        <Setter Property="CornerRadius" Value="18"/>
-        <Setter Property="Padding" Value="10,8"/>
-        <Setter Property="FontSize" Value="16"/>
-        <Setter Property="BackgroundColor" Value="#D32F2F"/>
+    <Style x:Key="DeleteButtonStyle"
+           TargetType="Button">
+        <Setter Property="TextColor"
+                Value="White"/>
+        <Setter Property="FontAttributes"
+                Value="Bold"/>
+        <Setter Property="CornerRadius"
+                Value="18"/>
+        <Setter Property="Padding"
+                Value="10,8"/>
+        <Setter Property="FontSize"
+                Value="16"/>
+        <Setter Property="BackgroundColor"
+                Value="#D32F2F"/>
         <Setter Property="Shadow">
             <Setter.Value>
-                <Shadow Brush="#670000" Offset="0,4" Radius="12" Opacity="0.4"/>
+                <Shadow Brush="#670000"
+                        Offset="0,4"
+                        Radius="12"
+                        Opacity="0.4"/>
             </Setter.Value>
         </Setter>
     </Style>
 
-    <Style x:Key="EmptyLabelStyle" TargetType="Label">
-        <Setter Property="TextColor" Value="#9CA3AF"/>
-        <Setter Property="FontSize" Value="18"/>
-        <Setter Property="HorizontalOptions" Value="Center"/>
-        <Setter Property="FontAttributes" Value="Italic"/>
-        <Setter Property="Margin" Value="0,20,0,0"/>
+    <Style x:Key="EmptyLabelStyle"
+           TargetType="Label">
+        <Setter Property="TextColor"
+                Value="#9CA3AF"/>
+        <Setter Property="FontSize"
+                Value="18"/>
+        <Setter Property="HorizontalOptions"
+                Value="Center"/>
+        <Setter Property="FontAttributes"
+                Value="Italic"/>
+        <Setter Property="Margin"
+                Value="0,20,0,0"/>
     </Style>
 
     <!-- Mise en page compacte pour les écrans mobiles -->
-    <Style x:Key="PageRootLayoutStyle" TargetType="VerticalStackLayout">
-        <Setter Property="Spacing" Value="18"/>
-        <Setter Property="Padding" Value="16"/>
+    <Style x:Key="PageRootLayoutStyle"
+           TargetType="VerticalStackLayout">
+        <Setter Property="Spacing"
+                Value="18"/>
+        <Setter Property="Padding"
+                Value="16"/>
     </Style>
 
-    <Style x:Key="CompactHeaderStyle" TargetType="Label">
-        <Setter Property="FontSize" Value="20"/>
-        <Setter Property="FontAttributes" Value="Bold"/>
-        <Setter Property="HorizontalOptions" Value="Center"/>
-        <Setter Property="TextColor" Value="#2D3748"/>
-        <Setter Property="Margin" Value="0,4,0,4"/>
-        <Setter Property="Shadow">
-            <Setter.Value>
-                <Shadow Offset="1,1" Radius="4" Opacity="0.2"/>
-            </Setter.Value>
-        </Setter>
+    <Style x:Key="CompactHeaderStyle"
+           TargetType="Label">
+        <Setter Property="FontAttributes"
+                Value="Bold"/>
+        <Setter Property="FontSize"
+                Value="22"/>
+        <Setter Property="TextColor"
+                Value="#FF34248F"/>
+        <Setter Property="HorizontalOptions"
+                Value="Center"/>
+    </Style>
+
+    <Style TargetType="Frame"
+           x:Key="CardFrame">
+        <Setter Property="BackgroundColor"
+                Value="White"/>
+        <Setter Property="CornerRadius"
+                Value="20"/>
+        <Setter Property="HasShadow"
+                Value="False"/>
+        <Setter Property="Padding"
+                Value="18"/>
+        <Setter Property="Margin"
+                Value="0,0,0,5"/>
+    </Style>
+    <Style TargetType="Label"
+           x:Key="BigStatLabel">
+        <Setter Property="FontAttributes"
+                Value="Bold"/>
+        <Setter Property="FontSize"
+                Value="18"/>
+        <Setter Property="TextColor"
+                Value="#222"/>
+    </Style>
+    <Style TargetType="Frame"
+           x:Key="BadgeFrame">
+        <Setter Property="CornerRadius"
+                Value="14"/>
+        <Setter Property="BackgroundColor"
+                Value="#EAFBEA"/>
+        <Setter Property="Padding"
+                Value="10,2"/>
+        <Setter Property="HasShadow"
+                Value="False"/>
+        <Setter Property="VerticalOptions"
+                Value="Center"/>
     </Style>
 
     <chart:ChartLineStyle x:Key="CustomTrackballLineStyle"
