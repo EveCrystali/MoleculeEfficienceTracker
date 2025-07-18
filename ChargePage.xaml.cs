@@ -265,7 +265,8 @@ namespace MoleculeEfficienceTracker
                 VariationPercent = variation,
                 Peak = peak.PeakAmount,
                 PeakTime = peak.PeakTime,
-                HoursAboveThreshold = peak.HoursAboveThreshold
+                HoursAboveThreshold = peak.HoursAboveThreshold,
+                Threshold = threshold
             };
         }
 
@@ -304,6 +305,11 @@ namespace MoleculeEfficienceTracker
             public double Peak { get; set; }
             public DateTime PeakTime { get; set; }
             public double HoursAboveThreshold { get; set; }
+            public double Threshold { get; set; }
+            public double ProgressRatio => Threshold > 0 ? Math.Min(AvgDose / Threshold, 1) : 0;
+            public Color ProgressColor =>
+                ProgressRatio < 0.5 ? Colors.Green :
+                ProgressRatio < 1 ? Colors.Orange : Colors.Red;
             public string VariationText => double.IsNaN(VariationPercent)
                 ? "N/A"
                 : VariationPercent > 0 ? $"▲ {VariationPercent:F0}%"
