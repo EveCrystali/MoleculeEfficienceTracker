@@ -22,7 +22,7 @@ namespace MoleculeEfficienceTracker.Core.Services
 
         // Paramètres pharmacocinétiques du bromazépam
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures
-        private const double ABSORPTION_TIME_HOURS = 2.0; // Temps pour atteindre le pic
+        private const double ABSORPTION_TIME_HOURS = 0.385; // Demi-vie d'absorption (en heures) pour un pic vers 2h
         private const double BIOAVAILABILITY = 0.84; // Fraction absorbée
         public const double VOLUME_DISTRIBUTION_L_PER_KG = 1.5; // Volume de distribution
 
