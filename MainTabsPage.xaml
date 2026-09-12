@@ -5,22 +5,19 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:MoleculeEfficienceTracker">
 
-    <!-- Onglet Charge -->
-    <local:ChargePage Title="⚡" />
-  
-    <!-- Onglet Caféine -->
-    <local:CaffeinePage Title="🍵"  />
-    
-    <!-- Onglet Bromazépam -->
-    <local:BromazepamPage Title="🧠"  />
-    <!-- Onglet Anti-douleur -->
-    <local:PainReliefPage Title="🩹" />
+    <!--
+        Les onglets portent un mot, plus seulement un emoji. Un lecteur d'écran
+        annonçait jusqu'ici « tasse à thé », « cerveau », « pansement adhésif ».
+        L'onglet Paramètres déclarait en outre IconImageSource="⚙️", c'est-à-dire
+        un fichier image nommé littéralement ⚙️, qui n'a jamais existé.
 
-    
+        La caféine passe en tête : c'est l'usage quotidien.
+    -->
 
-    <!-- Onglet Alcool -->
-    <local:AlcoholPage Title="🍾" />
-    <!-- Onglet Paramètres -->
-
-    <local:SettingsPage Title="⚙️" IconImageSource="⚙️" />
+    <local:CaffeinePage Title="Café" />
+    <local:BromazepamPage Title="Bromaz." />
+    <local:PainReliefPage Title="Douleur" />
+    <local:AlcoholPage Title="Alcool" />
+    <local:ChargePage Title="Charge" />
+    <local:SettingsPage Title="Réglages" />
 </TabbedPage>

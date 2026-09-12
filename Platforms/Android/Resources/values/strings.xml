@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="shortcut_caffeine_short">Café</string>
+    <string name="shortcut_caffeine_long">Enregistrer un café</string>
+</resources>

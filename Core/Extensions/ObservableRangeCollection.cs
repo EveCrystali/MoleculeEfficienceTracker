@@ -4,11 +4,19 @@ using System.ComponentModel;
 
 namespace MoleculeEfficienceTracker.Core.Extensions;
 
+/// <summary>
+/// Collection observable acceptant des modifications par lots.
+///
+/// La version précédente muselait aussi les notifications de propriété pendant le
+/// lot, puis ne levait qu'un Reset de collection : les liaisons sur Count et sur
+/// l'indexeur restaient périmées, contrairement au contrat d'ObservableCollection.
+/// Le lot se termine désormais par les trois notifications attendues.
+/// </summary>
 public class ObservableRangeCollection<T> : ObservableCollection<T>
 {
-    private bool _suppressNotification = false;
+    private bool _suppressNotification;
 
-    public ObservableRangeCollection() : base() { }
+    public ObservableRangeCollection() { }
 
     public ObservableRangeCollection(IEnumerable<T> collection) : base(collection) { }
 
@@ -24,55 +32,61 @@ public class ObservableRangeCollection<T> : ObservableCollection<T>
             base.OnPropertyChanged(e);
     }
 
-    public void AddRange(IEnumerable<T> list)
+    private void NotifyReset()
     {
-        if (list == null)
-            throw new ArgumentNullException(nameof(list));
+        OnPropertyChanged(new PropertyChangedEventArgs(nameof(Count)));
+        OnPropertyChanged(new PropertyChangedEventArgs("Item[]"));
+        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+    }
 
+    /// <summary>Exécute une modification en lot, puis notifie une seule fois.</summary>
+    private void InBatch(Action action)
+    {
         _suppressNotification = true;
-
-        foreach (T item in list)
+        try
         {
-            Add(item);
+            action();
+        }
+        finally
+        {
+            // Le drapeau est rendu même si le lot échoue : sans cela, une exception
+            // laissait la collection muette pour le reste de la session.
+            _suppressNotification = false;
         }
 
-        _suppressNotification = false;
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        NotifyReset();
+    }
+
+    public void AddRange(IEnumerable<T> list)
+    {
+        ArgumentNullException.ThrowIfNull(list);
+
+        InBatch(() =>
+        {
+            foreach (T item in list) Add(item);
+        });
     }
 
     public void ReplaceRange(IEnumerable<T> collection)
     {
-        if (collection == null)
-            throw new ArgumentNullException(nameof(collection));
+        ArgumentNullException.ThrowIfNull(collection);
 
-        _suppressNotification = true;
-        Clear();
-        foreach (var item in collection)
-            Add(item);
-        _suppressNotification = false;
-
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+        InBatch(() =>
+        {
+            Clear();
+            foreach (T item in collection) Add(item);
+        });
     }
 
     public void RemoveRange(IEnumerable<T> list)
     {
-        if (list == null)
-            throw new ArgumentNullException(nameof(list));
+        ArgumentNullException.ThrowIfNull(list);
 
-        _suppressNotification = true;
-
-        foreach (T item in list)
+        InBatch(() =>
         {
-            Remove(item);
-        }
-
-        _suppressNotification = false;
-        OnCollectionChanged(new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset));
+            foreach (T item in list) Remove(item);
+        });
     }
 
-    public void Replace(T item)
-    {
-        ReplaceRange(new T[] { item });
-    }
+    public void Replace(T item) => ReplaceRange(new[] { item });
 }
-

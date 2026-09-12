@@ -1,146 +1,60 @@
-﻿using MoleculeEfficienceTracker.Core.Models;
+using MoleculeEfficienceTracker.Controls;
+using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using Syncfusion.Maui.Charts;
-using Microsoft.Maui.Graphics;
-using System.Text.Json;
-using CommunityToolkit.Maui.Storage;
-using System.Text;
-using System.IO;
 
 namespace MoleculeEfficienceTracker
 {
     public partial class BromazepamPage : BaseMoleculePage<BromazepamCalculator>
     {
-        protected override Entry DoseInputControl => DoseEntry;
-        protected override DatePicker DatePickerControl => DatePicker;
-        protected override TimePicker TimePickerControl => TimePicker;
-        protected override Label ConcentrationOutputLabel => ConcentrationLabel;
-        protected override Label LastUpdateOutputLabel => LastUpdateLabel;
-        protected override SfCartesianChart ChartControl => ConcentrationChart;
-        protected override CollectionView DosesDisplayCollection => DosesCollection;
-        protected override Label EmptyStateIndicatorLabel => EmptyDosesLabel;
+        private readonly PharmacodynamicModel _saturation = new(BromazepamCalculator.EC50_MG_PER_L);
 
-        // Labels spécifiques à l'effet
-        private Label EffectStatusLabel => EffectStatus;
-        private Label EffectEndPredictionLabel => EffectPrediction;
-        private Label EffectPowerLabel => EffectPower;
-
-        private readonly PharmacodynamicModel _pdModel = new PharmacodynamicModel(0.05);
-        
+        protected override MoleculePanelView Panel => PanelView;
 
         protected override string DoseAnnotationIcon => "💊";
-        protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
+        protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-2);
         protected override TimeSpan GraphDataEndOffset => TimeSpan.FromDays(3);
-        protected override int GraphDataNumberOfPoints => 10 * 24 * 2;
-        protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-12); // Ajustez si nécessaire
-        protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(24);  // Ajustez si nécessaire
+        protected override int GraphDataNumberOfPoints => 5 * 24 * 2;
+        protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-12);
+        protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(24);
 
+        protected override string AddSectionTitle => "Ajouter une prise";
+        protected override string DoseFieldCaption => "Dose (mg)";
+        protected override string HelperText => "Comprimé sécable : 1,5 mg · 3 mg · 6 mg";
+        protected override double MaxPlausibleDose => 30;
 
-        public BromazepamPage() : base("bromazepam")
+        protected override IReadOnlyList<double> Presets => new[] { 1.5, 3.0, 6.0 };
+
+        protected override IReadOnlyList<(double Value, string Label, EffectLevel Level)> Thresholds => new[]
+        {
+            (BromazepamCalculator.STRONG_THRESHOLD, "Fort (4,5 mg)", EffectLevel.Strong),
+            (BromazepamCalculator.MODERATE_THRESHOLD, "Net (3 mg)", EffectLevel.Moderate),
+            (BromazepamCalculator.LIGHT_THRESHOLD, "Léger (1,5 mg)", EffectLevel.Light),
+            (BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Imperceptible", EffectLevel.None)
+        };
+
+        public BromazepamPage() : base(MoleculeKeys.Bromazepam)
         {
             InitializeComponent();
-            base.InitializePageUI();
-        }
-
-        protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
-        {
-            if (Calculator is BromazepamCalculator calc)
-            {
-                double concentration = calc.CalculateTotalConcentration(doses, currentTime);
-                double saturation = _pdModel.GetEffectPercent(concentration);
-                var level = calc.GetEffectLevelFromSaturation(saturation);
-
-                string text = level switch
-                {
-                    EffectLevel.Strong => "⚠️ Risque de surdosage",
-                    EffectLevel.Moderate => "Effet marqué",
-                    EffectLevel.Light => "Effet modéré",
-                    _ => "Effet léger"
-                };
-
-                Color color = level switch
-                {
-                    EffectLevel.Strong => Colors.Red,
-                    EffectLevel.Moderate => Colors.Green,
-                    EffectLevel.Light => Colors.Green,
-                    _ => Colors.Orange
-                };
-
-                if (EffectStatusLabel != null)
-                {
-                    EffectStatusLabel.Text = text;
-                    EffectStatusLabel.TextColor = color;
-                    EffectStatusLabel.IsVisible = true;
-                }
-
-                if (EffectPowerLabel != null)
-                {
-                    EffectPowerLabel.Text = $"Saturation : {saturation:F0} %";
-                    EffectPowerLabel.IsVisible = true;
-                }
-
-                DateTime? endTime = calc.PredictEffectEndTime(doses, currentTime);
-                if (EffectEndPredictionLabel != null)
-                {
-                    if (endTime.HasValue && endTime.Value > currentTime)
-                    {
-                        var remaining = endTime.Value - currentTime;
-                        EffectEndPredictionLabel.Text = $"Effet négligeable estimé dans {remaining.TotalHours:F1} heures";
-                    }
-                    else
-                    {
-                        EffectEndPredictionLabel.Text = "Effet actuellement négligeable";
-                    }
-                    EffectEndPredictionLabel.IsVisible = true;
-                }
-            }
-        }
-
-        private void AddThresholdAnnotation(double yValue, string text, Color color)
-        {
-            var annotation = new HorizontalLineAnnotation
-            {
-                Y1 = yValue,
-                Stroke = new SolidColorBrush(color),
-                StrokeWidth = 2,
-                StrokeDashArray = new DoubleCollection { 5, 5 },
-                Text = text,
-                LabelStyle = new ChartAnnotationLabelStyle
-                {
-                    FontSize = 10,
-                    TextColor = color,
-                    Background = Brush.White,
-                    CornerRadius = 3,
-                    HorizontalTextAlignment = ChartLabelAlignment.Start,
-                    VerticalTextAlignment = ChartLabelAlignment.Center,
-                    Margin = new Thickness(5, 0, 0, 0)
-                }
-            };
-
-            ChartControl.Annotations.Add(annotation);
-        }
-
-        protected override void AddMoleculeSpecificChartAnnotations()
-        {
-            if (Calculator is BromazepamCalculator calc && ChartControl != null)
-            {
-                AddThresholdAnnotation(BromazepamCalculator.STRONG_THRESHOLD, "Fort (4,5mg)", Colors.Orange);
-                AddThresholdAnnotation(BromazepamCalculator.MODERATE_THRESHOLD, "Modéré (3mg)", Colors.YellowGreen);
-                AddThresholdAnnotation(BromazepamCalculator.LIGHT_THRESHOLD, "Léger (1,5mg)", Colors.Green);
-                AddThresholdAnnotation(BromazepamCalculator.NEGLIGIBLE_THRESHOLD, "Imperceptible", Colors.Grey);
-            }
+            InitializePageUI();
         }
 
         protected override double? GetEffectPercentForConcentration(double concentration)
-        {
-            return _pdModel.GetEffectPercent(concentration);
-        }
+            => _saturation.GetEffectPercent(concentration);
 
-        protected override async Task OnBeforeLoadDataAsync()
+        protected override void UpdateMoleculeSpecificConcentrationInfo(
+            List<DoseEntry> doses, DateTime currentTime, double concentration)
         {
-            await base.OnBeforeLoadDataAsync(); // Appel à l'implémentation de base (facultatif ici car vide)
+            base.UpdateMoleculeSpecificConcentrationInfo(doses, currentTime, concentration);
+
+            double saturation = _saturation.GetEffectPercent(concentration);
+            Panel.HeadlineText = $"Saturation des récepteurs : {saturation:0} %";
+            Panel.HeadlineDetailText = $"Modèle Emax, EC50 {BromazepamCalculator.EC50_MG_PER_L:0.###} mg/L.";
+
+            DateTime? end = Calculator.PredictEffectEndTime(doses, currentTime);
+            Panel.EffectPrediction.Text = end.HasValue && end.Value > currentTime
+                ? $"Sous le seuil imperceptible le {end.Value:dd/MM} vers {end.Value:HH\\hmm}."
+                : "Sous le seuil imperceptible.";
+            Panel.EffectPrediction.IsVisible = true;
         }
     }
 }

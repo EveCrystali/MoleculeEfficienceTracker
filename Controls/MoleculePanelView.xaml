@@ -1,0 +1,223 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentView xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
+             x:Class="MoleculeEfficienceTracker.Controls.MoleculePanelView">
+
+    <!--
+        Corps commun à toutes les pages molécules.
+
+        Les écrans caféine, bromazépam et alcool partageaient jusqu'à 91 % de leurs
+        lignes de XAML, recopiées à la main : le bloc graphique, quatre-vingt-quinze
+        lignes, existait en quatre exemplaires. Il n'en existe plus qu'un.
+    -->
+
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
+
+            <!-- ===== 1. La réponse, avant la courbe ===== -->
+            <Border x:Name="HeadlineCard" Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="10">
+                    <Label x:Name="HeadlineLabel"
+                           Style="{StaticResource HeadlineAnswerStyle}" />
+
+                    <Label x:Name="HeadlineDetailLabel"
+                           Style="{StaticResource CaptionLabelStyle}" />
+
+                    <BoxView HeightRequest="1" Margin="0,4"
+                             Color="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+
+                    <Label x:Name="ConcentrationLabel"
+                           Style="{StaticResource BigStatLabel}"
+                           SemanticProperties.Description="Quantité actuellement présente dans l'organisme" />
+
+                    <Label x:Name="EffectStatusLabel"
+                           Style="{StaticResource BodyLabelStyle}"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label x:Name="EffectPredictionLabel"
+                           Style="{StaticResource CaptionLabelStyle}"
+                           HorizontalTextAlignment="Center" />
+
+                    <Label x:Name="LastUpdateLabel"
+                           Style="{StaticResource CaptionLabelStyle}"
+                           HorizontalTextAlignment="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== 2. Saisie ===== -->
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="12">
+
+                    <Label x:Name="AddTitleLabel"
+                           Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
+
+                    <!-- Accès direct : un appui suffit, sans clavier ni formulaire. -->
+                    <VerticalStackLayout x:Name="PresetsSection" Spacing="8" IsVisible="False">
+                        <Label Text="Enregistrer maintenant"
+                               Style="{StaticResource CaptionLabelStyle}" />
+                        <HorizontalStackLayout x:Name="PresetsHost" Spacing="10" />
+                    </VerticalStackLayout>
+
+                    <Label x:Name="ManualEntryHint"
+                           Text="Ou saisir le détail"
+                           Style="{StaticResource CaptionLabelStyle}"
+                           Margin="0,4,0,0" />
+
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" RowSpacing="10">
+                        <Label x:Name="DoseFieldLabel"
+                               Grid.Column="0"
+                               Style="{StaticResource BodyLabelStyle}" />
+                        <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
+                            <Entry x:Name="DoseEntryControl"
+                                   Keyboard="Numeric"
+                                   Style="{StaticResource FieldEntryStyle}"
+                                   SemanticProperties.Description="Quantité de la prise" />
+                        </Border>
+                    </Grid>
+
+                    <ContentView x:Name="ExtraInputHost" />
+
+                    <Label x:Name="HelperLabel"
+                           Style="{StaticResource CaptionLabelStyle}" />
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                        <Label Grid.Column="0" Text="Quand"
+                               Style="{StaticResource BodyLabelStyle}" />
+                        <DatePicker x:Name="DateControl" Grid.Column="1"
+                                    MinimumHeightRequest="48"
+                                    SemanticProperties.Description="Date de la prise" />
+                        <TimePicker x:Name="TimeControl" Grid.Column="2" Format="HH:mm"
+                                    MinimumHeightRequest="48"
+                                    SemanticProperties.Description="Heure de la prise" />
+                    </Grid>
+
+                    <Button x:Name="AddButton"
+                            Text="Ajouter la prise"
+                            Style="{StaticResource PrimaryButtonStyle}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== 3. Courbe ===== -->
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Évolution"
+                           Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
+
+                    <chart:SfCartesianChart x:Name="ConcentrationChart"
+                                            HeightRequest="300"
+                                            MinimumHeightRequest="220"
+                                            SemanticProperties.Description="Courbe de concentration au cours du temps">
+                        <chart:SfCartesianChart.TrackballBehavior>
+                            <chart:ChartTrackballBehavior DisplayMode="FloatAllPoints" />
+                        </chart:SfCartesianChart.TrackballBehavior>
+
+                        <chart:SfCartesianChart.ZoomPanBehavior>
+                            <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True" />
+                        </chart:SfCartesianChart.ZoomPanBehavior>
+
+                        <chart:SfCartesianChart.XAxes>
+                            <chart:DateTimeAxis x:Name="ChartXAxis" ShowMajorGridLines="True">
+                                <chart:DateTimeAxis.LabelStyle>
+                                    <chart:ChartAxisLabelStyle FontSize="11"
+                                        TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                                </chart:DateTimeAxis.LabelStyle>
+                                <chart:DateTimeAxis.MajorGridLineStyle>
+                                    <chart:ChartLineStyle StrokeWidth="1"
+                                        Stroke="{AppThemeBinding Light={StaticResource GridLineLight}, Dark={StaticResource GridLineDark}}" />
+                                </chart:DateTimeAxis.MajorGridLineStyle>
+                            </chart:DateTimeAxis>
+                        </chart:SfCartesianChart.XAxes>
+
+                        <chart:SfCartesianChart.YAxes>
+                            <chart:NumericalAxis x:Name="ChartYAxis" Minimum="0">
+                                <chart:NumericalAxis.LabelStyle>
+                                    <chart:ChartAxisLabelStyle FontSize="11"
+                                        TextColor="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+                                </chart:NumericalAxis.LabelStyle>
+                                <chart:NumericalAxis.MajorGridLineStyle>
+                                    <chart:ChartLineStyle StrokeWidth="1"
+                                        Stroke="{AppThemeBinding Light={StaticResource GridLineLight}, Dark={StaticResource GridLineDark}}" />
+                                </chart:NumericalAxis.MajorGridLineStyle>
+                            </chart:NumericalAxis>
+                        </chart:SfCartesianChart.YAxes>
+
+                        <chart:SplineSeries x:Name="ConcentrationSeries"
+                                            ItemsSource="{Binding ChartData}"
+                                            XBindingPath="Time"
+                                            YBindingPath="Concentration"
+                                            StrokeWidth="2"
+                                            EnableAnimation="False"
+                                            EnableTooltip="True" />
+                    </chart:SfCartesianChart>
+
+                    <!-- Légende des seuils, remplie par le code : chaque niveau y
+                         apparaît avec son trait et son libellé, jamais sa seule
+                         couleur. -->
+                    <FlexLayout x:Name="ThresholdLegend"
+                                Wrap="Wrap" JustifyContent="Start" AlignItems="Center" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== 4. Historique ===== -->
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Prises récentes"
+                           Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
+
+                    <Label x:Name="EmptyDosesLabel"
+                           Text="Aucune prise enregistrée"
+                           Style="{StaticResource EmptyLabelStyle}" />
+
+                    <CollectionView x:Name="DosesCollection"
+                                    ItemsSource="{Binding Doses}"
+                                    MaximumHeightRequest="320">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource DoseRowStyle}">
+                                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                                            <Label Text="{Binding TimeTaken, StringFormat='{0:ddd dd/MM · HH:mm}'}"
+                                                   Style="{StaticResource BodyLabelStyle}" />
+                                            <Label Text="{Binding BeverageType}"
+                                                   Style="{StaticResource CaptionLabelStyle}"
+                                                   IsVisible="{Binding BeverageType, Converter={StaticResource IsNotEmptyConverter}}" />
+                                        </VerticalStackLayout>
+
+                                        <Label Grid.Column="1"
+                                               Text="{Binding AmountDisplay}"
+                                               Style="{StaticResource BodyLabelStyle}"
+                                               FontAttributes="Bold" />
+
+                                        <Button Grid.Column="2"
+                                                Text="✕"
+                                                Style="{StaticResource DeleteButtonStyle}"
+                                                CommandParameter="{Binding Id}"
+                                                Clicked="OnDeleteRowClicked"
+                                                SemanticProperties.Description="Supprimer cette prise" />
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== 5. Données ===== -->
+            <Border Style="{StaticResource CardStyle}">
+                <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
+                    <Button x:Name="ExportButton" Grid.Column="0"
+                            Text="Exporter"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                    <Button x:Name="ClearButton" Grid.Column="1"
+                            Text="Tout effacer"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                </Grid>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentView>

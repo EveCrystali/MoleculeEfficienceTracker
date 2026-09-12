@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using MoleculeEfficienceTracker.Core.Models;
@@ -8,123 +8,108 @@ namespace MoleculeEfficienceTracker.Core.Services
     public class CaffeineCalculator : IMoleculeCalculator
     {
         public string DisplayName => "Caféine";
-        public string DoseUnit => "mg";
+        public string DoseUnit => DoseUnits.Milligram;
         public string ConcentrationUnit => "mg/L";
 
-        // Paramètres pharmacocinétiques de la caféine
-        private const double HALF_LIFE_HOURS = 5.0; // Demi-vie moyenne en heures (3-7h)
-        private const double ABSORPTION_TIME_HOURS = 0.75; // Temps pour atteindre le pic (45 min)
+        private const double HALF_LIFE_HOURS = 5.0;
 
-        public const double MG_PER_UNIT = 80.0; // 1 unité = 80mg (Nespresso standard)
-        public const double VOLUME_DISTRIBUTION_L_PER_KG = 0.65; // Volume de distribution moyen
-        private const double BIOAVAILABILITY = 1.0; // Fraction absorbée (≈100 %)
+        /// <summary>
+        /// Demi-vie d'absorption, et non délai du pic.
+        ///
+        /// L'ancienne constante valait 0,75 h avec le commentaire « temps pour
+        /// atteindre le pic (45 min) », mais elle était injectée dans ka = ln2/T.
+        /// Le pic d'un modèle de Bateman vaut ln(ka/ke)/(ka−ke) : la courbe
+        /// culminait en réalité à 2 h 25, pendant que GetPeakTime annonçait 45 min.
+        /// La valeur ci-dessous est celle qui place effectivement le pic à 45 min.
+        /// </summary>
+        private const double ABSORPTION_HALF_LIFE_HOURS = 0.141768;
+
+        public const double MG_PER_UNIT = 80.0; // 1 Nespresso standard
+        public const double VOLUME_DISTRIBUTION_L_PER_KG = 0.65;
+        private const double BIOAVAILABILITY = 1.0;
 
         private readonly double eliminationConstant; // ke
-        private readonly double absorptionConstant; // ka
+        private readonly double absorptionConstant;  // ka
 
-        // Seuils d'effet exprimés en mg/L
-        public const double STRONG_THRESHOLD = 8.0;      // mg/L : effet fort/toxique
-        public const double MODERATE_THRESHOLD = 3.0;     // mg/L : effet net
-        public const double LIGHT_THRESHOLD = 1;        // mg/L : effet léger
-        public const double NEGLIGIBLE_THRESHOLD = 0.3;   // mg/L : effet négligeable
+        // Seuils d'effet, en mg/L. Repère : un espresso de 80 mg culmine à
+        // 1,54 mg/L pour 72 kg.
+        public const double STRONG_THRESHOLD = 8.0;
+        public const double MODERATE_THRESHOLD = 3.0;
+        public const double LIGHT_THRESHOLD = 1.0;
+        public const double NEGLIGIBLE_THRESHOLD = 0.3;
 
-
-        private const double MINIMUM_EFFECTIVE_DOSE_MG_PER_KG = 0.5; // 0.5 mg/kg
-        private const double AVERAGE_BODY_WEIGHT_KG = 70.0; // Poids moyen
-
-        // Seuil calculé dynamiquement
-        public static double GetEffectivenessThreshold(double bodyWeightKg = AVERAGE_BODY_WEIGHT_KG)
-        {
-            return MINIMUM_EFFECTIVE_DOSE_MG_PER_KG * bodyWeightKg; // 35mg pour 70kg
-        }
+        /// <summary>Concentration au-delà de laquelle l'endormissement est gêné.</summary>
+        public const double DEFAULT_SLEEP_THRESHOLD = 1.0;
 
         public CaffeineCalculator()
         {
-            eliminationConstant = Math.Log(2) / HALF_LIFE_HOURS; // ke = 0.139 h⁻¹
-            absorptionConstant = Math.Log(2) / ABSORPTION_TIME_HOURS; // ka = 0.924 h⁻¹
+            eliminationConstant = Math.Log(2) / HALF_LIFE_HOURS;
+            absorptionConstant = Math.Log(2) / ABSORPTION_HALF_LIFE_HOURS;
         }
 
-        // Calcule la concentration pour une dose unique à un moment donné
-        public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime currentTime)
+        /// <summary>Délai réel du pic après la prise, déduit du modèle.</summary>
+        public double PeakDelayHours =>
+            Math.Log(absorptionConstant / eliminationConstant) / (absorptionConstant - eliminationConstant);
+
+        /// <summary>Concentration produite par une dose, t heures après la prise.</summary>
+        public double ConcentrationAfterHours(double doseMg, double weightKg, double hoursElapsed)
         {
-            double hoursElapsed = (currentTime - dose.TimeTaken).TotalHours;
+            if (hoursElapsed < 0) return 0;
 
-            if (hoursElapsed < 0) return 0; // Dose future
-
-            double doseMg = dose.DoseMg;
-
-            double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
-
-            // Modèle pharmacocinétique à un compartiment avec absorption d'ordre 1
-            // Adapté pour la caféine avec absorption rapide
+            double volume = weightKg * VOLUME_DISTRIBUTION_L_PER_KG;
             double concentration = (doseMg * BIOAVAILABILITY * absorptionConstant /
-                                  (volume * (absorptionConstant - eliminationConstant))) *
-                                 (Math.Exp(-eliminationConstant * hoursElapsed) -
-                                  Math.Exp(-absorptionConstant * hoursElapsed));
+                                   (volume * (absorptionConstant - eliminationConstant))) *
+                                  (Math.Exp(-eliminationConstant * hoursElapsed) -
+                                   Math.Exp(-absorptionConstant * hoursElapsed));
 
             return Math.Max(0, concentration);
         }
 
-        // Calcule la concentration totale en tenant compte de toutes les doses
-        public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime currentTime)
-        {
-            return doses.Sum(dose => CalculateSingleDoseConcentration(dose, currentTime));
-        }
+        public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime currentTime)
+            => ConcentrationAfterHours(dose.DoseMg, dose.WeightKg, PkTime.ElapsedHours(dose.TimeTaken, currentTime));
 
-        // Retourne la valeur de la dose en unité de concentration (mg pour la caféine)
-        public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose)
-        {
-            // La dose est désormais saisie directement en mg
-            return dose.DoseMg;
-        }
+        public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime currentTime)
+            => doses.Sum(dose => CalculateSingleDoseConcentration(dose, currentTime));
+
+        public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose) => dose.DoseMg;
 
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime currentTime)
-        {
-            // Convertit la concentration totale (mg/L) en quantité restante (mg)
-            double totalMg = doses.Sum(d =>
-            {
-                double conc = CalculateSingleDoseConcentration(d, currentTime);
-                double volume = d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
-                return conc * volume;
-            });
+            => doses.Sum(d => CalculateSingleDoseConcentration(d, currentTime) * d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG);
 
-            return totalMg; // Résultat en mg
-        }
-
-        // Génère des points pour un graphique sur une période donnée
-        // Période plus courte pour la caféine (élimination plus rapide)
         public List<(DateTime Time, double Concentration)> GenerateGraph(
             List<DoseEntry> doses, DateTime startTime, DateTime endTime, int pointCount = 200)
         {
-            var points = new List<(DateTime, double)>();
-            var timeSpan = endTime - startTime;
-            var interval = timeSpan.TotalMinutes / pointCount;
+            var points = new List<(DateTime, double)>(pointCount + 1);
+            double interval = (endTime - startTime).TotalMinutes / pointCount;
 
+            // Les instants absolus sont résolus une fois, hors de la boucle.
             var doseParams = doses.Select(d => new
             {
-                d.TimeTaken,
+                Instant = PkTime.ToOffset(d.TimeTaken),
                 A = (d.DoseMg * BIOAVAILABILITY * absorptionConstant) /
                     (d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG * (absorptionConstant - eliminationConstant))
             }).ToList();
 
             for (int i = 0; i <= pointCount; i++)
             {
-                var currentTime = startTime.AddMinutes(i * interval);
+                DateTime currentTime = startTime.AddMinutes(i * interval);
+                DateTimeOffset currentInstant = PkTime.ToOffset(currentTime);
                 double total = 0;
+
                 foreach (var p in doseParams)
                 {
-                    double hoursElapsed = (currentTime - p.TimeTaken).TotalHours;
+                    double hoursElapsed = (currentInstant - p.Instant).TotalHours;
                     if (hoursElapsed < 0) continue;
                     double conc = p.A * (Math.Exp(-eliminationConstant * hoursElapsed) - Math.Exp(-absorptionConstant * hoursElapsed));
                     if (conc > 0) total += conc;
                 }
+
                 points.Add((currentTime, total));
             }
 
             return points;
         }
 
-        // Détermine le niveau d'effet subjectif
         public EffectLevel GetEffectLevel(double concentration)
         {
             if (concentration >= STRONG_THRESHOLD) return EffectLevel.Strong;
@@ -133,7 +118,6 @@ namespace MoleculeEfficienceTracker.Core.Services
             return EffectLevel.None;
         }
 
-        // Calculer quand la concentration tombera sous le seuil négligeable
         public DateTime? PredictEffectEndTime(List<DoseEntry> doses, DateTime currentTime)
         {
             if (!doses.Any()) return currentTime;
@@ -141,40 +125,60 @@ namespace MoleculeEfficienceTracker.Core.Services
             for (int minutes = 0; minutes <= 24 * 60; minutes += 15)
             {
                 DateTime checkTime = currentTime.AddMinutes(minutes);
-                double conc = CalculateTotalConcentration(doses, checkTime);
-                if (conc < NEGLIGIBLE_THRESHOLD)
+                if (CalculateTotalConcentration(doses, checkTime) < NEGLIGIBLE_THRESHOLD)
                     return checkTime;
             }
 
             return null;
         }
 
-        // Compatibilité avec l'ancien nom de méthode
-        public DateTime? GetIneffectiveTime(List<DoseEntry> doses, DateTime currentTime) =>
-            PredictEffectEndTime(doses, currentTime);
-
-        // Indique si l'effet est négligeable pour une concentration donnée
-        public bool IsEffectNegligible(double concentration) => concentration < NEGLIGIBLE_THRESHOLD;
-
-        public static class CaffeineUnits
+        /// <summary>
+        /// Heure limite de la prochaine prise pour être sous <paramref name="threshold"/>
+        /// à l'heure du coucher.
+        ///
+        /// C'est la réponse que l'écran affiche en une phrase. Retourne null si le
+        /// socle déjà en place dépasse à lui seul le seuil — auquel cas aucune
+        /// heure ne convient, et le dire est plus utile que proposer un horaire faux.
+        /// </summary>
+        public DateTime? LatestIntakeTimeBefore(
+            List<DoseEntry> existingDoses,
+            DateTime bedTime,
+            double plannedDoseMg,
+            double weightKg,
+            DateTime notEarlierThan,
+            double threshold = DEFAULT_SLEEP_THRESHOLD)
         {
-            public const double NESPRESSO_STANDARD = 1.0;      // 80mg
-            public const double NESPRESSO_LUNGO = 1.2;         // ~95mg  
-            public const double NESPRESSO_KAZAAR = 1.8;        // 142mg (le plus fort)
-            public const double COFFEE_CUP_REGULAR = 1.2;      // ~95mg
-            public const double TEA_CUP = 0.6;                 // ~47mg
-            public const double COLA_CAN = 0.4;                // ~35mg
+            // L'instant qui décide n'est pas le coucher, c'est le pic de la prise
+            // envisagée — un café bu à l'heure du coucher n'a encore rien libéré à
+            // cet instant précis, et le juger là reviendrait à l'autoriser toujours.
+            // On évalue donc au plus tard des deux : le coucher, ou le pic.
+            double peakDelay = PeakDelayHours;
+
+            for (int minutes = 0; minutes <= 24 * 60; minutes += 5)
+            {
+                DateTime candidate = bedTime.AddMinutes(-minutes);
+                if (candidate < notEarlierThan) break;
+
+                double hoursToBed = PkTime.ElapsedHours(candidate, bedTime);
+                double evaluationDelay = Math.Max(hoursToBed, peakDelay);
+                DateTime evaluationTime = candidate.AddHours(evaluationDelay);
+
+                double total = CalculateTotalConcentration(existingDoses, evaluationTime)
+                             + ConcentrationAfterHours(plannedDoseMg, weightKg, evaluationDelay);
+
+                if (total <= threshold)
+                    return candidate;
+            }
+
+            return null;
         }
 
-        // Méthodes spécifiques à la caféine
+        public bool IsEffectNegligible(double concentration) => concentration < NEGLIGIBLE_THRESHOLD;
+
         public double GetHalfLifeHours() => HALF_LIFE_HOURS;
-        public double GetAbsorptionTimeHours() => ABSORPTION_TIME_HOURS;
+        public double GetEliminationTimeHours() => HALF_LIFE_HOURS * 5;
 
-        // Estimation du temps pour élimination quasi-complète (5 demi-vies)
-        public double GetEliminationTimeHours() => HALF_LIFE_HOURS * 5; // ~25 heures
-
-        // Pic de concentration estimé
-        public DateTime GetPeakTime(DateTime doseTime) => doseTime.AddMinutes(45);
-
+        /// <summary>Instant du pic pour une prise donnée, cohérent avec la courbe tracée.</summary>
+        public DateTime GetPeakTime(DateTime doseTime) => doseTime.AddHours(PeakDelayHours);
     }
 }

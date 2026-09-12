@@ -1,176 +1,159 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<ResourceDictionary xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-                    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-                    xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts">
-    <Style x:Key="CardFrameStyle"
-           TargetType="Frame">
-        <Setter Property="CornerRadius"
-                Value="16"/>
-        <Setter Property="Padding"
-                Value="16"/>
-        <Setter Property="HasShadow"
-                Value="True"/>
-        <Setter Property="Shadow">
-            <Setter.Value>
-                <Shadow Brush="{StaticResource PrimaryBrush}"
-                        Offset="0,6"
-                        Radius="18"
-                        Opacity="0.25"/>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Background">
-            <LinearGradientBrush StartPoint="0,0"
-                                 EndPoint="0,1">
-                <GradientStop Color="White"
-                              Offset="0"/>
-                <GradientStop Color="#F3F4F6"
-                              Offset="1"/>
-            </LinearGradientBrush>
-        </Setter>
+<?xaml-comp compile="true" ?>
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
+
+    <!--
+        Styles communs. Deux changements de fond par rapport à la version
+        précédente.
+
+        Frame a disparu : le contrôle est obsolète depuis MAUI 9 et l'application en
+        comptait trente-neuf. Border le remplace partout.
+
+        Chaque couleur suit le thème. Les pages forçaient auparavant un fond clair en
+        dur tandis que le style global peignait les libellés en blanc au thème
+        sombre : la liste des doses de l'écran alcool s'écrivait en blanc sur blanc.
+    -->
+
+    <!-- ===== Surfaces ===== -->
+
+    <Style x:Key="CardStyle" TargetType="Border">
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
+        <Setter Property="Padding" Value="16" />
+        <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
 
-    <Style x:Key="PrimaryButtonStyle"
-           TargetType="Button">
-        <Setter Property="TextColor"
-                Value="White"/>
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
-        <Setter Property="CornerRadius"
-                Value="18"/>
-        <Setter Property="Padding"
-                Value="10,8"/>
-        <Setter Property="FontSize"
-                Value="16"/>
-        <Setter Property="Background">
-            <LinearGradientBrush StartPoint="0,0"
-                                 EndPoint="1,0">
-                <GradientStop Color="{StaticResource Primary}"
-                              Offset="0"/>
-                <GradientStop Color="{StaticResource Tertiary}"
-                              Offset="1"/>
-            </LinearGradientBrush>
-        </Setter>
-        <Setter Property="Shadow">
-            <Setter.Value>
-                <Shadow Brush="{StaticResource PrimaryBrush}"
-                        Offset="0,4"
-                        Radius="12"
-                        Opacity="0.3"/>
-            </Setter.Value>
-        </Setter>
+    <Style x:Key="PageRootLayoutStyle" TargetType="VerticalStackLayout">
+        <Setter Property="Spacing" Value="14" />
+        <Setter Property="Padding" Value="16,16,16,32" />
+        <Setter Property="MaximumWidthRequest" Value="720" />
+        <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
 
-    <Style x:Key="DeleteButtonStyle"
-           TargetType="Button">
-        <Setter Property="TextColor"
-                Value="White"/>
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
-        <Setter Property="CornerRadius"
-                Value="18"/>
-        <Setter Property="Padding"
-                Value="10,8"/>
-        <Setter Property="FontSize"
-                Value="16"/>
-        <Setter Property="BackgroundColor"
-                Value="#D32F2F"/>
-        <Setter Property="Shadow">
-            <Setter.Value>
-                <Shadow Brush="#670000"
-                        Offset="0,4"
-                        Radius="12"
-                        Opacity="0.4"/>
-            </Setter.Value>
-        </Setter>
+    <!-- ===== Texte ===== -->
+
+    <Style x:Key="SectionTitleStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Setter Property="Margin" Value="0,0,0,10" />
     </Style>
 
-    <Style x:Key="EmptyLabelStyle"
-           TargetType="Label">
-        <Setter Property="TextColor"
-                Value="#9CA3AF"/>
-        <Setter Property="FontSize"
-                Value="18"/>
-        <Setter Property="HorizontalOptions"
-                Value="Center"/>
-        <Setter Property="FontAttributes"
-                Value="Italic"/>
-        <Setter Property="Margin"
-                Value="0,20,0,0"/>
+    <Style x:Key="BodyLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
     </Style>
 
-    <!-- Mise en page compacte pour les écrans mobiles -->
-    <Style x:Key="PageRootLayoutStyle"
-           TargetType="VerticalStackLayout">
-        <Setter Property="Spacing"
-                Value="18"/>
-        <Setter Property="Padding"
-                Value="16"/>
+    <Style x:Key="CaptionLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
     </Style>
 
-    <Style x:Key="CompactHeaderStyle"
-           TargetType="Label">
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
-        <Setter Property="FontSize"
-                Value="22"/>
-        <Setter Property="TextColor"
-                Value="#FF34248F"/>
-        <Setter Property="HorizontalOptions"
-                Value="Center"/>
+    <!-- La réponse en une phrase, en tête de l'écran caféine. -->
+    <Style x:Key="HeadlineAnswerStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="19" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="LineHeight" Value="1.3" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
     </Style>
 
-    <Style TargetType="Frame"
-           x:Key="CardFrame">
-        <Setter Property="BackgroundColor"
-                Value="White"/>
-        <Setter Property="CornerRadius"
-                Value="20"/>
-        <Setter Property="HasShadow"
-                Value="False"/>
-        <Setter Property="Padding"
-                Value="18"/>
-        <Setter Property="Margin"
-                Value="0,0,0,5"/>
-    </Style>
-    <Style TargetType="Label"
-           x:Key="BigStatLabel">
-        <Setter Property="FontAttributes"
-                Value="Bold"/>
-        <Setter Property="FontSize"
-                Value="18"/>
-        <Setter Property="TextColor"
-                Value="#222"/>
-    </Style>
-    <Style TargetType="Frame"
-           x:Key="BadgeFrame">
-        <Setter Property="CornerRadius"
-                Value="14"/>
-        <Setter Property="BackgroundColor"
-                Value="#EAFBEA"/>
-        <Setter Property="Padding"
-                Value="10,2"/>
-        <Setter Property="HasShadow"
-                Value="False"/>
-        <Setter Property="VerticalOptions"
-                Value="Center"/>
+    <Style x:Key="BigStatLabel" TargetType="Label">
+        <Setter Property="FontSize" Value="34" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
     </Style>
 
-    <chart:ChartLineStyle x:Key="CustomTrackballLineStyle"
-                          Stroke="{StaticResource Primary}"
-                          StrokeWidth="2"
-                          StrokeDashArray="3,2"/>
+    <Style x:Key="EmptyLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontAttributes" Value="Italic" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+        <Setter Property="Margin" Value="0,12" />
+    </Style>
 
-    <chart:ChartLabelStyle x:Key="CustomTrackballLabelStyle"
-                           Background="{StaticResource Primary}"
-                           TextColor="White"
-                           FontSize="12"
-                           CornerRadius="4"/>
+    <!-- ===== Actions ===== -->
 
-    <chart:ChartMarkerSettings x:Key="CustomTrackballMarkerSettings"
-                               Type="Circle"
-                               Fill="{StaticResource Primary}"
-                               Stroke="White"
-                               StrokeWidth="2"
-                               Height="16"
-                               Width="16"/>
+    <!-- 48 px de haut : le style global annonçait un minimum de 44 que les boutons
+         de l'application contredisaient à 28. -->
+    <Style x:Key="PrimaryButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=#0E1620}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="Padding" Value="18,0" />
+    </Style>
+
+    <Style x:Key="PresetButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FieldBackgroundLight}, Dark={StaticResource FieldBackgroundDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="BorderWidth" Value="1.5" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="FontAttributes" Value="Bold" />
+        <Setter Property="CornerRadius" Value="14" />
+        <Setter Property="HeightRequest" Value="60" />
+        <Setter Property="MinimumHeightRequest" Value="60" />
+    </Style>
+
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+        <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+    </Style>
+
+    <Style x:Key="DeleteButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource EffectStrongDark}}" />
+        <Setter Property="FontSize" Value="18" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="WidthRequest" Value="48" />
+        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="MinimumWidthRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="Padding" Value="0" />
+    </Style>
+
+    <!-- ===== Champs ===== -->
+
+    <Style x:Key="FieldBorderStyle" TargetType="Border">
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource FieldBackgroundLight}, Dark={StaticResource FieldBackgroundDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 10" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style x:Key="FieldEntryStyle" TargetType="Entry">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+    </Style>
+
+    <!-- ===== Liste des doses ===== -->
+
+    <Style x:Key="DoseRowStyle" TargetType="Border">
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource FieldBackgroundDark}}" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="12,8" />
+        <Setter Property="Margin" Value="0,3" />
+    </Style>
+
 </ResourceDictionary>

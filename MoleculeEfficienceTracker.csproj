@@ -1,17 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-maccatalyst;net9.0-android35.0</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
-		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-		<!-- <TargetFrameworks>$(TargetFrameworks);net9.0-tizen</TargetFrameworks> -->
-
-		<!-- Note for MacCatalyst:
-		The default runtime is maccatalyst-x64, except in Release config, in which case the default is maccatalyst-x64;maccatalyst-arm64.
-		When specifying both architectures, use the plural <RuntimeIdentifiers> instead of the singular <RuntimeIdentifier>.
-		The Mac App Store will NOT accept apps with ONLY maccatalyst-arm64 indicated;
-		either BOTH runtimes must be indicated or ONLY macatalyst-x64. -->
-		<!-- For example: <RuntimeIdentifiers>maccatalyst-x64;maccatalyst-arm64</RuntimeIdentifiers> -->
+		<!-- net9.0-maccatalyst a été retiré : aucun dossier Platforms/MacCatalyst
+		     n'a jamais existé, et comme il était le premier de la liste, un
+		     `dotnet build` sans cible échouait sur toute machine non-macOS. -->
+		<TargetFrameworks>net10.0-android36.0</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net10.0-windows10.0.19041.0</TargetFrameworks>
 
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MoleculeEfficienceTracker</RootNamespace>
@@ -20,49 +14,66 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<!-- Display name -->
-		<ApplicationTitle>MoleculeEfficienceTracker</ApplicationTitle>
+		<ApplicationTitle>Molecule Tracker</ApplicationTitle>
 
-		<!-- App Identifier -->
-		<ApplicationId>com.companyname.moleculeefficiencetracker</ApplicationId>
+		<!-- Identifiant réel : le modèle laissait com.companyname.*, qui interdit
+		     toute publication et entre en collision avec n'importe quelle autre
+		     application issue du même modèle. -->
+		<ApplicationId>com.evecrystali.moleculeefficiencetracker</ApplicationId>
 
-		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationDisplayVersion>2.0</ApplicationDisplayVersion>
+		<ApplicationVersion>2</ApplicationVersion>
 
-		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<WindowsPackageType>None</WindowsPackageType>
 
-		
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">29.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</SupportedOSPlatformVersion>
 		<TargetPlatformMinVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'windows'">10.0.17763.0</TargetPlatformMinVersion>
 	</PropertyGroup>
 
+	<!-- Clé de licence Syncfusion.
+
+	     Elle n'est jamais écrite dans le dépôt : elle arrive par la variable
+	     d'environnement SYNCFUSION_LICENSE_KEY au moment de la compilation et se
+	     retrouve en métadonnée d'assemblage, lue au démarrage. Sans clé, la
+	     compilation passe et l'application affiche le bandeau d'essai. -->
+	<PropertyGroup>
+		<SyncfusionLicenseKey Condition="'$(SyncfusionLicenseKey)' == ''">$(SYNCFUSION_LICENSE_KEY)</SyncfusionLicenseKey>
+	</PropertyGroup>
+
 	<ItemGroup>
-		<!-- App Icon -->
-		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#512BD4" />
+		<AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+			<_Parameter1>SyncfusionLicense</_Parameter1>
+			<_Parameter2>$(SyncfusionLicenseKey)</_Parameter2>
+		</AssemblyAttribute>
+	</ItemGroup>
 
-		<!-- Splash Screen -->
-		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#512BD4" BaseSize="128,128" />
+	<!-- Le glob implicite du SDK ramassait tests/**/*.cs dans l'application. -->
+	<ItemGroup>
+		<Compile Remove="tests/**/*.cs" />
+		<None Remove="tests/**" />
+	</ItemGroup>
 
-		<!-- Images -->
+	<ItemGroup>
+		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#1F5FAF" />
+		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1F5FAF" BaseSize="128,128" />
+
 		<MauiImage Include="Resources\Images\*" />
-		<MauiImage Update="Resources\Images\dotnet_bot.png" Resize="True" BaseSize="300,185" />
 
-		<!-- Custom Fonts -->
-		<MauiFont Include="Resources\Fonts\*" />
+		<!-- Restreint aux vraies polices : le glob d'origine embarquait aussi
+		     FluentUI.cs, un fichier source de 526 Ko, comme s'il s'agissait d'une
+		     police. -->
+		<MauiFont Include="Resources\Fonts\*.ttf" />
 
-		<!-- Raw Assets (also remove the "Resources\Raw" prefix) -->
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Maui" Version="11.2.0" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
-		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
-		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
-		<PackageReference Include="Syncfusion.Maui.Charts" Version="29.2.7" />
+		<PackageReference Include="CommunityToolkit.Maui" Version="15.0.1" />
+		<PackageReference Include="Microsoft.Maui.Controls" Version="10.0.101" />
+		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.12" />
+		<PackageReference Include="Syncfusion.Maui.Charts" Version="34.2.7" />
+		<PackageReference Include="Plugin.LocalNotification" Version="14.1.2" />
 	</ItemGroup>
 
 </Project>
