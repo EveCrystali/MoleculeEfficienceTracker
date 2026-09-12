@@ -1,38 +1,13 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <Application x:Class="MoleculeEfficienceTracker.App"
              xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             xmlns:chart="clr-namespace:Syncfusion.Maui.Charts;assembly=Syncfusion.Maui.Charts"
-             xmlns:local="clr-namespace:MoleculeEfficienceTracker"
              xmlns:converters="clr-namespace:MoleculeEfficienceTracker.Converters">
 
     <Application.Resources>
         <ResourceDictionary>
-            <!-- Convertisseurs globaux -->
-            <converters:DoseDisplayConverter x:Key="DoseDisplayConverter"/>
-            <converters:DoseLabelConverter x:Key="DoseLabelConverter"/>
-            <converters:ConcentrationTooltipConverter x:Key="ConcentrationTooltipConverter"/>
-            
-            <!-- Styles globaux pour les graphiques Syncfusion -->
-            <chart:ChartMarkerSettings x:Key="MarkerSettings" 
-                                      Type="Circle" 
-                                      Width="6" 
-                                      Height="6" 
-                                      Fill="Blue" 
-                                      Stroke="White" 
-                                      StrokeWidth="1"/>
-            
-            <!-- Style pour les lignes de grille -->
-            <chart:ChartLineStyle x:Key="GridLineStyle" 
-                                 Stroke="LightGray" 
-                                 StrokeWidth="1"/>
-            
-            <chart:ChartLineStyle x:Key="MinorGridLineStyle" 
-                                 Stroke="LightGray" 
-                                 StrokeWidth="0.5" 
-                                 StrokeDashArray="2,2"/>
+            <converters:IsNotEmptyConverter x:Key="IsNotEmptyConverter"/>
 
-            <!-- Couleurs et styles de base -->
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
                 <ResourceDictionary Source="Resources/Styles/Styles.xaml" />

@@ -1,172 +1,130 @@
-# 🧬 MoleculeEfficienceTracker
+# MoleculeEfficienceTracker
 
-[![.NET MAUI](https://img.shields.io/badge/.NET%20MAUI-9.0-blue)](https://dotnet.microsoft.com/apps/maui)
-[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Android-blue)](https://dotnet.microsoft.com/apps/maui)
-[![License](https://img.shields.io/badge/License-Proprietary-red)](LICENSE.md)
-[![Status](https://img.shields.io/badge/Status-WIP-yellow)](https://github.com/votre-username/MoleculeEfficienceTracker)
+Application .NET MAUI de suivi pharmacocinétique personnel : elle enregistre les
+prises et estime, pour chaque molécule, ce qu'il en reste dans l'organisme à un
+instant donné.
 
-## 📖 Description
+> **Ceci n'est pas un dispositif médical.**
+>
+> L'auteur n'est ni médecin ni professionnel de santé. Les concentrations
+> affichées sont des estimations issues de modèles moyens de population, jamais
+> une mesure. Elles ne remplacent aucun avis médical et ne valent aucune
+> autorisation — en particulier pas celle de conduire.
 
-MoleculeEfficienceTracker est une application mobile multiplateforme développée avec **.NET MAUI** qui permet de calculer et visualiser en temps réel la concentration de différentes molécules dans l'organisme. L'application utilise des modèles pharmacocinétiques scientifiques pour estimer l'évolution des concentrations après chaque prise.
+## État
 
-**⚠️ AVERTISSEMENT MÉDICAL IMPORTANT**
+Reprise et modernisation complètes, septembre 2026. La version précédente datait
+d'août 2025 et tournait sur .NET 9, sorti de support depuis mai 2026.
 
-> **L'auteur de cette application n'est pas médecin ni professionnel de santé.**
-> 
-> Cette application est fournie **uniquement à des fins éducatives et informatives**.
-> Elle ne fournit pas de conseils médicaux, de diagnostic ou de traitement.
-> Les informations ne remplacent en aucun cas une consultation médicale professionnelle.
-> 
-> **Consultez toujours un professionnel de santé qualifié pour toute question médicale.**
-> 
-> L'utilisateur utilise cette application à ses propres risques. Le développeur décline toute responsabilité pour les dommages directs ou indirects résultant de l'utilisation de cette application.
+Ce qui a changé, et pourquoi :
 
-## ✨ Fonctionnalités
+- **Les données ne s'effacent plus en silence.** Une lecture qui échoue met le
+  fichier de côté et remonte l'erreur au lieu de rendre une liste vide que la
+  saisie suivante écrasait. L'écriture est atomique.
+- **Une seule clé par molécule.** L'alcool était écrit `alcohol` et lu `alcool` :
+  la ligne Alcool de la page de synthèse affichait zéro depuis l'origine. Même
+  flottement entre `ibuprofen` et `ibuprofene`.
+- **Constantes d'absorption corrigées.** Elles étaient documentées comme le délai
+  du pic mais injectées comme demi-vies d'absorption : le pic de la caféine
+  tombait à 2 h 25 au lieu de 45 minutes.
+- **Seuils atteignables.** Le niveau « fort » du bromazépam se situait 11 % au-dessus
+  de ce que sa dose de référence peut produire.
+- **Alcool à compartiment unique.** L'élimination d'ordre zéro était appliquée dose
+  par dose puis sommée : quatre verres s'éliminaient quatre fois plus vite.
+- **Saisie en un geste.** Trois doses en accès direct, plus un raccourci d'écran
+  d'accueil Android qui enregistre sans ouvrir l'application.
+- **Une phrase avant la courbe.** L'écran caféine répond « dernier café avant
+  telle heure pour dormir à telle heure » ; le graphique documente, il ne tranche pas.
+- **Lisibilité.** Palette rouge / orange / bleu, sans opposition rouge-vert, et
+  chaque seuil se distingue aussi par son motif de trait. Thème sombre réellement
+  rendu.
 
-### 🧪 Molécules supportées
-- **Bromazépam** : Demi-vie 14h, absorption 2h, biodisponibilité 84%, concentration en **mg/L** (modèle Emax avec EC50 0,05 mg/L)
-- **Caféine** : Demi-vie 5h, absorption 45min, saisie des doses en **mg** (80 mg = 1 Nespresso)
-- **Alcool** : Élimination linéaire 1 unité/heure, absorption 45min
-- **Paracétamol** : Demi-vie 3h, absorption 30min, biodisponibilité 92%, concentration en **mg/L** *(en développement)*
-- **Ibuprofène** : Demi-vie 2h, absorption 30min, biodisponibilité 90%, concentration en **mg/L** *(en développement)*
+## Molécules
 
-### 📊 Fonctionnalités principales
-- **Suivi des doses** : Enregistrement avec date/heure précise
- - **Calculs pharmacocinétiques** : Modèle 1 compartiment (absorption/élimination du 1er ordre) prenant en compte le poids (configurable, 72 kg par défaut) et le volume de distribution
-- **Graphiques temps réel** : Visualisation interactive avec annotations (Syncfusion Charts)
-- **Affichage de la saturation des récepteurs** : échelle 0–80 % pour le bromazépam
-- **Seuils d'efficacité** : Prédictions personnalisées (ex: seuil caféine à 35mg)
-- **Sauvegarde automatique** : Persistance JSON locale
-- **Export de données** : Sauvegarde au format JSON
-- **Interface intuitive** : Navigation par onglets avec design moderne
-- **Réglage du poids utilisateur** : saisie du poids personnel utilisé dans les calculs
+| Molécule | Demi-vie | Pic | Vd | Biodisponibilité | Unité de saisie |
+|---|---|---|---|---|---|
+| Caféine | 5 h | 45 min | 0,65 L/kg | 100 % | mg |
+| Bromazépam | 14 h | 2 h 03 | 1,0 L/kg | 84 % | mg |
+| Paracétamol | 2,5 h | 30 min | 0,95 L/kg | 92 % | mg |
+| Ibuprofène | 2 h | 30 min | 0,15 L/kg | 90 % | mg |
+| Alcool | élimination 0,15 g/L·h | selon la boisson | 0,7 ou 0,6 L/kg | — | unité (10 g) |
 
-### 🔬 Modèle mathématique
-
-L'application utilise le modèle pharmacocinétique standard :
-
-```
-
-C(t) = (F × D × ka / (Vd × (ka - ke))) × (e^{-ke×t} - e^{-ka×t})
-
-```
-
-Où :
-- `C(t)` = Concentration au temps t (mg/L)
-- `F` = Biodisponibilité
-- `D` = Dose administrée (mg)
-- `ka` = Constante d'absorption
-- `ke` = Constante d'élimination
-- `Vd` = Volume de distribution (L)
-
-## 🚀 Installation
-
-### Prérequis
-
-- [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-- [.NET MAUI Workload](https://docs.microsoft.com/dotnet/maui/get-started/installation)
-- Visual Studio 2022 17.8+ ou Visual Studio Code avec extensions C#
-
-### Plateformes supportées
-
-| Plateforme | Version minimale | Status |
-|------------|------------------|--------|
-| Android | API 21 (Android 5.0) | ✅ Testé |
-| Windows | Windows 10 version 1809+ | ✅ Testé |
-
-
-### Étapes d'installation
-
-1. **Cloner le repository**
-```
-
-git clone https://github.com/votre-username/MoleculeEfficienceTracker.git
-cd MoleculeEfficienceTracker
+Modèle à un compartiment avec absorption du premier ordre pour les quatre
+premières :
 
 ```
-
-2. **Restaurer les packages**
+C(t) = (F · D · ka) / (Vd · (ka − ke)) · (e^(−ke·t) − e^(−ka·t))
 ```
 
-dotnet restore
+L'alcool suit Widmark : montée linéaire jusqu'à la fin de l'absorption, puis
+élimination à taux constant appliquée **au total**, jamais dose par dose.
 
+## Construire
+
+Prérequis : SDK .NET 10, charge de travail `maui-android`, JDK 17, Android SDK
+API 36.
+
+```bash
+dotnet workload install maui-android
+
+# Tests de la couche de calcul — ils ne demandent ni Android ni émulateur
+dotnet test tests/MoleculeEfficienceTracker.Tests/MoleculeEfficienceTracker.Tests.csproj
+
+# Application
+dotnet build MoleculeEfficienceTracker.csproj -f net10.0-android36.0 -c Release
 ```
 
-3. **Compiler le projet**
+Sous Windows, la cible `net10.0-windows10.0.19041.0` s'ajoute automatiquement.
+Il n'y a **pas** de cible iOS ni macOS : les dossiers de plateforme correspondants
+n'existent pas.
+
+### Licence Syncfusion
+
+Les graphiques utilisent Syncfusion, qui affiche un bandeau d'essai sans clé
+enregistrée. La clé n'est jamais écrite dans le dépôt : elle est lue à la
+compilation dans la variable d'environnement `SYNCFUSION_LICENSE_KEY` et déposée
+en métadonnée d'assemblage.
+
+```bash
+SYNCFUSION_LICENSE_KEY="votre-clé" dotnet build ...
 ```
 
-dotnet build
+En intégration continue, le secret de dépôt du même nom suffit.
+
+### APK
+
+Le workflow **APK Android** produit un APK signé et le publie en artefact. Sans
+les secrets `ANDROID_KEYSTORE_BASE64`, `ANDROID_KEYSTORE_PASSWORD` et
+`ANDROID_KEY_ALIAS`, la signature est éphémère : il faut alors désinstaller la
+version précédente avant d'installer la nouvelle.
+
+## Architecture
 
 ```
-
-4. **Déployer sur votre plateforme**
+Core/
+  Models/      DoseEntry, MoleculeKeys, UserProfile, ChartDataPoint, ResidualLoadSnapshot
+  Services/    calculateurs, persistance, migration, statistiques, notifications
+  Design/      EffectPalette — la palette et les motifs de trait
+  Extensions/  ObservableRangeCollection
+Controls/      MoleculePanelView — le corps commun à toutes les pages molécules
+Converters/
+Platforms/     Android (raccourci d'écran d'accueil inclus), Windows
+Resources/     styles, polices, icônes
+tests/         couche de calcul, sans dépendance à la plateforme
 ```
 
+`BaseMoleculePage<TCalculator>` porte la logique commune ; `MoleculePanelView`
+porte la vue commune. Les trois écrans molécules partageaient auparavant jusqu'à
+91 % de leurs lignes de XAML, recopiées à la main.
 
-# Android
+## Données
 
-dotnet build -f net9.0-android
-dotnet maui deploy -f net9.0-android
+Un fichier JSON par molécule dans le répertoire de données de l'application. Une
+migration versionnée s'exécute au premier lancement : elle sauvegarde, réunifie les
+clés, reconstruit les fuseaux horaires absents, arrondit les flottants et écarte
+les double-saisies. L'export et l'import partagent enfin la même convention de
+nommage — un fichier exporté n'était pas relisible par l'application.
 
-# Windows
+## Licence
 
-dotnet build -f net9.0-windows10.0.19041.0
-dotnet run -f net9.0-windows10.0.19041.0
-
-# iOS (nécessite macOS)
-
-dotnet build -f net9.0-ios
-
-```
-
-## 🏗️ Architecture
-
-```
-
-MoleculeEfficienceTracker/
-├── Core/
-│   ├── Models/           \# DoseEntry, ChartDataPoint
-│   └── Services/         \# Calculateurs, DataPersistence
-├── Pages/               \# BromazepamPage, CaffeinePage, etc.
-├── Converters/          \# Formatage UI
-└── Resources/           \# Images, styles
-
-```
-
-### Composants principaux
-
-- **`BaseMoleculePage<T>`** : Page générique commune à toutes les molécules
-- **`IMoleculeCalculator`** : Interface pour les calculs pharmacocinétiques
-- **`DataPersistenceService`** : Sauvegarde/chargement JSON automatique
-- **Calculateurs spécialisés** : Un par molécule avec paramètres spécifiques
-
-## 📱 Utilisation
-
-1. **Sélectionner une molécule** via les onglets
-2. **Ajouter une dose** en spécifiant la quantité et l'heure
-3. **Visualiser la concentration** en temps réel sur le graphique
-4. **Consulter l'historique** des doses prises
-5. **Exporter les données** si nécessaire
-
-## 🔮 Roadmap
-
-- [ ] Page "Charge totale d'intoxication" (toutes molécules)
-- [ ] Extension Ibuprofène (etc.)
-- [?] Calcul d'interactions médicamenteuses
-- [ ] Prédictions optimisées
-
-## 🤝 Contribution
-
-Ce projet est actuellement en développement privé. Les contributions externes ne sont pas acceptées pour le moment.
-
-## 📄 Licence
-
-Ce logiciel est protégé par une licence propriétaire. Voir [LICENSE.md](LICENSE.md) pour plus de détails.
-
-## ⚖️ Limitation de responsabilité
-
-L'utilisation de cette application se fait aux risques et périls de l'utilisateur. Le développeur ne peut être tenu responsable des conséquences de son utilisation, notamment en matière de santé ou de décisions médicales.
-
----
-
-**Développé avec ❤️ et .NET MAUI**
+Logiciel propriétaire. Voir [LICENSE.md](LICENSE.md).

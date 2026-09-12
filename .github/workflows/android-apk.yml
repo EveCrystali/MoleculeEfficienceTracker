@@ -1,0 +1,111 @@
+name: APK Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["claude/app-complete-audit-tq5ehc"]
+    paths-ignore:
+      - '**.md'
+
+permissions:
+  contents: read
+
+jobs:
+  apk:
+    name: Produire l'APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Charge de travail MAUI Android
+        run: dotnet workload install maui-android
+
+      - name: Plateforme Android 36
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null 2>&1 || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-36" "build-tools;36.0.0" > /dev/null
+
+      # Clé de signature.
+      #
+      # Si le dépôt porte le secret ANDROID_KEYSTORE_BASE64, l'APK est signé avec
+      # lui : les mises à jour s'installent alors par-dessus la version précédente.
+      # Sinon une clé éphémère est produite, et chaque build change de signature —
+      # il faut désinstaller avant de réinstaller.
+      - name: Clé de signature
+        id: keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          set -euo pipefail
+          if [ -n "${KEYSTORE_B64:-}" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/signing.keystore"
+            echo "alias=${KEY_ALIAS:-molecule}" >> "$GITHUB_OUTPUT"
+            echo "password=${KEYSTORE_PASSWORD}" >> "$GITHUB_OUTPUT"
+            echo "stable=true" >> "$GITHUB_OUTPUT"
+          else
+            keytool -genkeypair -v -keystore "$RUNNER_TEMP/signing.keystore" \
+              -alias molecule -keyalg RSA -keysize 2048 -validity 10000 \
+              -storepass motdepasse -keypass motdepasse \
+              -dname "CN=Molecule Tracker, OU=Personnel, O=Personnel, L=Annecy, C=FR"
+            echo "alias=molecule" >> "$GITHUB_OUTPUT"
+            echo "password=motdepasse" >> "$GITHUB_OUTPUT"
+            echo "stable=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publier l'APK
+        env:
+          SYNCFUSION_LICENSE_KEY: ${{ secrets.SYNCFUSION_LICENSE_KEY }}
+        run: |
+          dotnet publish MoleculeEfficienceTracker.csproj \
+            -f net10.0-android36.0 \
+            -c Release \
+            -p:AndroidPackageFormat=apk \
+            -p:AndroidKeyStore=true \
+            -p:AndroidSigningKeyStore="$RUNNER_TEMP/signing.keystore" \
+            -p:AndroidSigningKeyAlias=${{ steps.keystore.outputs.alias }} \
+            -p:AndroidSigningKeyPass='${{ steps.keystore.outputs.password }}' \
+            -p:AndroidSigningStorePass='${{ steps.keystore.outputs.password }}' \
+            -o artifacts/apk
+
+      - name: Retrouver l'APK
+        id: find
+        run: |
+          set -euo pipefail
+          APK=$(find artifacts/apk -name '*-Signed.apk' | head -1)
+          if [ -z "$APK" ]; then APK=$(find artifacts/apk -name '*.apk' | head -1); fi
+          echo "path=$APK" >> "$GITHUB_OUTPUT"
+          ls -lh "$APK"
+
+      - name: Résumé
+        run: |
+          {
+            echo "### APK produit"
+            echo ""
+            echo '`'"$(basename '${{ steps.find.outputs.path }}')"'`'
+            echo ""
+            if [ "${{ steps.keystore.outputs.stable }}" = "true" ]; then
+              echo "Signé avec la clé du dépôt : la mise à jour s'installe par-dessus la version précédente."
+            else
+              echo "⚠️ Signé avec une clé éphémère : désinstallez la version précédente avant d'installer celle-ci."
+              echo ""
+              echo "Pour des mises à jour en place, ajoutez les secrets \`ANDROID_KEYSTORE_BASE64\`, \`ANDROID_KEYSTORE_PASSWORD\` et \`ANDROID_KEY_ALIAS\`."
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: molecule-tracker-apk
+          path: ${{ steps.find.outputs.path }}
+          retention-days: 30
+          if-no-files-found: error

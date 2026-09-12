@@ -13,7 +13,7 @@ En installant, copiant ou utilisant ce logiciel, vous acceptez d'être lié par 
 
 - **"Logiciel"** désigne l'application MoleculeEfficienceTracker, incluant tous les fichiers, documentation, code source et éléments associés.
 - **"Vous"** ou **"Utilisateur"** désigne la personne physique ou morale utilisant le Logiciel.
-- **"Développeur"** désigne [Votre Nom], créateur et propriétaire du Logiciel.
+- **"Développeur"** désigne EveCrystali, créateur et propriétaire du Logiciel.
 
 ## 2. OCTROI DE LICENCE
 

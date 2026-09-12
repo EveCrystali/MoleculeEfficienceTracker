@@ -1,0 +1,39 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <IsPackable>false</IsPackable>
+    <RootNamespace>MoleculeEfficienceTracker.Tests</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    L'application cible Android et ne peut pas être référencée par un projet de
+    test exécutable sur la machine de compilation. Les fichiers vérifiés ici sont
+    ceux de la couche de calcul, qui ne dépend d'aucune API de plateforme : c'est
+    précisément pour cela que le profil utilisateur a été sorti du stockage MAUI.
+  -->
+  <ItemGroup>
+    <Compile Include="../../Core/Models/MoleculeKeys.cs" Link="Core/MoleculeKeys.cs" />
+    <Compile Include="../../Core/Models/UserProfile.cs" Link="Core/UserProfile.cs" />
+    <Compile Include="../../Core/Models/DoseEntry.cs" Link="Core/DoseEntry.cs" />
+    <Compile Include="../../Core/Models/ChartDataPoint.cs" Link="Core/ChartDataPoint.cs" />
+    <Compile Include="../../Core/Services/PkTime.cs" Link="Core/PkTime.cs" />
+    <Compile Include="../../Core/Services/IMoleculeCalculator.cs" Link="Core/IMoleculeCalculator.cs" />
+    <Compile Include="../../Core/Services/PharmacodynamicModel.cs" Link="Core/PharmacodynamicModel.cs" />
+    <Compile Include="../../Core/Services/CaffeineCalculator.cs" Link="Core/CaffeineCalculator.cs" />
+    <Compile Include="../../Core/Services/BromazepamCalculator.cs" Link="Core/BromazepamCalculator.cs" />
+    <Compile Include="../../Core/Services/ParacetamolCalculator.cs" Link="Core/ParacetamolCalculator.cs" />
+    <Compile Include="../../Core/Services/IbuprofeneCalculator.cs" Link="Core/IbuprofeneCalculator.cs" />
+    <Compile Include="../../Core/Services/CombinedPainReliefCalculator.cs" Link="Core/CombinedPainReliefCalculator.cs" />
+    <Compile Include="../../Core/Services/AlcoholCalculator.cs" Link="Core/AlcoholCalculator.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.10.0" />
+    <PackageReference Include="xunit" Version="2.9.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+
+</Project>

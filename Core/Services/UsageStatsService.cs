@@ -1,6 +1,7 @@
 using MoleculeEfficienceTracker.Core.Models;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -25,101 +26,135 @@ namespace MoleculeEfficienceTracker.Core.Services
         private readonly Dictionary<string, DataPersistenceService> _persistence;
         private readonly IResidualLoadService _residualService = new ResidualLoadService();
 
+        /// <summary>
+        /// Cache de lecture à durée de vie courte.
+        ///
+        /// Un affichage de la page de synthèse déclenchait près de cent lectures
+        /// et désérialisations complètes des mêmes fichiers, toutes séquentielles.
+        /// Le contenu ne change pas pendant un rafraîchissement : il est lu une
+        /// fois par molécule.
+        /// </summary>
+        private static readonly TimeSpan CacheLifetime = TimeSpan.FromSeconds(20);
+        private readonly Dictionary<string, (DateTime LoadedAt, List<DoseEntry> Doses)> _cache = new();
+
         public UsageStatsService(IEnumerable<string> moleculeKeys)
         {
-            _persistence = moleculeKeys.ToDictionary(k => k.ToLowerInvariant(), k => new DataPersistenceService(k));
+            _persistence = moleculeKeys
+                .Select(MoleculeKeys.Normalize)
+                .Distinct()
+                .ToDictionary(k => k, k => new DataPersistenceService(k));
+        }
+
+        /// <summary>Vide le cache : à appeler quand une dose vient d'être saisie.</summary>
+        public void Invalidate() => _cache.Clear();
+
+        private async Task<List<DoseEntry>> LoadAsync(string key)
+        {
+            if (!_persistence.ContainsKey(key))
+                return new List<DoseEntry>();
+
+            if (_cache.TryGetValue(key, out var cached) && DateTime.Now - cached.LoadedAt < CacheLifetime)
+                return cached.Doses;
+
+            List<DoseEntry> doses;
+            try
+            {
+                doses = await _persistence[key].LoadDosesAsync();
+            }
+            catch (DoseDataCorruptedException ex)
+            {
+                Debug.WriteLine($"[Stats] {key} illisible : {ex.Message}");
+                doses = new List<DoseEntry>();
+            }
+
+            _cache[key] = (DateTime.Now, doses);
+            return doses;
         }
 
         public async Task<List<DoseEntry>> GetDosesAsync(string key, DateTime start, DateTime end)
         {
-            key = key.ToLowerInvariant();
-            if (!_persistence.ContainsKey(key)) return new List<DoseEntry>();
-            var doses = await _persistence[key].LoadDosesAsync();
-            return doses.Where(d => d.TimeTaken >= start && d.TimeTaken <= end).OrderBy(d => d.TimeTaken).ToList();
+            List<DoseEntry> doses = await LoadAsync(MoleculeKeys.Normalize(key));
+            return doses.Where(d => d.TimeTaken >= start && d.TimeTaken <= end)
+                        .OrderBy(d => d.TimeTaken)
+                        .ToList();
         }
 
         public async Task<List<DailyStats>> GetDailyStatsAsync(string key, int days)
         {
-            key = key.ToLowerInvariant();
-            if (!_persistence.ContainsKey(key)) return new List<DailyStats>();
+            List<DoseEntry> doses = await LoadAsync(MoleculeKeys.Normalize(key));
 
             DateTime end = DateTime.Now.Date;
             DateTime start = end.AddDays(-days + 1);
 
-            var doses = await _persistence[key].LoadDosesAsync();
-            var relevant = doses.Where(d => d.TimeTaken.Date >= start && d.TimeTaken.Date <= end);
+            Dictionary<DateTime, DailyStats> grouped = doses
+                .Where(d => d.TimeTaken.Date >= start && d.TimeTaken.Date <= end)
+                .GroupBy(d => d.TimeTaken.Date)
+                .ToDictionary(g => g.Key, g => new DailyStats
+                {
+                    Date = g.Key,
+                    TotalDose = g.Sum(x => x.DoseMg),
+                    Count = g.Count()
+                });
 
-            var grouped = relevant.GroupBy(d => d.TimeTaken.Date)
-                                  .ToDictionary(g => g.Key,
-                                                g => new DailyStats
-                                                {
-                                                    Date = g.Key,
-                                                    TotalDose = g.Sum(x => x.DoseMg),
-                                                    Count = g.Count()
-                                                });
             var list = new List<DailyStats>();
             for (DateTime d = start; d <= end; d = d.AddDays(1))
-            {
-                if (grouped.TryGetValue(d, out var val))
-                    list.Add(val);
-                else
-                    list.Add(new DailyStats { Date = d, TotalDose = 0, Count = 0 });
-            }
+                list.Add(grouped.TryGetValue(d, out DailyStats? val)
+                         ? val
+                         : new DailyStats { Date = d, TotalDose = 0, Count = 0 });
+
             return list;
         }
 
+        /// <summary>Écart-type d'échantillon (n−1) : les jours observés estiment une habitude.</summary>
         public static (double mean, double stdDev, double min, double max) ComputeStats(IEnumerable<double> values)
         {
-            var arr = values.ToList();
-            if (!arr.Any()) return (0, 0, 0, 0);
+            List<double> arr = values.ToList();
+            if (arr.Count == 0) return (0, 0, 0, 0);
+
             double mean = arr.Average();
-            double min = arr.Min();
-            double max = arr.Max();
-            double variance = arr.Sum(v => Math.Pow(v - mean, 2)) / arr.Count;
-            double sd = Math.Sqrt(variance);
-            return (mean, sd, min, max);
+            if (arr.Count == 1) return (mean, 0, mean, mean);
+
+            double variance = arr.Sum(v => (v - mean) * (v - mean)) / (arr.Count - 1);
+            return (mean, Math.Sqrt(variance), arr.Min(), arr.Max());
         }
 
         public static double ComputeAverageIntervalHours(IEnumerable<DoseEntry> doses)
         {
-            var ordered = doses.OrderBy(d => d.TimeTaken).ToList();
+            List<DoseEntry> ordered = doses.OrderBy(d => d.TimeTaken).ToList();
             if (ordered.Count < 2) return double.NaN;
-            var intervals = ordered.Zip(ordered.Skip(1), (a, b) => (b.TimeTaken - a.TimeTaken).TotalHours);
-            return intervals.Average();
+
+            return ordered.Zip(ordered.Skip(1),
+                               (a, b) => PkTime.ElapsedHours(a.TimeTaken, b.TimeTaken))
+                          .Average();
         }
 
-        public async Task<PeakInfo> GetPeakInfoAsync(
-    string key, DateTime from, DateTime to, double thresholdMgPerL)
+        /// <summary>
+        /// Pic de charge et temps passé au-dessus d'un seuil de concentration.
+        ///
+        /// La concentration vient désormais du calculateur de la molécule. Elle
+        /// était auparavant reconstituée en divisant une charge résiduelle par un
+        /// volume de distribution deviné d'après la clé — avec 1 L/kg par défaut
+        /// dès que la clé n'était pas reconnue, ce qui était le cas de
+        /// « ibuprofene » et de « alcool ».
+        /// </summary>
+        public async Task<PeakInfo> GetPeakInfoAsync(string key, DateTime from, DateTime to, double thresholdConcentration)
         {
-            var snapshots = await _residualService.GetSnapshots(key, from, to, TimeSpan.FromHours(1));
-            if (!snapshots.Any())
+            IReadOnlyList<ResidualLoadSnapshot> snapshots =
+                await _residualService.GetSnapshots(key, from, to, TimeSpan.FromHours(1));
+
+            if (snapshots.Count == 0)
                 return new PeakInfo { PeakAmount = 0, PeakTime = from, HoursAboveThreshold = 0 };
 
-            // 1) Pic simple en mg
-            var peak = snapshots.OrderByDescending(s => s.ResidualAmount).First();
+            ResidualLoadSnapshot peak = snapshots.MaxBy(s => s.ResidualAmount)!;
 
-            // 2) Calcul des heures > seuil (mg/L) **uniquement si on a un Vd et un poids**
             double hours = 0;
-            // Exemple de récupération Vd et poids (à adapter) :
-            double vd = GetVdForMolecule(key);        // ex. ParacetamolCalculator.VOLUME_DISTRIBUTION_L_PER_KG
-            double wt = UserPreferences.GetWeightKg(); // à définir dans ta config utilisateur
-
-            if (vd > 0 && wt > 0 && thresholdMgPerL > 0)
+            if (thresholdConcentration > 0)
             {
                 for (int i = 1; i < snapshots.Count; i++)
                 {
-                    // concentration mg/L
-                    double concPrev = PharmacokineticsUtils
-                                         .ResidualMgToConcentration(
-                                             snapshots[i - 1].ResidualAmount,
-                                             vd, wt);
-                    if (concPrev >= thresholdMgPerL)
+                    if (snapshots[i - 1].Concentration >= thresholdConcentration)
                         hours += (snapshots[i].Timestamp - snapshots[i - 1].Timestamp).TotalHours;
                 }
-            }
-            else
-            {
-                hours = double.NaN; // on ne peut pas calculer
             }
 
             return new PeakInfo
@@ -129,19 +164,5 @@ namespace MoleculeEfficienceTracker.Core.Services
                 HoursAboveThreshold = hours
             };
         }
-
-        public static double GetVdForMolecule(string molecule)
-        {
-            return molecule.ToLowerInvariant() switch
-            {
-                "paracetamol" => ParacetamolCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
-                "ibuprofen" => IbuprofeneCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
-                "caffeine" => CaffeineCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
-                "bromazepam" => BromazepamCalculator.VOLUME_DISTRIBUTION_L_PER_KG,
-
-                _ => 1.0
-            };
-        }
-
     }
 }

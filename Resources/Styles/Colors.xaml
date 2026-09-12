@@ -1,33 +1,71 @@
-﻿<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <?xaml-comp compile="true" ?>
 <ResourceDictionary 
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
+    <!-- Voir aussi Platforms\Android\Resources\values\colors.xml -->
 
-    <!-- Couleurs modernisées -->
-    <Color x:Key="Primary">#6750A4</Color>
-    <Color x:Key="PrimaryDark">#4F378B</Color>
+    <!--
+        Vingt-six valeurs hexadécimales vivaient auparavant dans les pages, hors de
+        tout dictionnaire, et quatre violets « de marque » coexistaient sans lien.
+        Tout passe désormais par les jetons ci-dessous.
+
+        Contrainte de lecture : rouge, orange et bleu seulement. Aucun vert ne porte
+        de sens, la lecture rouge/vert étant inaccessible en deutéranopie.
+    -->
+
+    <!-- Marque -->
+    <Color x:Key="Primary">#1F5FAF</Color>
+    <Color x:Key="PrimaryDark">#5A9BE6</Color>
     <Color x:Key="PrimaryDarkText">#FFFFFF</Color>
-    <Color x:Key="Secondary">#D0BCFF</Color>
-    <Color x:Key="SecondaryDarkText">#6750A4</Color>
-    <Color x:Key="Tertiary">#7D5260</Color>
+    <Color x:Key="Secondary">#B86A00</Color>
+    <Color x:Key="SecondaryDarkText">#FFFFFF</Color>
+    <Color x:Key="Tertiary">#C0392B</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
-    <Color x:Key="Magenta">#D600AA</Color>
-    <Color x:Key="MidnightBlue">#190649</Color>
-    <Color x:Key="OffBlack">#1f1f1f</Color>
+    <Color x:Key="OffBlack">#12171D</Color>
+    <Color x:Key="MidnightBlue">#0E1A2B</Color>
 
-    <Color x:Key="Gray100">#E1E1E1</Color>
-    <Color x:Key="Gray200">#C8C8C8</Color>
-    <Color x:Key="Gray300">#ACACAC</Color>
-    <Color x:Key="Gray400">#919191</Color>
-    <Color x:Key="Gray500">#6E6E6E</Color>
-    <Color x:Key="Gray600">#404040</Color>
-    <Color x:Key="Gray900">#212121</Color>
-    <Color x:Key="Gray950">#141414</Color>
+    <Color x:Key="Gray100">#E6EAEF</Color>
+    <Color x:Key="Gray200">#CDD5DE</Color>
+    <Color x:Key="Gray300">#AEB9C6</Color>
+    <Color x:Key="Gray400">#8B98A6</Color>
+    <Color x:Key="Gray500">#5B6B7C</Color>
+    <Color x:Key="Gray600">#3D4A58</Color>
+    <Color x:Key="Gray900">#1B222B</Color>
+    <Color x:Key="Gray950">#12171D</Color>
+
+    <!-- Surfaces -->
+    <Color x:Key="PageBackgroundLight">#F7F9FC</Color>
+    <Color x:Key="PageBackgroundDark">#12171D</Color>
+    <Color x:Key="CardBackgroundLight">#FFFFFF</Color>
+    <Color x:Key="CardBackgroundDark">#1B222B</Color>
+    <Color x:Key="CardStrokeLight">#E1E7EF</Color>
+    <Color x:Key="CardStrokeDark">#2C3743</Color>
+    <Color x:Key="FieldBackgroundLight">#EDF3FA</Color>
+    <Color x:Key="FieldBackgroundDark">#232C37</Color>
+
+    <!-- Texte -->
+    <Color x:Key="TextPrimaryLight">#12171D</Color>
+    <Color x:Key="TextPrimaryDark">#EEF2F7</Color>
+    <Color x:Key="TextSecondaryLight">#5B6B7C</Color>
+    <Color x:Key="TextSecondaryDark">#9BA8B6</Color>
+
+    <!-- Niveaux d'effet — miroir XAML de Core/Design/EffectPalette.cs -->
+    <Color x:Key="EffectNoneLight">#5B6B7C</Color>
+    <Color x:Key="EffectNoneDark">#93A1B0</Color>
+    <Color x:Key="EffectLightLight">#1F6FB2</Color>
+    <Color x:Key="EffectLightDark">#5AA9E6</Color>
+    <Color x:Key="EffectModerateLight">#B86A00</Color>
+    <Color x:Key="EffectModerateDark">#E8A33D</Color>
+    <Color x:Key="EffectStrongLight">#C0392B</Color>
+    <Color x:Key="EffectStrongDark">#F07167</Color>
+
+    <!-- Grille et axes -->
+    <Color x:Key="GridLineLight">#E1E7EF</Color>
+    <Color x:Key="GridLineDark">#2C3743</Color>
 
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>

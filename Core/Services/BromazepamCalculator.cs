@@ -17,39 +17,48 @@ namespace MoleculeEfficienceTracker.Core.Services
     {
 
         public string DisplayName => "Bromazépam";
-        public string DoseUnit => "mg";
+        public string DoseUnit => DoseUnits.Milligram;
         public string ConcentrationUnit => "mg/L";
 
         // Paramètres pharmacocinétiques du bromazépam
         private const double HALF_LIFE_HOURS = 14.0; // Demi-vie moyenne en heures
-        private const double ABSORPTION_TIME_HOURS = 0.385; // Demi-vie d'absorption (en heures) pour un pic vers 2h
+        private const double ABSORPTION_HALF_LIFE_HOURS = 0.385; // demi-vie d'absorption : pic à 2 h 03
         private const double BIOAVAILABILITY = 0.84; // Fraction absorbée
-        public const double VOLUME_DISTRIBUTION_L_PER_KG = 1.5; // Volume de distribution
+        /// <summary>
+        /// Volume de distribution, ramené de 1,5 à 1,0 L/kg. Le commentaire des
+        /// seuils affirmait déjà les avoir calculés pour 1 L/kg, et la littérature
+        /// situe le bromazépam autour de cette valeur : le modèle et ses seuils
+        /// reposent enfin sur la même hypothèse.
+        /// </summary>
+        public const double VOLUME_DISTRIBUTION_L_PER_KG = 1.0;
+
+        /// <summary>Concentration produisant la moitié de l'effet maximal (modèle Emax).</summary>
+        public const double EC50_MG_PER_L = 0.05;
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
 
-        // Seuils d'effet subjectif exprimés en mg/L pour le nouveau modèle
-        // Ces valeurs correspondent à une dose de 4.5 mg (effet fort) ingérée par
-        // défaut chez un patient de 72 kg avec un Vd de 1 L/kg et une
-        // biodisponibilité de 84 %.
-        public const double STRONG_THRESHOLD = 0.0525;    // ≈ 4,5 mg
-        public const double MODERATE_THRESHOLD = 0.035;  // ≈ 3 mg
-        public const double LIGHT_THRESHOLD = 0.0175;     // ≈ 1,5 mg
-        public const double NEGLIGIBLE_THRESHOLD = 0.00583; // ≈ 0,5 mg
+        // Seuils : pic réellement atteint par une dose de référence, pour 72 kg.
+        // Les anciennes valeurs étaient la concentration instantanée F·D/V, sans
+        // absorption ni élimination — le seuil « fort » annoncé pour 4,5 mg passait
+        // 11 % au-dessus de ce que 4,5 mg peut produire, donc inatteignable.
+        public const double STRONG_THRESHOLD = 0.0474;      // pic de 4,5 mg
+        public const double MODERATE_THRESHOLD = 0.0316;    // pic de 3 mg
+        public const double LIGHT_THRESHOLD = 0.0158;       // pic de 1,5 mg
+        public const double NEGLIGIBLE_THRESHOLD = 0.0053;  // pic de 0,5 mg
 
 
 
         public BromazepamCalculator()
         {
             eliminationConstant = Math.Log(2) / HALF_LIFE_HOURS;
-            absorptionConstant = Math.Log(2) / ABSORPTION_TIME_HOURS;
+            absorptionConstant = Math.Log(2) / ABSORPTION_HALF_LIFE_HOURS;
         }
 
         // Calcule la concentration pour une dose unique à un moment donné
         public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime currentTime)
         {
-            double hoursElapsed = (currentTime - dose.TimeTaken).TotalHours;
+            double hoursElapsed = PkTime.ElapsedHours(dose.TimeTaken, currentTime);
 
             if (hoursElapsed < 0) return 0; // Dose future
 
@@ -95,7 +104,7 @@ namespace MoleculeEfficienceTracker.Core.Services
 
             var doseParams = doses.Select(d => new
             {
-                d.TimeTaken,
+                Instant = PkTime.ToOffset(d.TimeTaken),
                 A = (d.DoseMg * BIOAVAILABILITY * absorptionConstant) /
                     (d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG * (absorptionConstant - eliminationConstant))
             }).ToList();
@@ -103,10 +112,11 @@ namespace MoleculeEfficienceTracker.Core.Services
             for (int i = 0; i <= pointCount; i++)
             {
                 var currentTime = startTime.AddMinutes(i * interval);
+                DateTimeOffset currentInstant = PkTime.ToOffset(currentTime);
                 double total = 0;
                 foreach (var p in doseParams)
                 {
-                    double hoursElapsed = (currentTime - p.TimeTaken).TotalHours;
+                    double hoursElapsed = (currentInstant - p.Instant).TotalHours;
                     if (hoursElapsed < 0) continue;
                     double conc = p.A * (Math.Exp(-eliminationConstant * hoursElapsed) - Math.Exp(-absorptionConstant * hoursElapsed));
                     if (conc > 0) total += conc;

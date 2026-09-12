@@ -1,313 +1,121 @@
+using MoleculeEfficienceTracker.Controls;
 using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
-using MoleculeEfficienceTracker.Core.Extensions;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
-using System.Threading.Tasks;
-using Syncfusion.Maui.Charts;
-using Microsoft.Maui.Graphics;
 
 namespace MoleculeEfficienceTracker
 {
     public partial class PainReliefPage : BaseMoleculePage<CombinedPainReliefCalculator>
     {
-        protected override Entry DoseInputControl => DoseEntry;
-        protected override DatePicker DatePickerControl => DatePicker;
-        protected override TimePicker TimePickerControl => TimePicker;
-        protected override Label ConcentrationOutputLabel => ConcentrationLabel;
-        protected override Label LastUpdateOutputLabel => LastUpdateLabel;
-        protected override SfCartesianChart ChartControl => ConcentrationChart;
-        protected override CollectionView DosesDisplayCollection => ParacetamolCollection;
-        protected override Label EmptyStateIndicatorLabel => EmptyDosesLabel;
+        private readonly Picker _moleculePicker;
 
-        private Label EffectStatusLabel => EffectStatus;
-        private Label EffectEndPredictionLabel => EffectPrediction;
-        
+        /// <summary>
+        /// Les deux molécules partagent un seul fichier.
+        ///
+        /// L'ancienne version en tenait trois — un agrégat plus un par molécule —
+        /// et les recopiait les uns dans les autres à chaque affichage, si bien
+        /// qu'une suppression pouvait être ressuscitée par la fusion suivante.
+        /// </summary>
+        protected override MoleculePanelView Panel => PanelView;
+
         protected override string DoseAnnotationIcon => "💊";
-        protected override TimeSpan GraphDataStartOffset => TimeSpan.FromDays(-7);
-        protected override TimeSpan GraphDataEndOffset => TimeSpan.FromDays(3);
-        protected override int GraphDataNumberOfPoints => 10 * 24 * 2;
-        protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-12);
+        protected override TimeSpan GraphDataStartOffset => TimeSpan.FromHours(-24);
+        protected override TimeSpan GraphDataEndOffset => TimeSpan.FromHours(24);
+        protected override int GraphDataNumberOfPoints => 48 * 4;
+        protected override TimeSpan InitialVisibleStartOffset => TimeSpan.FromHours(-6);
         protected override TimeSpan InitialVisibleEndOffset => TimeSpan.FromHours(12);
 
-        public ObservableCollection<DoseEntry> ParacetamolDoses { get; } = new();
-        public ObservableCollection<DoseEntry> IbuprofenDoses { get; } = new();
-        public ObservableRangeCollection<ChartDataPoint> ParacetamolChartData { get; } = new();
-        public ObservableRangeCollection<ChartDataPoint> IbuprofenChartData { get; } = new();
-        public ObservableRangeCollection<ChartDataPoint> TotalChartData { get; } = new();
+        protected override string AddSectionTitle => "Ajouter une prise";
+        protected override string DoseFieldCaption => "Dose (mg)";
+        protected override string HelperText => "Paracétamol 500 ou 1000 mg · ibuprofène 200 ou 400 mg";
+        protected override double MaxPlausibleDose => 4000;
+        protected override bool UseConcentrationUnitForDoseAnnotation => false;
 
-        private readonly DataPersistenceService _paraService = new("paracetamol");
-        private readonly DataPersistenceService _ibuService = new("ibuprofene");
+        protected override IReadOnlyList<(double Value, string Label, EffectLevel Level)> Thresholds => new[]
+        {
+            (Calculator.StrongPercent, "Fort", EffectLevel.Strong),
+            (Calculator.ModeratePercent, "Net", EffectLevel.Moderate),
+            (Calculator.LightPercent, "Léger", EffectLevel.Light),
+            (Calculator.NegligibleEffect, "Négligeable", EffectLevel.None)
+        };
 
-        public PainReliefPage() : base("pain_relief")
+        public PainReliefPage() : base(MoleculeKeys.PainRelief)
         {
             InitializeComponent();
-            base.InitializePageUI();
-            Doses.CollectionChanged += (s, e) => RefreshDoseGroups();
-            RefreshDoseGroups();
-        }
 
-        protected override async Task OnBeforeLoadDataAsync()
-        {
-            await base.OnBeforeLoadDataAsync();
-
-            // Charger toutes les données existantes
-            var own = await PersistenceService.LoadDosesAsync();
-            var para = await _paraService.LoadDosesAsync();
-            var ibu = await _ibuService.LoadDosesAsync();
-
-            foreach (var d in own)
+            _moleculePicker = new Picker
             {
-                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "pain_relief";
-            }
-            foreach (var d in para)
-            {
-                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "paracetamol";
-            }
-            foreach (var d in ibu)
-            {
-                if (string.IsNullOrEmpty(d.MoleculeKey)) d.MoleculeKey = "ibuprofene";
-            }
-
-            var merged = own
-                .Concat(para)
-                .Concat(ibu)
-                .GroupBy(d => d.Id)
-                .Select(g => g.First())
-                .OrderByDescending(d => d.TimeTaken)
-                .ToList();
-
-            await PersistenceService.SaveDosesAsync(merged);
-            await _paraService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase)).ToList());
-            await _ibuService.SaveDosesAsync(merged.Where(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase)).ToList());
-        }
-
-        private void RefreshDoseGroups()
-        {
-            ParacetamolDoses.Clear();
-            IbuprofenDoses.Clear();
-            foreach (var d in Doses)
-            {
-                if (d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase))
-                    ParacetamolDoses.Add(d);
-                else if (d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) ||
-                         d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase))
-                    IbuprofenDoses.Add(d);
-            }
-        }
-
-        private async void OnAddPainDoseClicked(object sender, EventArgs e)
-        {
-            if (double.TryParse(DoseEntry.Text, out double doseMg) && doseMg > 0 && MoleculePicker.SelectedItem is string molecule)
-            {
-                DateTime selectedDate = DatePicker.Date;
-                DateTime dateTime = selectedDate.Add(TimePicker.Time);
-                double weight = UserPreferences.GetWeightKg();
-                DoseEntry dose = new DoseEntry(dateTime, doseMg, weight, molecule);
-                Doses.Insert(0, dose);
-                DoseEntry.Text = string.Empty;
-                RefreshDoseGroups();
-
-                UpdateConcentrationDisplay();
-                await UpdateChart();
-                UpdateDoseAnnotations();
-                await SaveAllDataAsync();
-                await AlertService.ShowAlertAsync("✅", $"Dose {doseMg}mg {molecule} ajoutée pour {dateTime:dd/MM HH:mm}");
-            }
-            else
-            {
-                await AlertService.ShowAlertAsync("❌", "Veuillez entrer une dose valide");
-            }
-
-            if (sender is Button btn) AnimateButton(btn);
-            UpdateEmptyState();
-        }
-
-        protected override void UpdateMoleculeSpecificConcentrationInfo(List<DoseEntry> doses, DateTime currentTime)
-        {
-            double effect = Calculator.CalculateTotalConcentration(doses, currentTime);
-            ConcentrationOutputLabel.Text = $"Effet : {effect:F0} %";
-
-            EffectLevel level = Calculator.GetCombinedEffectLevel(doses, currentTime);
-            if (EffectStatusLabel != null)
-            {
-                string text = level switch
-                {
-                    EffectLevel.Strong => "Effet fort",
-                    EffectLevel.Moderate => "Effet net",
-                    EffectLevel.Light => "Effet léger",
-                    _ => "Effet négligeable"
-                };
-                Color color = level switch
-                {
-                    EffectLevel.Strong => Colors.Red,
-                    EffectLevel.Moderate => Colors.Green,
-                    EffectLevel.Light => Colors.Orange,
-                    _ => Colors.Gray
-                };
-                EffectStatusLabel.Text = text;
-                EffectStatusLabel.TextColor = color;
-                EffectStatusLabel.IsVisible = true;
-            }
-
-            DateTime? endTime = Calculator.PredictEffectEndTime(doses, currentTime);
-            if (EffectEndPredictionLabel != null)
-            {
-                if (endTime.HasValue && endTime.Value > currentTime)
-                {
-                    var remaining = endTime.Value - currentTime;
-                    EffectEndPredictionLabel.Text = $"Effet négligeable dans {remaining.TotalHours:F1} heures";
-                }
-                else
-                {
-                    EffectEndPredictionLabel.Text = "Effet actuellement négligeable";
-                }
-                EffectEndPredictionLabel.IsVisible = true;
-            }
-        }
-
-        private async void OnDeleteDoseClickedCustom(object sender, EventArgs e)
-        {
-            if (sender is Button button && button.CommandParameter is string doseId)
-            {
-                DoseEntry? dose = Doses.FirstOrDefault(d => d.Id == doseId);
-                if (dose != null)
-                {
-                    bool confirm = await DisplayAlert("Supprimer",
-                        $"Supprimer la dose de {dose.DoseMg}mg ({dose.MoleculeKey}) du {dose.TimeTaken:dd/MM HH:mm} ?",
-                        "Oui", "Non");
-
-                    if (confirm)
-                    {
-                        Doses.Remove(dose);
-                        RefreshDoseGroups();
-                        UpdateConcentrationDisplay();
-                        await UpdateChart();
-                        UpdateDoseAnnotations();
-                        await SaveAllDataAsync();
-                    }
-                }
-            }
-            UpdateEmptyState();
-        }
-
-        private async Task SaveAllDataAsync()
-        {
-            await PersistenceService.SaveDosesAsync(Doses.ToList());
-            await _paraService.SaveDosesAsync(Doses.Where(d => d.MoleculeKey.Equals("paracetamol", StringComparison.OrdinalIgnoreCase)).ToList());
-            await _ibuService.SaveDosesAsync(Doses.Where(d => d.MoleculeKey.Equals("ibuprofen", StringComparison.OrdinalIgnoreCase) || d.MoleculeKey.Equals("ibuprofene", StringComparison.OrdinalIgnoreCase)).ToList());
-        }
-
-        private async void OnClearAllDataClicked(object sender, EventArgs e)
-        {
-            bool confirm = await DisplayAlert("⚠️ Attention",
-                "Supprimer toutes les données ?\nCette action est irréversible.",
-                "Oui", "Annuler");
-
-            if (confirm)
-            {
-                Doses.Clear();
-                await PersistenceService.DeleteAllDataAsync();
-                await _paraService.DeleteAllDataAsync();
-                await _ibuService.DeleteAllDataAsync();
-                UpdateConcentrationDisplay();
-                await UpdateChart();
-                UpdateDoseAnnotations();
-                UpdateEmptyState();
-                await DisplayAlert("✅", "Toutes les données ont été supprimées", "OK");
-            }
-        }
-
-        private void AddThresholdAnnotation(double yValue, string text, Color color)
-        {
-            var annotation = new HorizontalLineAnnotation
-            {
-                Y1 = yValue,
-                Stroke = new SolidColorBrush(color),
-                StrokeWidth = 2,
-                StrokeDashArray = new DoubleCollection { 5, 5 },
-                Text = text,
-                LabelStyle = new ChartAnnotationLabelStyle
-                {
-                    FontSize = 10,
-                    TextColor = color,
-                    Background = Brush.White,
-                    CornerRadius = 3,
-                    HorizontalTextAlignment = ChartLabelAlignment.Start,
-                    VerticalTextAlignment = ChartLabelAlignment.Center,
-                    Margin = new Thickness(5, 0, 0, 0)
-                }
+                Title = "Molécule",
+                MinimumHeightRequest = 48,
+                ItemsSource = new List<string> { "Paracétamol", "Ibuprofène" },
+                SelectedIndex = 0
             };
+            SemanticProperties.SetDescription(_moleculePicker, "Molécule de la prise");
 
-            ChartControl.Annotations.Add(annotation);
+            PanelView.ExtraInputSlot.Content = _moleculePicker;
+
+            InitializePageUI();
         }
 
-        protected override void AddMoleculeSpecificChartAnnotations()
+        private readonly DataPersistenceService _paracetamolStore = new(MoleculeKeys.Paracetamol);
+        private readonly DataPersistenceService _ibuprofenStore = new(MoleculeKeys.Ibuprofen);
+
+        // Une molécule, un fichier. L'agrégat « pain_relief » a disparu : il
+        // stockait chaque prise en double et la fusion à chaque affichage pouvait
+        // ressusciter une suppression faite ailleurs.
+        protected override async Task<List<DoseEntry>> ReadDosesAsync()
         {
-            if (ChartControl == null) return;
-            AddThresholdAnnotation(Calculator.StrongPercent, "Fort", Colors.Orange);
-            AddThresholdAnnotation(Calculator.ModeratePercent, "Net", Colors.YellowGreen);
-            AddThresholdAnnotation(Calculator.LightPercent, "Léger", Colors.Green);
-            AddThresholdAnnotation(Calculator.NegligibleEffect, "Négligeable", Colors.Gray);
+            List<DoseEntry> para = await _paracetamolStore.LoadDosesAsync();
+            List<DoseEntry> ibu = await _ibuprofenStore.LoadDosesAsync();
+            return para.Concat(ibu).ToList();
         }
 
-        protected override async Task UpdateChart()
+        protected override async Task WriteDosesAsync(List<DoseEntry> doses)
         {
-            var chart = ChartControl;
-            if (chart == null) return;
+            await _paracetamolStore.SaveDosesAsync(
+                doses.Where(d => d.MoleculeKey == MoleculeKeys.Paracetamol).ToList());
+            await _ibuprofenStore.SaveDosesAsync(
+                doses.Where(d => d.MoleculeKey == MoleculeKeys.Ibuprofen).ToList());
+        }
 
-            if (!Doses.Any())
-            {
-                ParacetamolChartData.Clear();
-                IbuprofenChartData.Clear();
-                TotalChartData.Clear();
-                await base.UpdateChart();
-                return;
-            }
+        protected override async Task RemoveAllAsync()
+        {
+            await _paracetamolStore.DeleteAllDataAsync();
+            await _ibuprofenStore.DeleteAllDataAsync();
+        }
 
-            DateTime currentTime = DateTime.Now;
-            DateTime start = currentTime.Add(GraphDataStartOffset);
-            DateTime end = currentTime.Add(GraphDataEndOffset);
-            int points = GraphDataNumberOfPoints;
+        protected override async Task<string?> BackupStoreAsync(string suffix)
+        {
+            await _paracetamolStore.BackupAsync(suffix);
+            return await _ibuprofenStore.BackupAsync(suffix);
+        }
 
-            List<DoseEntry> copy = Doses.ToList();
-            var result = await Task.Run(() => Calculator.GenerateEffectGraph(copy, start, end, points));
+        private string SelectedMoleculeKey =>
+            _moleculePicker.SelectedIndex == 1 ? MoleculeKeys.Ibuprofen : MoleculeKeys.Paracetamol;
 
-            ParacetamolChartData.ReplaceRange(result.Item1.Select(p => new ChartDataPoint(p.Time, p.EffectPara)));
-            IbuprofenChartData.ReplaceRange(result.Item2.Select(p => new ChartDataPoint(p.Time, p.EffectIbu)));
-            TotalChartData.ReplaceRange(result.Item3.Select(p => new ChartDataPoint(p.Time, p.EffectTotal)));
+        protected override DoseEntry BuildDose(double amount, DateTime when)
+            => new(when, amount, UserPreferences.GetWeightKg(), SelectedMoleculeKey);
 
-            if (chart.XAxes?.FirstOrDefault() is DateTimeAxis xAxis)
-            {
-                xAxis.Minimum = start;
-                xAxis.Maximum = end;
-                xAxis.IntervalType = DateTimeIntervalType.Auto;
-                xAxis.Interval = 3;
+        protected override EffectLevel ResolveEffectLevel(double percent)
+        {
+            if (percent >= Calculator.StrongPercent) return EffectLevel.Strong;
+            if (percent >= Calculator.ModeratePercent) return EffectLevel.Moderate;
+            if (percent >= Calculator.LightPercent) return EffectLevel.Light;
+            return EffectLevel.None;
+        }
 
-                DateTime visibleStart = currentTime.Add(InitialVisibleStartOffset);
-                DateTime visibleEnd = currentTime.Add(InitialVisibleEndOffset);
+        protected override void UpdateMoleculeSpecificConcentrationInfo(
+            List<DoseEntry> doses, DateTime currentTime, double percent)
+        {
+            base.UpdateMoleculeSpecificConcentrationInfo(doses, currentTime, percent);
 
-                double totalRange = (end - start).TotalHours;
-                double desiredDuration = (visibleEnd - visibleStart).TotalHours;
+            Panel.HeadlineText = $"Effet analgésique estimé : {percent:0} %";
+            Panel.HeadlineDetailText = "Combinaison de Bliss des deux molécules, bornée à 100 %.";
 
-                if (totalRange > 0)
-                {
-                    xAxis.ZoomFactor = Math.Max(0.00001, Math.Min(1.0, desiredDuration / totalRange));
-                    double desiredStartOffset = (visibleStart - start).TotalHours;
-                    xAxis.ZoomPosition = desiredStartOffset / totalRange;
-                    xAxis.ZoomPosition = Math.Max(0.0, Math.Min(1.0 - xAxis.ZoomFactor, xAxis.ZoomPosition));
-                }
-                else
-                {
-                    xAxis.ZoomFactor = 1;
-                    xAxis.ZoomPosition = 0;
-                }
-            }
-
-            await chart.FadeTo(0.7, 80);
-            await chart.FadeTo(1.0, 80);
+            DateTime? end = Calculator.PredictEffectEndTime(doses, currentTime);
+            Panel.EffectPrediction.Text = end.HasValue && end.Value > currentTime
+                ? $"Effet négligeable vers {end.Value:HH\\hmm}."
+                : "Effet actuellement négligeable.";
+            Panel.EffectPrediction.IsVisible = true;
         }
     }
 }

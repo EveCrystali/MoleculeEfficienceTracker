@@ -2,41 +2,80 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MoleculeEfficienceTracker.SettingsPage"
-             Title="Paramètres">
-    <ContentPage.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Resources/Styles/ModernStyles.xaml"/>
-            </ResourceDictionary.MergedDictionaries>
-            <Color x:Key="MainBgColor">#F0F4F8</Color>
-        </ResourceDictionary>
-    </ContentPage.Resources>
-    <ContentPage.Background>
-        <SolidColorBrush Color="{StaticResource MainBgColor}"/>
-    </ContentPage.Background>
-    <VerticalStackLayout Spacing="20"
-                         Padding="20">
-        <Label Text="Poids (kg)"
-               FontAttributes="Bold"/>
-        <Entry x:Name="WeightEntry"
-               Keyboard="Numeric"
-               Placeholder="72"/>
-        <Label Text="Sex"
-               FontAttributes="Bold"/>
-        <Picker x:Name="SexPicker"
-                Grid.Row="0"
-                Grid.Column="1"
-                Title="Homme/Femme">
-            <Picker.Items>
-                <x:String>Homme</x:String>
-                <x:String>Femme</x:String>
-            </Picker.Items>
-        </Picker>
+             Title="Réglages"
+             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}">
 
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
 
-        <Button Text="Enregistrer"
-                Clicked="OnSaveClicked"
-                Style="{StaticResource PrimaryButtonStyle}"/>
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Vous" Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
 
-    </VerticalStackLayout>
+                    <Label Text="Poids (kg)" Style="{StaticResource BodyLabelStyle}" />
+                    <Border Style="{StaticResource FieldBorderStyle}">
+                        <Entry x:Name="WeightEntry" Keyboard="Numeric" Placeholder="72"
+                               Style="{StaticResource FieldEntryStyle}"
+                               SemanticProperties.Description="Poids en kilogrammes" />
+                    </Border>
+
+                    <Label Text="Sexe" Style="{StaticResource BodyLabelStyle}" />
+                    <Picker x:Name="SexPicker" MinimumHeightRequest="48"
+                            SemanticProperties.Description="Sexe, utilisé pour le coefficient de diffusion de l'alcool">
+                        <Picker.Items>
+                            <x:String>Homme</x:String>
+                            <x:String>Femme</x:String>
+                        </Picker.Items>
+                    </Picker>
+                </VerticalStackLayout>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Café et sommeil" Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
+
+                    <Label Text="Heure de coucher visée" Style="{StaticResource BodyLabelStyle}" />
+                    <TimePicker x:Name="BedTimePicker" Format="HH:mm" MinimumHeightRequest="48"
+                                SemanticProperties.Description="Heure de coucher visée" />
+
+                    <Label Text="Caféine tolérée au coucher (mg/L)" Style="{StaticResource BodyLabelStyle}" />
+                    <Border Style="{StaticResource FieldBorderStyle}">
+                        <Entry x:Name="SleepThresholdEntry" Keyboard="Numeric" Placeholder="1,0"
+                               Style="{StaticResource FieldEntryStyle}" />
+                    </Border>
+                    <Label Text="Repère : un Nespresso de 80 mg culmine autour de 1,5 mg/L."
+                           Style="{StaticResource CaptionLabelStyle}" />
+
+                    <Label Text="Doses en accès direct (mg, séparées par ;)" Style="{StaticResource BodyLabelStyle}" />
+                    <Border Style="{StaticResource FieldBorderStyle}">
+                        <Entry x:Name="PresetsEntry" Placeholder="80;65;35"
+                               Style="{StaticResource FieldEntryStyle}" />
+                    </Border>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Rappel à l'heure limite"
+                               Style="{StaticResource BodyLabelStyle}" />
+                        <Switch Grid.Column="1" x:Name="NotificationSwitch"
+                                SemanticProperties.Description="Activer le rappel à l'heure limite du dernier café" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <Button Text="Enregistrer" Clicked="OnSaveClicked"
+                    Style="{StaticResource PrimaryButtonStyle}" />
+
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Données" Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
+                    <Label x:Name="MigrationLabel" Style="{StaticResource CaptionLabelStyle}" />
+                    <Label Text="Cette application n'est pas un dispositif médical. Les concentrations affichées sont des estimations issues de modèles moyens, jamais une mesure."
+                           Style="{StaticResource CaptionLabelStyle}" />
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
 </ContentPage>

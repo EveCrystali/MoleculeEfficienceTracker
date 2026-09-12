@@ -6,36 +6,40 @@ using MoleculeEfficienceTracker.Core.Models;
 namespace MoleculeEfficienceTracker.Core.Services
 {
     /// <summary>
-    /// Calculator implementing a simple alcohol pharmacokinetic model with
-    /// bicompartmental absorption and zero order elimination.
-    /// Dose values are expressed in "units" (1 unit = 10 g of pure alcohol).
+    /// Modèle de Widmark : absorption linéaire jusqu'au pic, puis élimination
+    /// d'ordre zéro.
+    ///
+    /// La version précédente appliquait l'élimination <em>dose par dose</em> puis
+    /// sommait le tout. Avec quatre verres actifs, le foie éliminait quatre fois
+    /// plus vite — et la courbe redescendait d'autant plus brutalement qu'on avait
+    /// bu. L'organisme n'a qu'un compartiment : l'élimination s'applique désormais
+    /// une seule fois, sur le total.
+    ///
+    /// Les doses sont comptées en unités standard (1 u = 10 g d'éthanol pur).
     /// </summary>
     public class AlcoholCalculator : IMoleculeCalculator
     {
         public string DisplayName => "Alcool";
-        public string DoseUnit => "u";
+        public string DoseUnit => DoseUnits.StandardUnit;
         public string ConcentrationUnit => "g/L";
 
-        // Volume de distribution
+        // Coefficients de diffusion de Widmark
         private const double DIFFUSION_HOMME = 0.7;
         private const double DIFFUSION_FEMME = 0.6;
 
-        // Élimination (zéro-ordre)
+        /// <summary>Élimination d'ordre zéro, appliquée au total et non par dose.</summary>
         private const double ELIMINATION_RATE = 0.15; // g/L·h
 
-        // Seuils d'effet
-        public const double BAC_STRONG_THRESHOLD = 1.2;  // g/L
-        public const double BAC_MODERATE_THRESHOLD = 0.5;  // g/L
-        public const double BAC_LIGHT_THRESHOLD = 0.2;  // g/L
-        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.1;  // g/L
+        public const double BAC_STRONG_THRESHOLD = 1.2;
+        public const double BAC_MODERATE_THRESHOLD = 0.5;   // limite légale de conduite
+        public const double BAC_LIGHT_THRESHOLD = 0.2;
+        public const double BAC_NEGLIGIBLE_THRESHOLD = 0.1;
 
-
-        // Conversion dose → grammes
         private const double GRAMS_PER_UNIT = 10.0;
         private const double ALCOHOL_DENSITY = 0.8; // g/mL
 
-        // Temps d’absorption par boisson (h)
-        private static readonly Dictionary<string, double> AbsTime = new()
+        /// <summary>Durée d'absorption par type de boisson, en heures.</summary>
+        private static readonly Dictionary<string, double> AbsTime = new(StringComparer.OrdinalIgnoreCase)
         {
             ["biere"] = 0.33,
             ["cidre"] = 0.4,
@@ -46,110 +50,175 @@ namespace MoleculeEfficienceTracker.Core.Services
             ["liqueur"] = 0.25
         };
 
-        // Volume de distribution "standard" (L/kg)
-        public const double VOLUME_DISTRIBUTION_L_PER_KG_MALE = 0.7;
-        public const double VOLUME_DISTRIBUTION_L_PER_KG_FEMALE = 0.6;
-        // Pour conversion rapide sans le sexe
-        public static double GetVdLPerKg()
-        {
-            if (UserPreferences.GetSex().ToLower() == "femme") return VOLUME_DISTRIBUTION_L_PER_KG_FEMALE;
-            return VOLUME_DISTRIBUTION_L_PER_KG_MALE;
-        }
+        private const double DEFAULT_ABSORPTION_HOURS = 0.5;
 
+        /// <summary>Au-delà, la contribution d'une prise est nécessairement éliminée.</summary>
+        private const double RELEVANCE_WINDOW_HOURS = 48.0;
 
-
-        // Liste exposée à l’UI
         public static IEnumerable<string> KnownBeverageTypes => AbsTime.Keys;
 
-        // Propriété choisie par l’utilisateur
+        /// <summary>
+        /// Type proposé par défaut à la saisie. Il n'intervient plus dans le calcul :
+        /// chaque prise porte le sien.
+        /// </summary>
         public string BeverageType { get; set; } = KnownBeverageTypes.First();
 
-        /// <summary>
-        /// Convert volume (mL) and alcohol percentage into standard units (10 g of pure alcohol).
-        /// </summary>
+        /// <summary>Convertit un volume et un degré en unités standard.</summary>
         public static double VolumePercentToUnits(double volumeMl, double percent)
         {
             if (volumeMl <= 0 || percent <= 0) return 0;
-            double grams = volumeMl * (percent / 100.0) * ALCOHOL_DENSITY;
-            return grams / GRAMS_PER_UNIT;
+            return volumeMl * (percent / 100.0) * ALCOHOL_DENSITY / GRAMS_PER_UNIT;
         }
 
-        private double GetAbsorptionTime(string bev)
-            => AbsTime.TryGetValue(bev.ToLower(), out var t) ? t : 0.5;
+        private static double GetAbsorptionTime(string? beverage)
+            => !string.IsNullOrWhiteSpace(beverage) && AbsTime.TryGetValue(beverage, out double t)
+                ? t
+                : DEFAULT_ABSORPTION_HOURS;
 
-        private double GetDiffCoeff()
+        private static double GetDiffCoeff()
+            => UserProfile.Sex == Sex.Female ? DIFFUSION_FEMME : DIFFUSION_HOMME;
+
+        private sealed class AbsorptionWindow
         {
-            var s = UserPreferences.GetSex()?.ToLower();
-            return s == "femme" ? DIFFUSION_FEMME : DIFFUSION_HOMME;
+            public DateTimeOffset Start;
+            public DateTimeOffset End;
+            public double RatePerHour;
         }
 
-        private double SingleDoseBAC(DoseEntry d, DateTime now)
+        /// <summary>
+        /// Évalue l'alcoolémie aux instants demandés, en une seule passe.
+        ///
+        /// L'apport est linéaire par morceaux et l'élimination constante : la courbe
+        /// est donc affine entre deux ruptures. En prenant pour ruptures les débuts
+        /// et fins d'absorption ainsi que les instants interrogés, le résultat est
+        /// exact à chacun d'eux, sans pas d'intégration arbitraire.
+        /// </summary>
+        private double[] Evaluate(List<DoseEntry> doses, IReadOnlyList<DateTimeOffset> queries)
         {
-            double t = (now - d.TimeTaken).TotalHours;
-            if (t <= 0) return 0;
+            var result = new double[queries.Count];
+            if (doses == null || doses.Count == 0 || queries.Count == 0)
+                return result;
 
-            double D = d.DoseMg * GRAMS_PER_UNIT; // en g
-            double V = d.WeightKg * GetDiffCoeff(); // en L
-            double T_abs = GetAbsorptionTime(BeverageType);
+            DateTimeOffset firstQuery = queries.Min();
+            double diffusion = GetDiffCoeff();
 
-            // montée linéaire
-            if (t < T_abs)
-                return (D / V) * (t / T_abs);
+            var windows = new List<AbsorptionWindow>();
+            foreach (DoseEntry d in doses)
+            {
+                if (d.DoseMg <= 0 || d.WeightKg <= 0) continue;
 
-            // élimination zéro-ordre
-            double C_peak = D / V;
-            double C = C_peak - ELIMINATION_RATE * (t - T_abs);
-            return Math.Max(0, C);
+                DateTimeOffset start = PkTime.ToOffset(d.TimeTaken);
+                double hours = GetAbsorptionTime(d.BeverageType);
+                DateTimeOffset end = start.AddHours(hours);
+
+                if (end < firstQuery.AddHours(-RELEVANCE_WINDOW_HOURS)) continue;
+
+                double peak = d.DoseMg * GRAMS_PER_UNIT / (d.WeightKg * diffusion);
+                windows.Add(new AbsorptionWindow { Start = start, End = end, RatePerHour = peak / hours });
+            }
+
+            if (windows.Count == 0) return result;
+
+            var breakpoints = new SortedSet<DateTimeOffset>();
+            foreach (AbsorptionWindow w in windows) { breakpoints.Add(w.Start); breakpoints.Add(w.End); }
+            foreach (DateTimeOffset q in queries) breakpoints.Add(q);
+
+            List<DateTimeOffset> ordered = breakpoints.ToList();
+            var levels = new double[ordered.Count];
+
+            double bac = 0;
+            for (int i = 0; i < ordered.Count - 1; i++)
+            {
+                double segmentHours = (ordered[i + 1] - ordered[i]).TotalHours;
+
+                double rateIn = 0;
+                foreach (AbsorptionWindow w in windows)
+                {
+                    if (w.Start <= ordered[i] && w.End > ordered[i])
+                        rateIn += w.RatePerHour;
+                }
+
+                double net = rateIn - ELIMINATION_RATE;
+
+                // À jeun, l'élimination ne creuse pas sous zéro.
+                bac = (bac <= 0 && net <= 0) ? 0 : Math.Max(0, bac + net * segmentHours);
+                levels[i + 1] = bac;
+            }
+
+            for (int i = 0; i < queries.Count; i++)
+            {
+                int index = ordered.BinarySearch(queries[i]);
+                result[i] = index >= 0 ? levels[index] : 0;
+            }
+
+            return result;
         }
 
         public double CalculateTotalConcentration(List<DoseEntry> doses, DateTime now)
-            => doses.Sum(d => SingleDoseBAC(d, now));
+            => Evaluate(doses, new[] { PkTime.ToOffset(now) })[0];
 
         public List<(DateTime Time, double Concentration)> GenerateGraph(
             List<DoseEntry> doses, DateTime start, DateTime end, int points = 200)
         {
-            var list = new List<(DateTime, double)>();
-            var span = (end - start).TotalMinutes / points;
+            double stepMinutes = (end - start).TotalMinutes / points;
+
+            var times = new List<DateTime>(points + 1);
             for (int i = 0; i <= points; i++)
-            {
-                var t = start.AddMinutes(i * span);
-                list.Add((t, CalculateTotalConcentration(doses, t)));
-            }
+                times.Add(start.AddMinutes(i * stepMinutes));
+
+            double[] values = Evaluate(doses, times.Select(PkTime.ToOffset).ToList());
+
+            var list = new List<(DateTime, double)>(times.Count);
+            for (int i = 0; i < times.Count; i++)
+                list.Add((times[i], values[i]));
+
             return list;
         }
 
         public double GetDoseDisplayValueInConcentrationUnit(DoseEntry dose) => dose.DoseMg;
 
+        /// <summary>
+        /// Quantité encore présente, en unités standard — et non la concentration,
+        /// que l'ancienne version retournait, si bien que l'écran affichait deux
+        /// fois la même valeur sous deux unités différentes.
+        /// </summary>
         public double CalculateTotalAmount(List<DoseEntry> doses, DateTime time)
         {
-            return doses.Sum(d => CalculateSingleDoseConcentration(d, time));
+            double bac = CalculateTotalConcentration(doses, time);
+            double volume = UserProfile.WeightKg * GetDiffCoeff();
+            return bac * volume / GRAMS_PER_UNIT;
         }
 
+        /// <summary>
+        /// Contribution isolée d'une prise, à titre indicatif. Elle ne peut pas être
+        /// sommée pour reconstituer le total : l'élimination est commune.
+        /// </summary>
         public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime time)
-    => SingleDoseBAC(dose, time);
+            => Evaluate(new List<DoseEntry> { dose }, new[] { PkTime.ToOffset(time) })[0];
 
-
-        // --- Additional helpers specific to alcohol ---
-        public double CalculateTotalBloodAlcohol(List<DoseEntry> doses, DateTime time) => CalculateTotalConcentration(doses, time);
+        public double CalculateTotalBloodAlcohol(List<DoseEntry> doses, DateTime time)
+            => CalculateTotalConcentration(doses, time);
 
         public EffectLevel GetEffectLevelFromBAC(double bac)
         {
             if (bac >= BAC_STRONG_THRESHOLD) return EffectLevel.Strong;
             if (bac >= BAC_MODERATE_THRESHOLD) return EffectLevel.Moderate;
             if (bac >= BAC_LIGHT_THRESHOLD) return EffectLevel.Light;
-            if (bac >= BAC_NEGLIGIBLE_THRESHOLD) return EffectLevel.Light;
             return EffectLevel.None;
         }
 
+        /// <summary>Instant où l'alcoolémie repasse sous le seuil léger.</summary>
         public DateTime? PredictSoberTime(List<DoseEntry> doses, DateTime now)
         {
-            if (!doses.Any()) return now;
-            for (int m = 0; m <= 72 * 60; m += 15)
+            if (doses == null || !doses.Any()) return now;
+
+            for (int minutes = 0; minutes <= 72 * 60; minutes += 15)
             {
-                var check = now.AddMinutes(m);
-                if (CalculateTotalConcentration(doses, check) < 0.2)
+                DateTime check = now.AddMinutes(minutes);
+                if (CalculateTotalConcentration(doses, check) < BAC_LIGHT_THRESHOLD)
                     return check;
             }
+
             return null;
         }
     }

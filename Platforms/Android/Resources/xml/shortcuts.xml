@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Raccourci d'écran d'accueil.
+
+    C'est la seule brique qui attaque directement la cause des abandons : tout le
+    reste suppose l'application déjà ouverte. Un appui long sur l'icône, un appui
+    sur « + 80 mg », et la prise est enregistrée sans que l'application s'affiche.
+-->
+<shortcuts xmlns:android="http://schemas.android.com/apk/res/android">
+    <shortcut
+        android:shortcutId="quick_caffeine"
+        android:enabled="true"
+        android:icon="@mipmap/appicon"
+        android:shortcutShortLabel="@string/shortcut_caffeine_short"
+        android:shortcutLongLabel="@string/shortcut_caffeine_long">
+        <intent
+            android:action="android.intent.action.VIEW"
+            android:targetPackage="com.evecrystali.moleculeefficiencetracker"
+            android:targetClass="com.evecrystali.moleculeefficiencetracker.QuickAddActivity" />
+    </shortcut>
+</shortcuts>

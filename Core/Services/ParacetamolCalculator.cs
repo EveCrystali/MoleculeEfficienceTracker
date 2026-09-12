@@ -8,19 +8,27 @@ namespace MoleculeEfficienceTracker.Core.Services
     public class ParacetamolCalculator : IMoleculeCalculator
     {
         public string DisplayName => "Paracétamol";
-        public string DoseUnit => "mg";
+        public string DoseUnit => DoseUnits.Milligram;
         public string ConcentrationUnit => "mg/L";
 
         private const double HALF_LIFE_HOURS = 2.5; // Demi-vie moyenne
-        private const double ABSORPTION_TIME_HOURS = 0.5; // Temps d'absorption
+        /// <summary>
+        /// Demi-vie d'absorption, et non délai du pic. L'ancienne constante valait
+        /// 0,5 h sous le libellé « temps d'absorption » alors qu'elle alimentait
+        /// ka = ln2/T : le pic tombait en réalité bien plus tard. Cette valeur place
+        /// effectivement le pic à 30 min.
+        /// </summary>
+        private const double ABSORPTION_HALF_LIFE_HOURS = 0.104636;
         private const double BIOAVAILABILITY = 0.92; // Fraction absorbée
         public const double VOLUME_DISTRIBUTION_L_PER_KG = 0.95; // Volume de distribution
 
-        // Seuils d'effet exprimés en mg/L
-        public const double STRONG_THRESHOLD = 8.5;      // mg/L : effet fort, pic après 1g
-        public const double MODERATE_THRESHOLD = 5.0;    // mg/L : effet net
-        public const double LIGHT_THRESHOLD = 2.0;        // mg/L : effet léger
-        public const double NEGLIGIBLE_THRESHOLD = 0.8;   // mg/L : effet négligeable
+        // Seuils ancrés sur le pic que produit réellement une dose de référence,
+        // pour 72 kg. Les anciennes valeurs dataient du modèle mal calibré : le
+        // seuil « fort » était inatteignable avec la dose qui le nommait.
+        public const double STRONG_THRESHOLD = 11.71;   // pic d'une prise de 1 g
+        public const double MODERATE_THRESHOLD = 5.85;   // pic de 500 mg
+        public const double LIGHT_THRESHOLD = 2.34;   // pic de 200 mg
+        public const double NEGLIGIBLE_THRESHOLD = 0.88;   // pic de 75 mg
 
         private readonly double eliminationConstant; // ke
         private readonly double absorptionConstant; // ka
@@ -28,12 +36,12 @@ namespace MoleculeEfficienceTracker.Core.Services
         public ParacetamolCalculator()
         {
             eliminationConstant = Math.Log(2) / HALF_LIFE_HOURS;
-            absorptionConstant = Math.Log(2) / ABSORPTION_TIME_HOURS;
+            absorptionConstant = Math.Log(2) / ABSORPTION_HALF_LIFE_HOURS;
         }
 
         public double CalculateSingleDoseConcentration(DoseEntry dose, DateTime currentTime)
         {
-            double hoursElapsed = (currentTime - dose.TimeTaken).TotalHours;
+            double hoursElapsed = PkTime.ElapsedHours(dose.TimeTaken, currentTime);
             if (hoursElapsed < 0) return 0;
 
             double volume = dose.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG;
@@ -73,7 +81,7 @@ namespace MoleculeEfficienceTracker.Core.Services
 
             var doseParams = doses.Select(d => new
             {
-                d.TimeTaken,
+                Instant = PkTime.ToOffset(d.TimeTaken),
                 A = (d.DoseMg * BIOAVAILABILITY * absorptionConstant) /
                     (d.WeightKg * VOLUME_DISTRIBUTION_L_PER_KG * (absorptionConstant - eliminationConstant))
             }).ToList();
@@ -81,10 +89,11 @@ namespace MoleculeEfficienceTracker.Core.Services
             for (int i = 0; i <= pointCount; i++)
             {
                 var currentTime = startTime.AddMinutes(i * interval);
+                DateTimeOffset currentInstant = PkTime.ToOffset(currentTime);
                 double total = 0;
                 foreach (var p in doseParams)
                 {
-                    double hoursElapsed = (currentTime - p.TimeTaken).TotalHours;
+                    double hoursElapsed = (currentInstant - p.Instant).TotalHours;
                     if (hoursElapsed < 0) continue;
                     double conc = p.A * (Math.Exp(-eliminationConstant * hoursElapsed) - Math.Exp(-absorptionConstant * hoursElapsed));
                     if (conc > 0) total += conc;
