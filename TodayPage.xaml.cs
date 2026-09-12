@@ -34,6 +34,26 @@ namespace MoleculeEfficienceTracker
             _alerts = ServiceLocator.GetOptional<IAlertService>() ?? new AlertService();
 
             PeriodPicker.SelectedIndex = 1;
+            ApplyAccent();
+        }
+
+        /// <summary>
+        /// La carte de tête prend la teinte du café, puisque c'est de lui qu'elle
+        /// parle. Les cinq écrans étaient gris à l'identique.
+        /// </summary>
+        private void ApplyAccent()
+        {
+            Color accent = EffectPalette.ForMolecule(MoleculeKeys.Caffeine);
+            bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+
+            HeroCard.Background = new LinearGradientBrush(
+                new GradientStopCollection
+                {
+                    new GradientStop(accent.WithAlpha(dark ? 0.22f : 0.26f), 0f),
+                    new GradientStop(accent.WithAlpha(dark ? 0.05f : 0.07f), 1f)
+                },
+                new Point(0, 0),
+                new Point(1, 1));
         }
 
         protected override async void OnAppearing()
@@ -52,7 +72,8 @@ namespace MoleculeEfficienceTracker
             }
             catch (Exception ex)
             {
-                SummaryLabel.Text = $"Statistiques indisponibles : {ex.Message}";
+                StatsEmptyLabel.Text = $"Statistiques indisponibles : {ex.Message}";
+                StatsEmptyLabel.IsVisible = true;
             }
         }
 
@@ -79,6 +100,7 @@ namespace MoleculeEfficienceTracker
 
             CaffeineHeadlineLabel.Text = advice.Headline;
             CaffeineDetailLabel.Text = advice.Detail;
+            HeroUpdatedLabel.Text = $"à {now:HH:mm}";
 
             QuickAddButton.IsVisible = true;
             QuickAddButton.Text = $"Enregistrer un café de {advice.PresetMg:0} mg";
@@ -135,7 +157,8 @@ namespace MoleculeEfficienceTracker
             }
             catch (Exception ex)
             {
-                SummaryLabel.Text = $"Statistiques indisponibles : {ex.Message}";
+                StatsEmptyLabel.Text = $"Statistiques indisponibles : {ex.Message}";
+                StatsEmptyLabel.IsVisible = true;
             }
         }
 
@@ -150,11 +173,8 @@ namespace MoleculeEfficienceTracker
 
             StatsCollection.ItemsSource = rows;
             StatsCollection.IsVisible = rows.Count > 0;
+            StatsEmptyLabel.Text = "Aucune prise sur la période.";
             StatsEmptyLabel.IsVisible = rows.Count == 0;
-
-            SummaryLabel.Text = rows.Count > 0
-                ? $"Mis à jour à {DateTime.Now:HH\\hmm}. La variation compare la période à la précédente de même durée."
-                : $"Mis à jour à {DateTime.Now:HH\\hmm}.";
         }
 
         private async Task<List<StatRow>> BuildRowsAsync(int days)

@@ -135,8 +135,6 @@ namespace MoleculeEfficienceTracker
         protected override string? BuildAmountDetail(List<DoseEntry> doses, DateTime currentTime, double amount)
             => amount > 0 ? $"{amount:0.##} u encore en circulation" : null;
 
-        protected override string EmptyChartMessage
-            => "La courbe apparaîtra dès le premier verre enregistré.";
 
         protected override void UpdateMoleculeSpecificConcentrationInfo(
             List<DoseEntry> doses, DateTime currentTime, double bac)

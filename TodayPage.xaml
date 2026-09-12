@@ -67,8 +67,8 @@
         <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
 
             <!-- ===== 1. La question du matin ===== -->
-            <Border Style="{StaticResource HeroCardStyle}">
-                <VerticalStackLayout Spacing="12">
+            <Border x:Name="HeroCard" Style="{StaticResource HeroCardStyle}">
+                <VerticalStackLayout Spacing="16">
                     <Label x:Name="CaffeineHeadlineLabel"
                            Style="{StaticResource HeadlineAnswerStyle}"
                            MaxLines="3"
@@ -80,6 +80,11 @@
                     <Button x:Name="QuickAddButton"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Clicked="OnQuickAddClicked" />
+
+                    <Label x:Name="HeroUpdatedLabel"
+                           Style="{StaticResource HelperLabelStyle}"
+                           FontSize="11"
+                           HorizontalTextAlignment="End" />
                 </VerticalStackLayout>
             </Border>
 
@@ -131,7 +136,7 @@
                     <CollectionView x:Name="StatsCollection"
                                     ItemTemplate="{StaticResource StatRowTemplate}" />
 
-                    <Label x:Name="SummaryLabel" Style="{StaticResource HelperLabelStyle}" />
+
                 </VerticalStackLayout>
             </Border>
 

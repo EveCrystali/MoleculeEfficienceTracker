@@ -73,8 +73,26 @@ namespace MoleculeEfficienceTracker
             Panel.DoseFieldCaption = DoseFieldCaption;
             Panel.HelperText = HelperText;
             Panel.SetPresets(Presets, Calculator.DoseUnit);
-            Panel.Series.Fill = new SolidColorBrush(EffectPalette.Series);
             Panel.YAxis.Title = new ChartAxisTitle { Text = Calculator.ConcentrationUnit };
+
+            // Une teinte par molécule, sur la carte de tête et sous la courbe. Les
+            // cinq écrans étaient gris à l'identique : rien ne disait, avant
+            // d'avoir lu le titre, sur lequel on se trouvait.
+            Color accent = EffectPalette.ForMolecule(MoleculeKey);
+            Panel.SetAccent(accent);
+
+            // L'aire dit la charge accumulée, qu'un trait de deux pixels ne montrait
+            // pas. Elle s'éteint vers le bas pour ne pas peser sur les graduations.
+            Panel.Series.Fill = new LinearGradientBrush(
+                new GradientStopCollection
+                {
+                    new GradientStop(accent.WithAlpha(0.42f), 0f),
+                    new GradientStop(accent.WithAlpha(0.02f), 1f)
+                },
+                new Point(0, 0),
+                new Point(0, 1));
+
+            Panel.Series.Stroke = new SolidColorBrush(accent);
 
             if (Thresholds.Count > 0)
                 Panel.SetThresholdLegend(Thresholds.Select(t => (t.Label, t.Level)));
@@ -114,6 +132,10 @@ namespace MoleculeEfficienceTracker
 
             ResetPickersToNow();
             StartConcentrationTimer();
+
+            // La teinte se repose au retour sur l'onglet : elle est calculée pour le
+            // thème courant, et celui-ci peut avoir basculé entre-temps.
+            Panel.SetAccent(EffectPalette.ForMolecule(MoleculeKey));
 
             try
             {
@@ -328,7 +350,9 @@ namespace MoleculeEfficienceTracker
             // Une seule grande valeur, et une ligne pour la commenter. Les deux
             // tenaient auparavant dans le même libellé, séparées d'un point médian,
             // sous un titre de carte qui répétait déjà l'une des deux.
-            Panel.ConcentrationOutput.Text = FormatConcentration(concentration);
+            Panel.ConcentrationOutput.Text = FormatConcentrationValue(concentration);
+            Panel.ConcentrationUnitOutput.Text = Calculator.ConcentrationUnit;
+            Panel.SetGauge(GaugeProgress(concentration), EffectPalette.For(ResolveEffectLevel(concentration)));
             Panel.ConcentrationDetail.Text = BuildAmountDetail(doses, now, amount) ?? string.Empty;
             Panel.ConcentrationDetail.IsVisible = !string.IsNullOrWhiteSpace(Panel.ConcentrationDetail.Text);
             Panel.LastUpdateOutput.Text = $"à {now:HH:mm}";
@@ -337,17 +361,26 @@ namespace MoleculeEfficienceTracker
         }
 
         /// <summary>
-        /// La grande valeur, dans l'unité de la molécule.
+        /// La grande valeur, sans son unité — celle-ci s'écrit dessous, deux fois
+        /// plus petite, au centre de l'anneau.
         ///
         /// Le nombre de décimales suit l'ordre de grandeur : deux au-dessus de 1,
         /// trois en dessous. Un format fixe à deux décimales écraserait les
         /// 0,047 mg/L du bromazépam sur 0,05, et trois décimales encombreraient les
         /// 1,54 mg/L de la caféine.
         /// </summary>
-        protected virtual string FormatConcentration(double concentration)
-            => concentration >= 1
-                ? $"{concentration:0.##} {Calculator.ConcentrationUnit}"
-                : $"{concentration:0.###} {Calculator.ConcentrationUnit}";
+        protected virtual string FormatConcentrationValue(double concentration)
+            => concentration >= 1 ? $"{concentration:0.##}" : $"{concentration:0.###}";
+
+        /// <summary>
+        /// Fraction remplie de l'anneau : la valeur rapportée au seuil le plus
+        /// fort, qui borne l'échelle utile de la molécule.
+        /// </summary>
+        protected virtual double GaugeProgress(double concentration)
+        {
+            if (Thresholds.Count == 0 || Thresholds[0].Value <= 0) return 0;
+            return Math.Clamp(concentration / Thresholds[0].Value, 0, 1);
+        }
 
         /// <summary>
         /// La ligne sous la grande valeur. L'écran anti-douleur la redéfinit : sa
@@ -401,7 +434,7 @@ namespace MoleculeEfficienceTracker
             {
                 ChartData.Clear();
                 chart.Annotations.Clear();
-                Panel.ShowChart(false, EmptyChartMessage);
+                Panel.ShowChart(false);
                 return;
             }
 
@@ -446,10 +479,6 @@ namespace MoleculeEfficienceTracker
             }
         }
 
-        /// <summary>Ce que dit l'écran quand il n'y a rien à tracer.</summary>
-        protected virtual string EmptyChartMessage
-            => "La courbe apparaîtra dès la première prise enregistrée.";
-
         /// <summary>
         /// Plafond de l'axe des ordonnées, quand la grandeur en a un. L'écran
         /// anti-douleur le fixe à 100 : il trace un pourcentage.
@@ -471,14 +500,23 @@ namespace MoleculeEfficienceTracker
         /// </summary>
         private void ApplyYAxisBounds(List<ChartDataPoint> data)
         {
-            double top = data.Count > 0 ? data.Max(p => p.Concentration) : 0;
+            double dataMax = data.Count > 0 ? data.Max(p => p.Concentration) : 0;
 
-            foreach ((double value, _, _) in Thresholds)
-                top = Math.Max(top, value * 1.05);
+            // Sur les données, non sur les seuils. Le seuil « fort » de la caféine
+            // vaut 8 mg/L quand une journée ordinaire culmine à 3 : l'inclure
+            // réservait les deux tiers de la hauteur à une ligne jamais atteinte,
+            // et écrasait la courbe dans le tiers restant. Les seuils hors cadre ne
+            // se dessinent pas — la légende les nomme, cela suffit.
+            double top = dataMax * 1.25;
+
+            // Un plancher, tout de même : une journée presque vide ne doit pas
+            // produire un axe gradué au millième.
+            if (Thresholds.Count > 0)
+                top = Math.Max(top, Thresholds[Thresholds.Count - 1].Value * 2.5);
 
             if (top <= 0) top = 1;
 
-            top = NiceCeiling(top * 1.15);
+            top = NiceCeiling(top);
 
             if (YAxisMaximumCap is double cap)
                 top = Math.Min(top, cap);
@@ -549,18 +587,11 @@ namespace MoleculeEfficienceTracker
                 // toxicité rouge : le repère et le danger partageaient leur couleur.
                 Stroke = new SolidColorBrush(EffectPalette.Landmark),
                 StrokeWidth = 1.5,
-                StrokeDashArray = Dashes(new double[] { 4, 3 }),
-                Text = "Maintenant",
-                LabelStyle = new ChartAnnotationLabelStyle
-                {
-                    TextColor = EffectPalette.Landmark,
-                    FontSize = 11,
-                    HorizontalTextAlignment = ChartLabelAlignment.Start,
-                    // En haut du cadre. Centré sur sa ligne, ce libellé traversait
-                    // les seuils au milieu du graphique.
-                    VerticalTextAlignment = ChartLabelAlignment.Start,
-                    Margin = new Thickness(8, 2, 0, 0)
-                }
+                StrokeDashArray = Dashes(new double[] { 4, 3 })
+                // Sans texte. « Maintenant » s'écrivait à la verticale, en travers
+                // de la grille : Syncfusion pivote le libellé d'une annotation
+                // verticale pour le faire tenir. La ligne se comprend seule —
+                // l'axe des abscisses porte les heures.
             });
 
             await AddDoseMarkersAsync(chart);
@@ -827,6 +858,10 @@ namespace MoleculeEfficienceTracker
         protected void UpdateEmptyState()
         {
             bool empty = Doses.Count == 0;
+
+            // Sans prise, ni courbe ni historique : deux cartes vides suivies de
+            // deux écrans de blanc ne documentaient rien.
+            Panel.ShowHistory(!empty);
             Panel.EmptyIndicator.IsVisible = empty;
             Panel.DosesView.IsVisible = !empty;
             Panel.SetHistoryCount(Doses.Count);

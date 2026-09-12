@@ -7,20 +7,18 @@
     <!--
         Corps commun à toutes les pages molécules.
 
-        L'ordre précédent empilait six cartes de poids égal, chacune cerclée de
-        gris : l'écran ressemblait à un formulaire, et rien n'y disait ce qu'il
-        fallait regarder d'abord. Celui-ci hiérarchise.
+        La hiérarchie, d'abord : une phrase qui répond, une jauge qui situe, une
+        puce qui nomme. Puis l'ajout, la courbe, l'historique, les données. Six
+        cartes de poids égal ne hiérarchisaient rien.
 
-          1. La réponse — une phrase, une seule grande valeur, une puce d'état.
-          2. L'ajout — les doses en accès direct ; le formulaire détaillé se replie.
-          3. La courbe — seulement s'il y a de quoi tracer.
-          4. L'historique — des lignes, pas trente cartes empilées.
-          5. Les données — repliées elles aussi.
+        La peau, ensuite. Les cartes sont de verre — translucides sur le dégradé de
+        page, filet clair sur l'arête, ombre large. La carte de tête prend en plus
+        la teinte de sa molécule, posée en code : c'est ce qui distingue Café
+        d'Alcool avant même d'avoir lu le titre.
 
-        Les volets repliables sont faits à la main, un bouton qui bascule la
-        visibilité d'un conteneur, plutôt qu'avec le contrôle Expander de la
-        bibliothèque communautaire : celui-ci se mesure mal dans un ScrollView sur
-        Android, et le résultat visuel est le même.
+        Les volets repliables sont faits à la main, un bouton qui bascule une
+        visibilité, plutôt qu'avec le contrôle Expander de la bibliothèque
+        communautaire : celui-ci se mesure mal dans un ScrollView sur Android.
     -->
 
     <ScrollView>
@@ -28,54 +26,71 @@
 
             <!-- ===== 1. La réponse, avant la courbe ===== -->
             <Border x:Name="HeadlineCard" Style="{StaticResource HeroCardStyle}">
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="18">
 
                     <Label x:Name="HeadlineLabel"
                            Style="{StaticResource HeadlineAnswerStyle}"
                            MaxLines="3"
                            LineBreakMode="WordWrap" />
 
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
-                        <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
-                            <Label x:Name="ConcentrationLabel"
-                                   Style="{StaticResource DisplayValueStyle}"
-                                   SemanticProperties.Description="Valeur estimée à l'instant" />
+                    <Grid ColumnDefinitions="120,*" ColumnSpacing="18">
+
+                        <!-- La jauge et sa valeur occupent la même cellule : le
+                             nombre se lit au centre de l'anneau, comme un cadran. -->
+                        <Grid Grid.Column="0" WidthRequest="120" HeightRequest="120"
+                              HorizontalOptions="Start" VerticalOptions="Center">
+                            <GraphicsView x:Name="LevelGauge"
+                                          WidthRequest="120" HeightRequest="120"
+                                          InputTransparent="True" />
+                            <VerticalStackLayout VerticalOptions="Center"
+                                                 HorizontalOptions="Center"
+                                                 Spacing="0">
+                                <Label x:Name="ConcentrationLabel"
+                                       Style="{StaticResource DisplayValueStyle}"
+                                       SemanticProperties.Description="Valeur estimée à l'instant" />
+                                <Label x:Name="ConcentrationUnitLabel"
+                                       Style="{StaticResource DisplayUnitStyle}" />
+                            </VerticalStackLayout>
+                        </Grid>
+
+                        <VerticalStackLayout Grid.Column="1" Spacing="10" VerticalOptions="Center">
+
+                            <!-- La puce d'état porte ensemble le glyphe, le mot et la
+                                 couleur. Aucun des trois ne suffit seul : la couleur
+                                 est inaccessible en deutéranopie, le glyphe est muet
+                                 pour un lecteur d'écran. -->
+                            <Border x:Name="StatusChip"
+                                    HorizontalOptions="Start"
+                                    StrokeThickness="0"
+                                    StrokeShape="RoundRectangle 15"
+                                    Padding="12,7">
+                                <Label x:Name="EffectStatusLabel"
+                                       FontFamily="OpenSansSemibold"
+                                       FontSize="12"
+                                       VerticalTextAlignment="Center" />
+                            </Border>
+
                             <Label x:Name="ConcentrationDetailLabel"
                                    Style="{StaticResource CaptionLabelStyle}" />
-                        </VerticalStackLayout>
 
-                        <!-- La puce d'état porte ensemble le glyphe, le mot et la
-                             couleur. Aucune des trois ne suffit seule : la couleur
-                             est inaccessible en deutéranopie, le glyphe est muet
-                             pour un lecteur d'écran. -->
-                        <Border x:Name="StatusChip" Grid.Column="1"
-                                VerticalOptions="Center"
-                                StrokeShape="RoundRectangle 16"
-                                Padding="12,6">
-                            <Label x:Name="EffectStatusLabel"
-                                   FontFamily="OpenSansSemibold"
-                                   FontSize="12"
-                                   VerticalTextAlignment="Center" />
-                        </Border>
+                            <Label x:Name="EffectPredictionLabel"
+                                   Style="{StaticResource HelperLabelStyle}" />
+                        </VerticalStackLayout>
                     </Grid>
 
                     <Label x:Name="HeadlineDetailLabel"
                            Style="{StaticResource CaptionLabelStyle}" />
 
-                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="8">
-                        <Label x:Name="EffectPredictionLabel" Grid.Column="0"
-                               Style="{StaticResource HelperLabelStyle}" />
-                        <Label x:Name="LastUpdateLabel" Grid.Column="1"
-                               Style="{StaticResource HelperLabelStyle}"
-                               FontSize="11"
-                               HorizontalTextAlignment="End" />
-                    </Grid>
+                    <Label x:Name="LastUpdateLabel"
+                           Style="{StaticResource HelperLabelStyle}"
+                           FontSize="11"
+                           HorizontalTextAlignment="End" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- ===== 2. Saisie ===== -->
             <Border Style="{StaticResource CardStyle}">
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="14">
 
                     <Label x:Name="AddTitleLabel"
                            Style="{StaticResource SectionTitleStyle}"
@@ -87,13 +102,13 @@
                          horizontale sans repli : trois d'entre eux et les marges
                          réclamaient 396 px sur un écran de 360, et le nombre de
                          doses rapides est réglable. -->
-                    <Grid x:Name="PresetsHost" ColumnSpacing="8" RowSpacing="8" IsVisible="False" />
+                    <Grid x:Name="PresetsHost" ColumnSpacing="10" RowSpacing="10" IsVisible="False" />
 
                     <Button x:Name="DetailToggleButton"
                             Style="{StaticResource DisclosureButtonStyle}"
                             Clicked="OnDetailToggleClicked" />
 
-                    <VerticalStackLayout x:Name="DetailForm" Spacing="12" IsVisible="False">
+                    <VerticalStackLayout x:Name="DetailForm" Spacing="14" IsVisible="False">
 
                         <!-- Le libellé du champ est son propre indicateur : Material 3
                              le fait flotter au-dessus du contour dès la frappe. Il
@@ -107,13 +122,9 @@
                         <Label x:Name="HelperLabel"
                                Style="{StaticResource HelperLabelStyle}" />
 
-                        <!-- Date et heure sans habillage : le conteneur vient du
-                             système, comme pour le champ de dose. Ils n'avaient
-                             auparavant aucun style et retombaient à 14 px sans
-                             bordure, à côté d'un champ de dose encadré à 16. -->
                         <Label Text="Quand" Style="{StaticResource HelperLabelStyle}" />
 
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                             <DatePicker x:Name="DateControl" Grid.Column="0"
                                         SemanticProperties.Description="Date de la prise" />
                             <TimePicker x:Name="TimeControl" Grid.Column="1" Format="HH:mm"
@@ -128,84 +139,89 @@
             </Border>
 
             <!-- ===== 3. Courbe ===== -->
+            <!-- Masquée tant qu'il n'y a rien à tracer : une carte vide de trois
+                 cents pixels ne documente rien. -->
             <Border x:Name="ChartCard" Style="{StaticResource CardStyle}">
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="14">
                     <Label Text="Évolution"
                            Style="{StaticResource SectionTitleStyle}"
                            SemanticProperties.HeadingLevel="Level2" />
 
-                    <Label x:Name="ChartEmptyLabel"
-                           Text="La courbe apparaîtra dès la première prise enregistrée."
-                           Style="{StaticResource EmptyLabelStyle}"
-                           IsVisible="False" />
+                    <chart:SfCartesianChart x:Name="ConcentrationChart"
+                                            HeightRequest="250"
+                                            MinimumHeightRequest="200"
+                                            SemanticProperties.Description="Courbe de concentration au cours du temps">
+                        <chart:SfCartesianChart.TrackballBehavior>
+                            <chart:ChartTrackballBehavior DisplayMode="FloatAllPoints" />
+                        </chart:SfCartesianChart.TrackballBehavior>
 
-                    <VerticalStackLayout x:Name="ChartHost" Spacing="10">
-                        <chart:SfCartesianChart x:Name="ConcentrationChart"
-                                                HeightRequest="260"
-                                                MinimumHeightRequest="200"
-                                                SemanticProperties.Description="Courbe de concentration au cours du temps">
-                            <chart:SfCartesianChart.TrackballBehavior>
-                                <chart:ChartTrackballBehavior DisplayMode="FloatAllPoints" />
-                            </chart:SfCartesianChart.TrackballBehavior>
+                        <chart:SfCartesianChart.ZoomPanBehavior>
+                            <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True" />
+                        </chart:SfCartesianChart.ZoomPanBehavior>
 
-                            <chart:SfCartesianChart.ZoomPanBehavior>
-                                <chart:ChartZoomPanBehavior ZoomMode="X" EnablePanning="True" />
-                            </chart:SfCartesianChart.ZoomPanBehavior>
+                        <chart:SfCartesianChart.XAxes>
+                            <chart:DateTimeAxis x:Name="ChartXAxis" ShowMajorGridLines="False">
+                                <chart:DateTimeAxis.LabelStyle>
+                                    <chart:ChartAxisLabelStyle FontSize="11"
+                                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                                </chart:DateTimeAxis.LabelStyle>
+                                <chart:DateTimeAxis.AxisLineStyle>
+                                    <chart:ChartLineStyle StrokeWidth="0" />
+                                </chart:DateTimeAxis.AxisLineStyle>
+                                <chart:DateTimeAxis.MajorTickStyle>
+                                    <chart:ChartAxisTickStyle StrokeWidth="0" />
+                                </chart:DateTimeAxis.MajorTickStyle>
+                            </chart:DateTimeAxis>
+                        </chart:SfCartesianChart.XAxes>
 
-                            <chart:SfCartesianChart.XAxes>
-                                <chart:DateTimeAxis x:Name="ChartXAxis" ShowMajorGridLines="False">
-                                    <chart:DateTimeAxis.LabelStyle>
-                                        <chart:ChartAxisLabelStyle FontSize="11"
-                                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
-                                    </chart:DateTimeAxis.LabelStyle>
-                                    <chart:DateTimeAxis.AxisLineStyle>
-                                        <chart:ChartLineStyle StrokeWidth="1"
-                                            Stroke="{AppThemeBinding Light={StaticResource GridLineLight}, Dark={StaticResource GridLineDark}}" />
-                                    </chart:DateTimeAxis.AxisLineStyle>
-                                </chart:DateTimeAxis>
-                            </chart:SfCartesianChart.XAxes>
+                        <chart:SfCartesianChart.YAxes>
+                            <chart:NumericalAxis x:Name="ChartYAxis" Minimum="0" ShowMajorGridLines="True">
+                                <chart:NumericalAxis.LabelStyle>
+                                    <chart:ChartAxisLabelStyle FontSize="11"
+                                        TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                                </chart:NumericalAxis.LabelStyle>
+                                <chart:NumericalAxis.MajorGridLineStyle>
+                                    <chart:ChartLineStyle StrokeWidth="1"
+                                        Stroke="{AppThemeBinding Light={StaticResource GridLineLight}, Dark={StaticResource GridLineDark}}" />
+                                </chart:NumericalAxis.MajorGridLineStyle>
+                                <chart:NumericalAxis.AxisLineStyle>
+                                    <chart:ChartLineStyle StrokeWidth="0" />
+                                </chart:NumericalAxis.AxisLineStyle>
+                                <chart:NumericalAxis.MajorTickStyle>
+                                    <chart:ChartAxisTickStyle StrokeWidth="0" />
+                                </chart:NumericalAxis.MajorTickStyle>
+                            </chart:NumericalAxis>
+                        </chart:SfCartesianChart.YAxes>
 
-                            <chart:SfCartesianChart.YAxes>
-                                <chart:NumericalAxis x:Name="ChartYAxis" Minimum="0" ShowMajorGridLines="True">
-                                    <chart:NumericalAxis.LabelStyle>
-                                        <chart:ChartAxisLabelStyle FontSize="11"
-                                            TextColor="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
-                                    </chart:NumericalAxis.LabelStyle>
-                                    <chart:NumericalAxis.MajorGridLineStyle>
-                                        <chart:ChartLineStyle StrokeWidth="1"
-                                            Stroke="{AppThemeBinding Light={StaticResource GridLineLight}, Dark={StaticResource GridLineDark}}" />
-                                    </chart:NumericalAxis.MajorGridLineStyle>
-                                    <chart:NumericalAxis.AxisLineStyle>
-                                        <chart:ChartLineStyle StrokeWidth="0" />
-                                    </chart:NumericalAxis.AxisLineStyle>
-                                </chart:NumericalAxis>
-                            </chart:SfCartesianChart.YAxes>
-
-                            <chart:SplineSeries x:Name="ConcentrationSeries"
+                        <!-- Aire plutôt que ligne : la surface sous la courbe dit la
+                             charge accumulée, qu'un trait de deux pixels ne montrait
+                             pas. Le dégradé est posé en code, dans la teinte de la
+                             molécule. -->
+                        <chart:SplineAreaSeries x:Name="ConcentrationSeries"
                                                 ItemsSource="{Binding ChartData}"
                                                 XBindingPath="Time"
                                                 YBindingPath="Concentration"
                                                 StrokeWidth="2.5"
                                                 EnableAnimation="False"
                                                 EnableTooltip="True" />
-                        </chart:SfCartesianChart>
+                    </chart:SfCartesianChart>
 
-                        <!-- La légende porte les noms des seuils, leur couleur et
-                             leur motif de trait. C'est elle qui les nomme désormais :
-                             les quatre libellés écrits sur la courbe étaient ancrés
-                             à la même abscisse et s'y empilaient en une tache. -->
-                        <FlexLayout x:Name="ThresholdLegend"
-                                    Wrap="Wrap" JustifyContent="Start" AlignItems="Center" />
-                    </VerticalStackLayout>
+                    <!-- La légende porte les noms des seuils, leur couleur et leur
+                         motif de trait. C'est elle qui les nomme désormais : les
+                         quatre libellés écrits sur la courbe étaient ancrés à la
+                         même abscisse et s'y empilaient en une tache. -->
+                    <FlexLayout x:Name="ThresholdLegend"
+                                Wrap="Wrap" JustifyContent="Start" AlignItems="Center" />
                 </VerticalStackLayout>
             </Border>
 
             <!-- ===== 4. Historique ===== -->
-            <Border Style="{StaticResource CardStyle}">
+            <Border x:Name="HistoryCard" Style="{StaticResource CardStyle}">
                 <VerticalStackLayout Spacing="4">
                     <Label x:Name="HistoryTitleLabel"
                            Text="Prises récentes"
                            Style="{StaticResource SectionTitleStyle}"
+                           Margin="0,0,0,6"
                            SemanticProperties.HeadingLevel="Level2" />
 
                     <Label x:Name="EmptyDosesLabel"
@@ -242,7 +258,7 @@
                                                 SemanticProperties.Description="Supprimer cette prise" />
                                     </Grid>
 
-                                    <BoxView Style="{StaticResource SeparatorStyle}" Opacity="0.5" />
+                                    <BoxView Style="{StaticResource SeparatorStyle}" Opacity="0.4" />
                                 </VerticalStackLayout>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -252,13 +268,13 @@
 
             <!-- ===== 5. Données ===== -->
             <Border Style="{StaticResource CardStyle}">
-                <VerticalStackLayout Spacing="12">
+                <VerticalStackLayout Spacing="14">
                     <Button x:Name="DataToggleButton"
                             Style="{StaticResource DisclosureButtonStyle}"
                             Clicked="OnDataToggleClicked" />
 
-                    <VerticalStackLayout x:Name="DataSection" Spacing="8" IsVisible="False">
-                        <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <VerticalStackLayout x:Name="DataSection" Spacing="10" IsVisible="False">
+                        <Grid ColumnDefinitions="*,*" ColumnSpacing="10">
                             <Button x:Name="ImportButton" Grid.Column="0"
                                     Text="Importer"
                                     Style="{StaticResource SecondaryButtonStyle}" />

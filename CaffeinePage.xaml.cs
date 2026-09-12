@@ -67,9 +67,6 @@ namespace MoleculeEfficienceTracker
             Panel.EffectPrediction.IsVisible = true;
         }
 
-        protected override string EmptyChartMessage
-            => "La courbe apparaîtra dès le premier café enregistré.";
-
         protected override async Task OnAfterDoseChangedAsync()
         {
             await _notifications.ScheduleCutoffAsync(Doses.ToList(), DateTime.Now);

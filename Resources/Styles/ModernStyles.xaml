@@ -37,9 +37,12 @@
     <!-- 1. Styles implicites — ce qui reste du modèle, réécrit             -->
     <!-- ================================================================= -->
 
+    <!-- Le fond est un dégradé, non un aplat : c'est lui qui donne au verre
+         quelque chose à laisser voir. Background, et non BackgroundColor, sans
+         quoi la couleur unie l'emporterait. -->
     <Style TargetType="Page" ApplyToDerivedTypes="True">
         <Setter Property="Padding" Value="0" />
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource PageGradientLight}, Dark={StaticResource PageGradientDark}}" />
     </Style>
 
     <Style TargetType="Label">
@@ -156,13 +159,13 @@
     </Style>
 
     <Style TargetType="NavigationPage">
-        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light=#E9F0FC, Dark=#0A1018}" />
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
         <Setter Property="IconColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
     </Style>
 
     <Style TargetType="TabbedPage">
-        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceContainerDark}}" />
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light=#FBF5F4, Dark=#141018}" />
         <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
         <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
@@ -172,12 +175,21 @@
     <!-- 2. Échelle typographique Material 3                               -->
     <!-- ================================================================= -->
 
-    <!-- displaySmall — la valeur du moment. Une seule par écran. -->
+    <!-- La valeur du moment, au centre de l'anneau. Une seule par écran. -->
     <Style x:Key="DisplayValueStyle" TargetType="Label">
         <Setter Property="FontFamily" Value="OpenSansSemibold" />
-        <Setter Property="FontSize" Value="36" />
-        <Setter Property="LineHeight" Value="1.15" />
+        <Setter Property="FontSize" Value="30" />
+        <Setter Property="LineHeight" Value="1.05" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
         <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
+
+    <!-- L'unité sous la valeur : deux fois plus petite, jamais en gras. Une unité
+         de la même taille que son nombre lui dispute la lecture. -->
+    <Style x:Key="DisplayUnitStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
     </Style>
 
     <!-- titleLarge — la phrase-réponse, le titre d'écran. -->
@@ -229,24 +241,38 @@
     <!-- 3. Surfaces                                                        -->
     <!-- ================================================================= -->
 
-    <!-- La carte : surface teintée, rayon 16, aucune bordure. -->
+    <!--
+        La carte de verre : surface translucide, filet clair sur l'arête, ombre
+        large et peu opaque. Rayon 24 — au-delà de vingt, un coin cesse de se lire
+        comme un angle arrondi et devient une forme à lui seul.
+    -->
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SurfaceContainerLowLight}, Dark={StaticResource SurfaceContainerLowDark}}" />
-        <Setter Property="Stroke" Value="Transparent" />
-        <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 16" />
-        <Setter Property="Padding" Value="16" />
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource GlassFillLight}, Dark={StaticResource GlassFillDark}}" />
+        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource GlassStrokeLight}, Dark={StaticResource GlassStrokeDark}}" />
+        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 24" />
+        <Setter Property="Padding" Value="20" />
+        <Setter Property="Shadow">
+            <Setter.Value>
+                <Shadow Brush="{AppThemeBinding Light={StaticResource GlassShadowLight}, Dark={StaticResource GlassShadowDark}}"
+                        Offset="0,10" Radius="24" Opacity="0.5" />
+            </Setter.Value>
+        </Setter>
     </Style>
 
-    <!-- Une carte d'un cran plus haute, pour la réponse en tête d'écran. -->
+    <!--
+        La carte de tête. Son fond est réécrit en code avec la teinte de la
+        molécule : c'est ce qui distingue l'écran Café de l'écran Alcool au premier
+        coup d'œil, là où tous deux se ressemblaient en gris.
+    -->
     <Style x:Key="HeroCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
-        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceContainerDark}}" />
-        <Setter Property="Padding" Value="20" />
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource GlassFillStrongLight}, Dark={StaticResource GlassFillStrongDark}}" />
+        <Setter Property="Padding" Value="22" />
     </Style>
 
     <Style x:Key="PageRootLayoutStyle" TargetType="VerticalStackLayout">
-        <Setter Property="Spacing" Value="12" />
-        <Setter Property="Padding" Value="16,12,16,32" />
+        <Setter Property="Spacing" Value="14" />
+        <Setter Property="Padding" Value="16,8,16,32" />
         <Setter Property="MaximumWidthRequest" Value="720" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>

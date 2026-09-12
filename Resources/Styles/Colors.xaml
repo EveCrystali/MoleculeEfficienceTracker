@@ -113,6 +113,50 @@
     <Color x:Key="GridLineLight">#C3C7CF</Color>
     <Color x:Key="GridLineDark">#43474E</Color>
 
+    <!--
+        ===== Verre =====
+
+        Une carte de verre n'est pas une carte floutée : ni RenderEffect ni
+        BLUR_BEHIND ne sont exposés par MAUI pour une vue quelconque sur Android.
+        Elle se fabrique de trois ingrédients, et c'est ainsi qu'elle se fabrique
+        partout ailleurs en production.
+
+        Une surface translucide, d'abord, posée sur un fond qui a quelque chose à
+        laisser voir — d'où le dégradé de page ci-dessous. Un filet clair ensuite,
+        sur l'arête, qui imite la tranche éclairée du verre. Une ombre souple
+        enfin, large et peu opaque, qui décolle la carte du fond.
+
+        Ôte l'un des trois et l'illusion tombe : sans dégradé derrière, la
+        translucidité ne se voit pas ; sans filet, la carte redevient un
+        rectangle gris ; sans ombre, elle reste collée au fond.
+    -->
+    <Color x:Key="GlassFillLight">#D9FFFFFF</Color>
+    <Color x:Key="GlassFillDark">#1AFFFFFF</Color>
+    <Color x:Key="GlassFillStrongLight">#F2FFFFFF</Color>
+    <Color x:Key="GlassFillStrongDark">#26FFFFFF</Color>
+    <Color x:Key="GlassStrokeLight">#B3FFFFFF</Color>
+    <Color x:Key="GlassStrokeDark">#26FFFFFF</Color>
+    <Color x:Key="GlassShadowLight">#334A6B99</Color>
+    <Color x:Key="GlassShadowDark">#66000000</Color>
+
+    <!--
+        ===== Fond de page =====
+
+        Trois arrêts, très peu saturés : le verre a besoin d'un fond qui varie pour
+        se lire comme du verre. Un aplat uni rendrait la translucidité invisible.
+    -->
+    <LinearGradientBrush x:Key="PageGradientLight" StartPoint="0,0" EndPoint="0.6,1">
+        <GradientStop Color="#E6EFFC" Offset="0.0" />
+        <GradientStop Color="#F5F3FB" Offset="0.45" />
+        <GradientStop Color="#FDF4F1" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PageGradientDark" StartPoint="0,0" EndPoint="0.6,1">
+        <GradientStop Color="#0A1018" Offset="0.0" />
+        <GradientStop Color="#12131E" Offset="0.45" />
+        <GradientStop Color="#1A1219" Offset="1.0" />
+    </LinearGradientBrush>
+
     <!-- Pinceaux, pour les propriétés qui n'acceptent pas une Color. -->
     <SolidColorBrush x:Key="PrimaryBrushLight" Color="{StaticResource PrimaryLight}" />
     <SolidColorBrush x:Key="PrimaryBrushDark" Color="{StaticResource PrimaryDark}" />

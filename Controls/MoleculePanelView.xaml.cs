@@ -21,9 +21,13 @@ namespace MoleculeEfficienceTracker.Controls
         /// <summary>Au-delà de trois doses rapides, la rangée passe à la ligne.</summary>
         private const int PresetsPerRow = 3;
 
+        private readonly GaugeDrawable _gauge = new();
+
         public MoleculePanelView()
         {
             InitializeComponent();
+
+            LevelGauge.Drawable = _gauge;
             UpdateDetailToggleText();
             UpdateDataToggleText();
         }
@@ -33,6 +37,7 @@ namespace MoleculeEfficienceTracker.Controls
         public DatePicker DatePickerControl => DateControl;
         public TimePicker TimePickerControl => TimeControl;
         public Label ConcentrationOutput => ConcentrationLabel;
+        public Label ConcentrationUnitOutput => ConcentrationUnitLabel;
         public Label ConcentrationDetail => ConcentrationDetailLabel;
         public Label LastUpdateOutput => LastUpdateLabel;
         public Label EffectStatus => EffectStatusLabel;
@@ -40,7 +45,7 @@ namespace MoleculeEfficienceTracker.Controls
         public Label Headline => HeadlineLabel;
         public Label HeadlineDetail => HeadlineDetailLabel;
         public SfCartesianChart Chart => ConcentrationChart;
-        public SplineSeries Series => ConcentrationSeries;
+        public SplineAreaSeries Series => ConcentrationSeries;
         public NumericalAxis YAxis => ChartYAxis;
         public DateTimeAxis XAxis => ChartXAxis;
         public Label EmptyIndicator => EmptyDosesLabel;
@@ -106,6 +111,43 @@ namespace MoleculeEfficienceTracker.Controls
             => HistoryTitleLabel.Text = count > 0 ? $"Prises récentes · {count}" : "Prises récentes";
 
         /// <summary>
+        /// La teinte de la molécule, en dégradé sur la carte de tête.
+        ///
+        /// Les cinq écrans étaient gris à l'identique : rien ne disait, avant
+        /// d'avoir lu le titre, sur lequel on se trouvait. La couleur ne porte
+        /// aucune information que le texte ne porte déjà — elle situe, elle
+        /// n'informe pas.
+        /// </summary>
+        public void SetAccent(Color accent)
+        {
+            bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+
+            HeadlineCard.Background = new LinearGradientBrush(
+                new GradientStopCollection
+                {
+                    new GradientStop(accent.WithAlpha(dark ? 0.22f : 0.26f), 0f),
+                    new GradientStop(accent.WithAlpha(dark ? 0.05f : 0.07f), 1f)
+                },
+                new Point(0, 0),
+                new Point(1, 1));
+        }
+
+        /// <summary>
+        /// L'anneau : fraction remplie et couleur du niveau. Un nombre seul ne dit
+        /// pas s'il est grand.
+        /// </summary>
+        public void SetGauge(double progress, Color color)
+        {
+            bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+
+            _gauge.Progress = progress;
+            _gauge.ProgressColor = color;
+            _gauge.TrackColor = Color.FromArgb(dark ? "#2A2E35" : "#DDE3EC");
+
+            LevelGauge.Invalidate();
+        }
+
+        /// <summary>
         /// La puce d'état : fond teinté, texte du même rôle, glyphe compris.
         ///
         /// Le mot vient de la page, pas de la palette — l'alcool dit « ivresse
@@ -124,18 +166,15 @@ namespace MoleculeEfficienceTracker.Controls
         }
 
         /// <summary>
-        /// Masque la courbe et ses axes tant qu'il n'y a rien à tracer. La version
+        /// Masque la carte de la courbe tant qu'il n'y a rien à tracer. La version
         /// précédente dessinait le cadre, la grille, les quatre seuils et le repère
-        /// « Maintenant » au-dessus d'une série vide.
+        /// « Maintenant » au-dessus d'une série vide — puis, une fois la phrase
+        /// substituée, une carte de trois cents pixels pour une seule ligne.
         /// </summary>
-        public void ShowChart(bool visible, string? emptyMessage = null)
-        {
-            ChartHost.IsVisible = visible;
-            ChartEmptyLabel.IsVisible = !visible;
+        public void ShowChart(bool visible) => ChartCard.IsVisible = visible;
 
-            if (!visible && !string.IsNullOrWhiteSpace(emptyMessage))
-                ChartEmptyLabel.Text = emptyMessage;
-        }
+        /// <summary>L'historique disparaît avec la courbe, pour la même raison.</summary>
+        public void ShowHistory(bool visible) => HistoryCard.IsVisible = visible;
 
         /// <summary>
         /// Installe les doses en accès direct. Un appui enregistre à l'heure
@@ -169,7 +208,7 @@ namespace MoleculeEfficienceTracker.Controls
             {
                 double preset = list[i];
 
-                var button = new Button { Text = $"{preset:0.##} {unit}" };
+                var button = new Button { Text = $"{preset:0.##} {unit}" };
 
                 if (Application.Current?.Resources.TryGetValue("PresetButtonStyle", out object? style) == true)
                     button.Style = (Style)style;
@@ -219,7 +258,7 @@ namespace MoleculeEfficienceTracker.Controls
                 var row = new HorizontalStackLayout
                 {
                     Spacing = 6,
-                    Margin = new Thickness(0, 2, 14, 2),
+                    Margin = new Thickness(0, 3, 14, 3),
                     Children =
                     {
                         swatch,

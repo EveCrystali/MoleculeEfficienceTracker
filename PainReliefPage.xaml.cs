@@ -108,7 +108,10 @@ namespace MoleculeEfficienceTracker
         /// <summary>L'axe porte un pourcentage : il s'arrête à cent.</summary>
         protected override double? YAxisMaximumCap => 100;
 
-        protected override string FormatConcentration(double percent) => $"{percent:0} %";
+        protected override string FormatConcentrationValue(double percent) => $"{percent:0}";
+
+        /// <summary>L'anneau se remplit sur cent, l'échelle étant un pourcentage.</summary>
+        protected override double GaugeProgress(double percent) => Math.Clamp(percent / 100.0, 0, 1);
 
         /// <summary>
         /// La grandeur affichée est un effet, pas une quantité : annoncer « 42 mg
@@ -129,9 +132,6 @@ namespace MoleculeEfficienceTracker
 
             return $"Dernière prise {ago} · {MoleculeKeys.DisplayName(last.MoleculeKey)} {last.DoseMg:0.#} mg";
         }
-
-        protected override string EmptyChartMessage
-            => "La courbe apparaîtra dès la première prise enregistrée.";
 
         protected override void UpdateMoleculeSpecificConcentrationInfo(
             List<DoseEntry> doses, DateTime currentTime, double percent)

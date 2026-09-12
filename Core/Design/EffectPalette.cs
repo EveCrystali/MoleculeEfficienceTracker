@@ -169,6 +169,12 @@ namespace MoleculeEfficienceTracker.Core.Design
             Models.MoleculeKeys.Paracetamol => Color.FromArgb(IsDarkTheme ? "#9BB4C9" : "#4A6274"),
             Models.MoleculeKeys.Ibuprofen => Color.FromArgb(IsDarkTheme ? "#D0BCFF" : "#65558F"),
             Models.MoleculeKeys.Alcohol => IsDarkTheme ? StrongDark : StrongLight,
+
+            // L'écran anti-douleur porte la clé de l'agrégat, non celle d'une des
+            // deux molécules : sans ce cas, sa carte de tête retombait sur le gris
+            // neutre et restait la seule des cinq à n'avoir aucune teinte.
+            Models.MoleculeKeys.PainRelief => Color.FromArgb(IsDarkTheme ? "#D0BCFF" : "#65558F"),
+
             _ => Landmark
         };
     }
