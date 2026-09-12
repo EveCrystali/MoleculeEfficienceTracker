@@ -332,51 +332,20 @@
     <!-- ================================================================= -->
 
     <!--
-        Le conteneur de champ, quand il en faut un : surfaceContainerHighest, rayon
-        12, aucune bordure — le champ rempli de Material 3. Il enveloppe
-        indifféremment une Entry, un Picker, un DatePicker ou un TimePicker, ce qui
-        met fin aux trois apparences que présentait une même carte.
+        Il n'y a plus de style de champ, et c'est le but.
+
+        Sous Material 3, le gestionnaire Android rend l'Entry, l'Editor, le Picker,
+        le DatePicker et le TimePicker avec un TextInputLayout à contour et libellé
+        flottant. Les envelopper dans une bordure remplie, comme le faisait la
+        version précédente pour le seul champ de dose, dessinerait une boîte dans
+        une boîte ; poser une couleur de fond écraserait purement et simplement le
+        conteneur natif.
+
+        Ne restent donc que les styles implicites de la section 1 : couleur du
+        texte, taille, hauteur de touche. Le conteneur vient du système, et les cinq
+        champs se ressemblent enfin — ils affichaient jusqu'ici trois apparences
+        dans une même carte.
     -->
-    <Style x:Key="FieldBorderStyle" TargetType="Border">
-        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SurfaceContainerHighestLight}, Dark={StaticResource SurfaceContainerHighestDark}}" />
-        <Setter Property="Stroke" Value="Transparent" />
-        <Setter Property="StrokeThickness" Value="0" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
-        <Setter Property="Padding" Value="12,0" />
-        <Setter Property="MinimumHeightRequest" Value="48" />
-    </Style>
-
-    <Style x:Key="FieldEntryStyle" TargetType="Entry">
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="HeightRequest" Value="48" />
-        <Setter Property="MinimumHeightRequest" Value="48" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
-    </Style>
-
-    <Style x:Key="FieldPickerStyle" TargetType="Picker">
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="HeightRequest" Value="48" />
-        <Setter Property="MinimumHeightRequest" Value="48" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
-    </Style>
-
-    <Style x:Key="FieldDatePickerStyle" TargetType="DatePicker">
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="HeightRequest" Value="48" />
-        <Setter Property="MinimumHeightRequest" Value="48" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
-    </Style>
-
-    <Style x:Key="FieldTimePickerStyle" TargetType="TimePicker">
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="HeightRequest" Value="48" />
-        <Setter Property="MinimumHeightRequest" Value="48" />
-        <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
-    </Style>
 
     <!-- ================================================================= -->
     <!-- 6. Listes                                                          -->

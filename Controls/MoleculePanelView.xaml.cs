@@ -59,10 +59,15 @@ namespace MoleculeEfficienceTracker.Controls
             set => AddTitleLabel.Text = value;
         }
 
+        /// <summary>
+        /// Le libellé du champ de dose. Material 3 le pose dans le champ puis le
+        /// fait flotter au-dessus du contour dès la frappe : il n'occupe plus une
+        /// colonne entière à gauche.
+        /// </summary>
         public string DoseFieldCaption
         {
-            get => DoseFieldLabel.Text;
-            set => DoseFieldLabel.Text = value;
+            get => DoseEntryControl.Placeholder;
+            set => DoseEntryControl.Placeholder = value;
         }
 
         public string HelperText

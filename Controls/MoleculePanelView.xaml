@@ -95,38 +95,29 @@
 
                     <VerticalStackLayout x:Name="DetailForm" Spacing="12" IsVisible="False">
 
-                        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
-                            <Label x:Name="DoseFieldLabel"
-                                   Grid.Column="0"
-                                   Style="{StaticResource BodyLabelStyle}" />
-                            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
-                                <Entry x:Name="DoseEntryControl"
-                                       Keyboard="Numeric"
-                                       Style="{StaticResource FieldEntryStyle}"
-                                       SemanticProperties.Description="Quantité de la prise" />
-                            </Border>
-                        </Grid>
+                        <!-- Le libellé du champ est son propre indicateur : Material 3
+                             le fait flotter au-dessus du contour dès la frappe. Il
+                             occupait jusqu'ici une colonne entière à gauche. -->
+                        <Entry x:Name="DoseEntryControl"
+                               Keyboard="Numeric"
+                               SemanticProperties.Description="Quantité de la prise" />
 
                         <ContentView x:Name="ExtraInputHost" />
 
                         <Label x:Name="HelperLabel"
                                Style="{StaticResource HelperLabelStyle}" />
 
-                        <!-- Date et heure dans le même conteneur de champ que la
-                             dose. Ils n'avaient aucun style et retombaient à 14 px
-                             sans fond : trois apparences pour trois champs d'une
-                             même carte. -->
+                        <!-- Date et heure sans habillage : le conteneur vient du
+                             système, comme pour le champ de dose. Ils n'avaient
+                             auparavant aucun style et retombaient à 14 px sans
+                             bordure, à côté d'un champ de dose encadré à 16. -->
+                        <Label Text="Quand" Style="{StaticResource HelperLabelStyle}" />
+
                         <Grid ColumnDefinitions="*,*" ColumnSpacing="8">
-                            <Border Grid.Column="0" Style="{StaticResource FieldBorderStyle}">
-                                <DatePicker x:Name="DateControl"
-                                            Style="{StaticResource FieldDatePickerStyle}"
-                                            SemanticProperties.Description="Date de la prise" />
-                            </Border>
-                            <Border Grid.Column="1" Style="{StaticResource FieldBorderStyle}">
-                                <TimePicker x:Name="TimeControl" Format="HH:mm"
-                                            Style="{StaticResource FieldTimePickerStyle}"
-                                            SemanticProperties.Description="Heure de la prise" />
-                            </Border>
+                            <DatePicker x:Name="DateControl" Grid.Column="0"
+                                        SemanticProperties.Description="Date de la prise" />
+                            <TimePicker x:Name="TimeControl" Grid.Column="1" Format="HH:mm"
+                                        SemanticProperties.Description="Heure de la prise" />
                         </Grid>
 
                         <Button x:Name="AddButton"

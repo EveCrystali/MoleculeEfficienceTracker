@@ -4,6 +4,16 @@
              x:Class="MoleculeEfficienceTracker.SettingsPage"
              Title="Réglages">
 
+    <!--
+        Les Réglages ont quitté les onglets : c'est une action de la barre de titre,
+        atteinte par navigation. Material 3 plafonne une barre de navigation à cinq
+        destinations, et il y en avait six, aux libellés coupés.
+
+        Aucun champ n'est enveloppé : sous Material 3, le gestionnaire Android leur
+        dessine lui-même un contour et fait flotter leur libellé. Les encadrer à la
+        main dessinerait une boîte dans une boîte.
+    -->
+
     <ScrollView>
         <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
 
@@ -12,24 +22,18 @@
                     <Label Text="Vous" Style="{StaticResource SectionTitleStyle}"
                            SemanticProperties.HeadingLevel="Level2" />
 
-                    <Label Text="Poids (kg)" Style="{StaticResource BodyLabelStyle}" />
-                    <Border Style="{StaticResource FieldBorderStyle}">
-                        <Entry x:Name="WeightEntry" Keyboard="Numeric" Placeholder="72"
-                               Style="{StaticResource FieldEntryStyle}"
-                               SemanticProperties.Description="Poids en kilogrammes" />
-                    </Border>
+                    <Label Text="Poids (kg)" Style="{StaticResource CaptionLabelStyle}" />
+                    <Entry x:Name="WeightEntry" Keyboard="Numeric" Placeholder="72"
+                           SemanticProperties.Description="Poids en kilogrammes" />
 
-                    <Label Text="Sexe" Style="{StaticResource BodyLabelStyle}" />
-                    <Border Style="{StaticResource FieldBorderStyle}">
-                        <Picker x:Name="SexPicker"
-                                Style="{StaticResource FieldPickerStyle}"
-                                SemanticProperties.Description="Sexe, utilisé pour le coefficient de diffusion de l'alcool">
-                            <Picker.Items>
-                                <x:String>Homme</x:String>
-                                <x:String>Femme</x:String>
-                            </Picker.Items>
-                        </Picker>
-                    </Border>
+                    <Label Text="Sexe" Style="{StaticResource CaptionLabelStyle}" />
+                    <Picker x:Name="SexPicker"
+                            SemanticProperties.Description="Sexe, utilisé pour le coefficient de diffusion de l'alcool">
+                        <Picker.Items>
+                            <x:String>Homme</x:String>
+                            <x:String>Femme</x:String>
+                        </Picker.Items>
+                    </Picker>
                 </VerticalStackLayout>
             </Border>
 
@@ -38,31 +42,27 @@
                     <Label Text="Café et sommeil" Style="{StaticResource SectionTitleStyle}"
                            SemanticProperties.HeadingLevel="Level2" />
 
-                    <Label Text="Heure de coucher visée" Style="{StaticResource BodyLabelStyle}" />
-                    <Border Style="{StaticResource FieldBorderStyle}">
-                        <TimePicker x:Name="BedTimePicker" Format="HH:mm"
-                                    Style="{StaticResource FieldTimePickerStyle}"
-                                    SemanticProperties.Description="Heure de coucher visée" />
-                    </Border>
+                    <Label Text="Heure de coucher visée" Style="{StaticResource CaptionLabelStyle}" />
+                    <TimePicker x:Name="BedTimePicker" Format="HH:mm"
+                                SemanticProperties.Description="Heure de coucher visée" />
 
-                    <Label Text="Caféine tolérée au coucher (mg/L)" Style="{StaticResource BodyLabelStyle}" />
-                    <Border Style="{StaticResource FieldBorderStyle}">
-                        <Entry x:Name="SleepThresholdEntry" Keyboard="Numeric" Placeholder="1,0"
-                               Style="{StaticResource FieldEntryStyle}" />
-                    </Border>
+                    <Label Text="Caféine tolérée au coucher (mg/L)" Style="{StaticResource CaptionLabelStyle}" />
+                    <Entry x:Name="SleepThresholdEntry" Keyboard="Numeric" Placeholder="1,0"
+                           SemanticProperties.Description="Concentration de caféine tolérée à l'heure du coucher" />
+
                     <Label Text="Repère : un Nespresso de 80 mg culmine autour de 1,5 mg/L."
                            Style="{StaticResource HelperLabelStyle}" />
 
-                    <Label Text="Doses en accès direct (mg, séparées par ;)" Style="{StaticResource BodyLabelStyle}" />
-                    <Border Style="{StaticResource FieldBorderStyle}">
-                        <Entry x:Name="PresetsEntry" Placeholder="80;65;35"
-                               Style="{StaticResource FieldEntryStyle}" />
-                    </Border>
+                    <Label Text="Doses en accès direct (mg, séparées par ;)"
+                           Style="{StaticResource CaptionLabelStyle}" />
+                    <Entry x:Name="PresetsEntry" Placeholder="80;65;35"
+                           SemanticProperties.Description="Doses proposées en accès direct, séparées par un point-virgule" />
 
-                    <Grid ColumnDefinitions="*,Auto">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
                         <Label Grid.Column="0" Text="Rappel à l'heure limite"
                                Style="{StaticResource BodyLabelStyle}" />
                         <Switch Grid.Column="1" x:Name="NotificationSwitch"
+                                VerticalOptions="Center"
                                 SemanticProperties.Description="Activer le rappel à l'heure limite du dernier café" />
                     </Grid>
                 </VerticalStackLayout>
@@ -74,13 +74,10 @@
                            SemanticProperties.HeadingLevel="Level2" />
 
                     <Label Text="Adresse de dépôt (laisser vide pour désactiver)"
-                           Style="{StaticResource BodyLabelStyle}" />
-                    <Border Style="{StaticResource FieldBorderStyle}">
-                        <Entry x:Name="BackupEndpointEntry" Keyboard="Url"
-                               Placeholder="http://machine.tailnet:8080/depot"
-                               Style="{StaticResource FieldEntryStyle}"
-                               SemanticProperties.Description="Adresse du point de dépôt de la sauvegarde" />
-                    </Border>
+                           Style="{StaticResource CaptionLabelStyle}" />
+                    <Entry x:Name="BackupEndpointEntry" Keyboard="Url"
+                           Placeholder="http://machine.tailnet:8080/depot"
+                           SemanticProperties.Description="Adresse du point de dépôt de la sauvegarde" />
 
                     <Label Text="Envoi quotidien, dans un seul sens. Rien ne revient du serveur : il n'y a donc aucun conflit à arbitrer, et un échec est sans conséquence."
                            Style="{StaticResource HelperLabelStyle}" />
