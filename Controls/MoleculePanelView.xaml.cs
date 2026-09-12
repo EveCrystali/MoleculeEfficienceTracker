@@ -145,7 +145,11 @@ namespace MoleculeEfficienceTracker.Controls
 
                 double[] dash = EffectPalette.DashPattern(level);
                 if (dash.Length > 0)
-                    swatch.StrokeDashArray = new DoubleCollection(dash);
+                {
+                    var pattern = new DoubleCollection();
+                    foreach (double value in dash) pattern.Add(value);
+                    swatch.StrokeDashArray = pattern;
+                }
 
                 var row = new HorizontalStackLayout
                 {

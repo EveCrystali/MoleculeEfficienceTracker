@@ -447,7 +447,7 @@ namespace MoleculeEfficienceTracker
                 // toxicité rouge : le repère et le danger partageaient leur couleur.
                 Stroke = new SolidColorBrush(EffectPalette.Landmark),
                 StrokeWidth = 1.5,
-                StrokeDashArray = new DoubleCollection(new double[] { 4, 3 }),
+                StrokeDashArray = Dashes(new double[] { 4, 3 }),
                 Text = "Maintenant",
                 LabelStyle = new ChartAnnotationLabelStyle
                 {
@@ -509,6 +509,18 @@ namespace MoleculeEfficienceTracker
             }
         }
 
+
+        /// <summary>
+        /// Construit un motif de trait sans dépendre d'un constructeur par
+        /// collection, dont la présence varie selon les versions de MAUI.
+        /// </summary>
+        private static DoubleCollection Dashes(double[] pattern)
+        {
+            var collection = new DoubleCollection();
+            foreach (double value in pattern) collection.Add(value);
+            return collection;
+        }
+
         private static HorizontalLineAnnotation BuildThresholdAnnotation(double value, string label, EffectLevel level)
         {
             var annotation = new HorizontalLineAnnotation
@@ -533,7 +545,7 @@ namespace MoleculeEfficienceTracker
             // c'étaient orange, jaune-vert et vert.
             double[] dash = EffectPalette.DashPattern(level);
             if (dash.Length > 0)
-                annotation.StrokeDashArray = new DoubleCollection(dash);
+                annotation.StrokeDashArray = Dashes(dash);
 
             return annotation;
         }
