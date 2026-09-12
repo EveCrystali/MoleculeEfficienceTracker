@@ -574,11 +574,29 @@ namespace MoleculeEfficienceTracker
             _timer = null;
         }
 
-        private void OnTimerTick(object? sender, EventArgs e)
+        private int _ticksSinceChartRefresh;
+
+        private async void OnTimerTick(object? sender, EventArgs e)
         {
             // Seule la valeur courante bouge d'une minute à l'autre ; redessiner la
             // courbe et cent annotations à chaque battement ne servait à rien.
             UpdateConcentrationDisplay();
+
+            // Le repère « Maintenant » finirait tout de même par dériver sur un
+            // onglet laissé ouvert : la courbe se rafraîchit au quart d'heure.
+            if (++_ticksSinceChartRefresh < 15) return;
+
+            _ticksSinceChartRefresh = 0;
+
+            try
+            {
+                await UpdateChart();
+                await UpdateDoseAnnotations();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[Graphique] rafraîchissement : {ex.Message}");
+            }
         }
 
         // ===== Données =====
