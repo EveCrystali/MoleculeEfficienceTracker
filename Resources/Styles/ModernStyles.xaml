@@ -5,136 +5,344 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
     <!--
-        Styles communs. Deux changements de fond par rapport à la version
-        précédente.
+        Le dictionnaire unique de l'application, depuis que Styles.xaml — les 451
+        lignes du modèle Visual Studio — a été supprimé.
 
-        Frame a disparu : le contrôle est obsolète depuis MAUI 9 et l'application en
-        comptait trente-neuf. Border le remplace partout.
+        Ce fichier-là ne faisait pas que doubler celui-ci : il travaillait contre
+        lui. Son style implicite de BoxView posait un fond presque noir sur tout
+        séparateur ne fixant que sa couleur de trait. Son style implicite de Border
+        imposait un contour rectangulaire de 1 px. Son style de Page posait un fond
+        blanc que chaque page réécrivait ensuite. Et, la documentation Microsoft le
+        dit sans détour, c'est lui qui empêchait Material 3 de s'appliquer aux
+        champs : le champ de dose était encadré et bleu pâle, les sélecteurs de date
+        et d'heure de la même carte n'étaient ni l'un ni l'autre.
 
-        Chaque couleur suit le thème. Les pages forçaient auparavant un fond clair en
-        dur tandis que le style global peignait les libellés en blanc au thème
-        sombre : la liste des doses de l'écran alcool s'écrivait en blanc sur blanc.
+        Trois conventions gouvernent désormais l'ensemble.
+
+        L'échelle typographique est celle de Material 3, huit tailles nommées par
+        leur rôle, contre les neuf tailles arbitraires d'avant : 36 pour la valeur
+        du moment, 22 pour la phrase-réponse, 16 pour un titre de carte ou le corps,
+        14 pour le secondaire et les boutons, 12 pour l'aide, 11 pour les
+        graduations.
+
+        Les espacements tombent sur la grille de 4 : 4, 8, 12, 16, 24, 32.
+
+        Les cartes n'ont plus de bordure. Material 3 les détache par l'élévation
+        tonale — une surface un peu plus teintée que le fond. Le contour gris sur
+        chaque carte est exactement ce qui donnait à l'application son air de
+        formulaire administratif.
     -->
 
-    <!-- ===== Surfaces ===== -->
+    <!-- ================================================================= -->
+    <!-- 1. Styles implicites — ce qui reste du modèle, réécrit             -->
+    <!-- ================================================================= -->
 
+    <Style TargetType="Page" ApplyToDerivedTypes="True">
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+    </Style>
+
+    <Style TargetType="Span">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
+
+    <!-- Bouton plein Material 3 : coins entièrement arrondis, 40 px de haut,
+         libellé à 14. Le modèle annonçait un minimum de 44 px que les boutons de
+         l'application contredisaient à 28. -->
+    <Style TargetType="Button">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnPrimaryLight}, Dark={StaticResource OnPrimaryDark}}" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="Padding" Value="24,0" />
+        <Setter Property="MinimumHeightRequest" Value="40" />
+        <Setter Property="VisualStateManager.VisualStateGroups">
+            <VisualStateGroupList>
+                <VisualStateGroup x:Name="CommonStates">
+                    <VisualState x:Name="Normal" />
+                    <VisualState x:Name="Disabled">
+                        <VisualState.Setters>
+                            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+                            <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceContainerHighestLight}, Dark={StaticResource SurfaceContainerHighestDark}}" />
+                        </VisualState.Setters>
+                    </VisualState>
+                    <VisualState x:Name="PointerOver" />
+                </VisualStateGroup>
+            </VisualStateGroupList>
+        </Setter>
+    </Style>
+
+    <!-- Sans contour, sauf demande expresse. Le modèle en posait un partout. -->
+    <Style TargetType="Border">
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+    </Style>
+
+    <!-- Séparateur. Le modèle posait ici un fond presque noir, qui peignait en
+         sombre tout BoxView ne fixant que sa couleur de trait. -->
+    <Style TargetType="BoxView">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource OutlineVariantLight}, Dark={StaticResource OutlineVariantDark}}" />
+    </Style>
+
+    <Style TargetType="ActivityIndicator">
+        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+    </Style>
+
+    <Style TargetType="Switch">
+        <Setter Property="OnColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="ThumbColor" Value="{AppThemeBinding Light={StaticResource OnPrimaryLight}, Dark={StaticResource OnPrimaryDark}}" />
+    </Style>
+
+    <!--
+        Champs de saisie.
+
+        Volontairement réduits à la lisibilité du texte : couleur, taille, hauteur
+        de touche. Ni fond ni bordure, pour laisser Material 3 poser son propre
+        conteneur, ce que la propriété de compilation UseMaterial3 active sur
+        Android pour Entry, Editor, Picker, DatePicker, TimePicker, Slider et
+        RadioButton. Poser ici une couleur de fond reviendrait à l'écraser — c'est
+        précisément ce que faisait le modèle.
+
+        La couleur du texte, elle, reste écrite : sans elle, un champ illisible
+        dépendrait du bon vouloir du thème Android sous-jacent.
+    -->
+    <Style TargetType="Entry">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style TargetType="Editor">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style TargetType="Picker">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="TitleColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style TargetType="DatePicker">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style TargetType="TimePicker">
+        <Setter Property="FontFamily" Value="OpenSansRegular" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+    </Style>
+
+    <Style TargetType="NavigationPage">
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceLight}, Dark={StaticResource SurfaceDark}}" />
+        <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="IconColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+    </Style>
+
+    <Style TargetType="TabbedPage">
+        <Setter Property="BarBackgroundColor" Value="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceContainerDark}}" />
+        <Setter Property="BarTextColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="SelectedTabColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="UnselectedTabColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+    </Style>
+
+    <!-- ================================================================= -->
+    <!-- 2. Échelle typographique Material 3                               -->
+    <!-- ================================================================= -->
+
+    <!-- displaySmall — la valeur du moment. Une seule par écran. -->
+    <Style x:Key="DisplayValueStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="36" />
+        <Setter Property="LineHeight" Value="1.15" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
+
+    <!-- titleLarge — la phrase-réponse, le titre d'écran. -->
+    <Style x:Key="HeadlineAnswerStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="22" />
+        <Setter Property="LineHeight" Value="1.27" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
+
+    <!-- titleMedium — titre de carte ou de section. -->
+    <Style x:Key="SectionTitleStyle" TargetType="Label">
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
+
+    <!-- bodyLarge — le corps. -->
+    <Style x:Key="BodyLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="LineHeight" Value="1.35" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+        <Setter Property="VerticalTextAlignment" Value="Center" />
+    </Style>
+
+    <!-- bodyMedium — le secondaire, sur onSurfaceVariant. -->
+    <Style x:Key="CaptionLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="LineHeight" Value="1.3" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+    </Style>
+
+    <!-- labelMedium — l'aide, les légendes. -->
+    <Style x:Key="HelperLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="LineHeight" Value="1.33" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+    </Style>
+
+    <!-- L'état vide : une phrase, pas un cadre vide. -->
+    <Style x:Key="EmptyLabelStyle" TargetType="Label">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="HorizontalTextAlignment" Value="Center" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+        <Setter Property="Margin" Value="0,16" />
+    </Style>
+
+    <!-- ================================================================= -->
+    <!-- 3. Surfaces                                                        -->
+    <!-- ================================================================= -->
+
+    <!-- La carte : surface teintée, rayon 16, aucune bordure. -->
     <Style x:Key="CardStyle" TargetType="Border">
-        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource CardBackgroundLight}, Dark={StaticResource CardBackgroundDark}}" />
-        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
-        <Setter Property="StrokeThickness" Value="1" />
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SurfaceContainerLowLight}, Dark={StaticResource SurfaceContainerLowDark}}" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="StrokeThickness" Value="0" />
         <Setter Property="StrokeShape" Value="RoundRectangle 16" />
         <Setter Property="Padding" Value="16" />
-        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <!-- Une carte d'un cran plus haute, pour la réponse en tête d'écran. -->
+    <Style x:Key="HeroCardStyle" TargetType="Border" BasedOn="{StaticResource CardStyle}">
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceContainerDark}}" />
+        <Setter Property="Padding" Value="20" />
     </Style>
 
     <Style x:Key="PageRootLayoutStyle" TargetType="VerticalStackLayout">
-        <Setter Property="Spacing" Value="14" />
-        <Setter Property="Padding" Value="16,16,16,32" />
+        <Setter Property="Spacing" Value="12" />
+        <Setter Property="Padding" Value="16,12,16,32" />
         <Setter Property="MaximumWidthRequest" Value="720" />
         <Setter Property="HorizontalOptions" Value="Fill" />
     </Style>
 
-    <!-- ===== Texte ===== -->
+    <!-- ================================================================= -->
+    <!-- 4. Actions                                                         -->
+    <!-- ================================================================= -->
 
-    <Style x:Key="SectionTitleStyle" TargetType="Label">
-        <Setter Property="FontSize" Value="17" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-        <Setter Property="Margin" Value="0,0,0,10" />
-    </Style>
-
-    <Style x:Key="BodyLabelStyle" TargetType="Label">
-        <Setter Property="FontSize" Value="15" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-        <Setter Property="VerticalTextAlignment" Value="Center" />
-    </Style>
-
-    <Style x:Key="CaptionLabelStyle" TargetType="Label">
-        <Setter Property="FontSize" Value="13" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
-    </Style>
-
-    <!-- La réponse en une phrase, en tête de l'écran caféine. -->
-    <Style x:Key="HeadlineAnswerStyle" TargetType="Label">
-        <Setter Property="FontSize" Value="19" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="LineHeight" Value="1.3" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-    </Style>
-
-    <Style x:Key="BigStatLabel" TargetType="Label">
-        <Setter Property="FontSize" Value="34" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="HorizontalTextAlignment" Value="Center" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
-    </Style>
-
-    <Style x:Key="EmptyLabelStyle" TargetType="Label">
-        <Setter Property="FontSize" Value="15" />
-        <Setter Property="FontAttributes" Value="Italic" />
-        <Setter Property="HorizontalTextAlignment" Value="Center" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
-        <Setter Property="Margin" Value="0,12" />
-    </Style>
-
-    <!-- ===== Actions ===== -->
-
-    <!-- 48 px de haut : le style global annonçait un minimum de 44 que les boutons
-         de l'application contredisaient à 28. -->
     <Style x:Key="PrimaryButtonStyle" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light=White, Dark=#0E1620}" />
-        <Setter Property="FontSize" Value="16" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnPrimaryLight}, Dark={StaticResource OnPrimaryDark}}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="CornerRadius" Value="20" />
         <Setter Property="HeightRequest" Value="48" />
         <Setter Property="MinimumHeightRequest" Value="48" />
-        <Setter Property="Padding" Value="18,0" />
+        <Setter Property="Padding" Value="24,0" />
     </Style>
 
+    <!-- Le bouton teinté de Material 3 : fond secondaryContainer, texte du même
+         rôle. C'est la forme des doses en accès direct — franche sans crier. -->
     <Style x:Key="PresetButtonStyle" TargetType="Button">
-        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource FieldBackgroundLight}, Dark={StaticResource FieldBackgroundDark}}" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource PrimaryDark}}" />
-        <Setter Property="BorderWidth" Value="1.5" />
-        <Setter Property="FontSize" Value="18" />
-        <Setter Property="FontAttributes" Value="Bold" />
-        <Setter Property="CornerRadius" Value="14" />
-        <Setter Property="HeightRequest" Value="60" />
-        <Setter Property="MinimumHeightRequest" Value="60" />
+        <Setter Property="BackgroundColor" Value="{AppThemeBinding Light={StaticResource PrimaryContainerLight}, Dark={StaticResource PrimaryContainerDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnPrimaryContainerLight}, Dark={StaticResource OnPrimaryContainerDark}}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="HeightRequest" Value="56" />
+        <Setter Property="MinimumHeightRequest" Value="56" />
+        <Setter Property="MinimumWidthRequest" Value="0" />
+        <Setter Property="Padding" Value="4,0" />
     </Style>
 
+    <!-- Le bouton à contour de Material 3 : fond transparent, filet outline. -->
     <Style x:Key="SecondaryButtonStyle" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextSecondaryLight}, Dark={StaticResource TextSecondaryDark}}" />
-        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="BorderColor" Value="{AppThemeBinding Light={StaticResource OutlineLight}, Dark={StaticResource OutlineDark}}" />
         <Setter Property="BorderWidth" Value="1" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
         <Setter Property="FontSize" Value="14" />
-        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="CornerRadius" Value="20" />
         <Setter Property="HeightRequest" Value="44" />
         <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="Padding" Value="16,0" />
+    </Style>
+
+    <!-- Action destructrice : le texte prend le rôle error, jamais le fond. -->
+    <Style x:Key="DangerButtonStyle" TargetType="Button" BasedOn="{StaticResource SecondaryButtonStyle}">
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource ErrorLight}, Dark={StaticResource ErrorDark}}" />
     </Style>
 
     <Style x:Key="DeleteButtonStyle" TargetType="Button">
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Tertiary}, Dark={StaticResource EffectStrongDark}}" />
-        <Setter Property="FontSize" Value="18" />
-        <Setter Property="CornerRadius" Value="10" />
-        <Setter Property="WidthRequest" Value="48" />
-        <Setter Property="HeightRequest" Value="48" />
-        <Setter Property="MinimumWidthRequest" Value="48" />
-        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceVariantLight}, Dark={StaticResource OnSurfaceVariantDark}}" />
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="CornerRadius" Value="20" />
+        <Setter Property="WidthRequest" Value="40" />
+        <Setter Property="HeightRequest" Value="40" />
+        <Setter Property="MinimumWidthRequest" Value="40" />
+        <Setter Property="MinimumHeightRequest" Value="40" />
         <Setter Property="Padding" Value="0" />
     </Style>
 
-    <!-- ===== Champs ===== -->
+    <!-- L'en-tête d'un volet repliable : un bouton qui ne ressemble pas à un
+         bouton, aligné à gauche, du poids d'un titre de section. -->
+    <Style x:Key="DisclosureButtonStyle" TargetType="Button">
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource PrimaryLight}, Dark={StaticResource PrimaryDark}}" />
+        <Setter Property="FontFamily" Value="OpenSansSemibold" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="BorderWidth" Value="0" />
+        <Setter Property="CornerRadius" Value="12" />
+        <Setter Property="HeightRequest" Value="44" />
+        <Setter Property="MinimumHeightRequest" Value="44" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalOptions" Value="Start" />
+    </Style>
 
+    <!-- ================================================================= -->
+    <!-- 5. Champs                                                          -->
+    <!-- ================================================================= -->
+
+    <!--
+        Le conteneur de champ, quand il en faut un : surfaceContainerHighest, rayon
+        12, aucune bordure — le champ rempli de Material 3. Il enveloppe
+        indifféremment une Entry, un Picker, un DatePicker ou un TimePicker, ce qui
+        met fin aux trois apparences que présentait une même carte.
+    -->
     <Style x:Key="FieldBorderStyle" TargetType="Border">
-        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource FieldBackgroundLight}, Dark={StaticResource FieldBackgroundDark}}" />
-        <Setter Property="Stroke" Value="{AppThemeBinding Light={StaticResource CardStrokeLight}, Dark={StaticResource CardStrokeDark}}" />
-        <Setter Property="StrokeThickness" Value="1" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 10" />
-        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource SurfaceContainerHighestLight}, Dark={StaticResource SurfaceContainerHighestDark}}" />
+        <Setter Property="Stroke" Value="Transparent" />
+        <Setter Property="StrokeThickness" Value="0" />
+        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
+        <Setter Property="Padding" Value="12,0" />
         <Setter Property="MinimumHeightRequest" Value="48" />
     </Style>
 
@@ -143,17 +351,47 @@
         <Setter Property="HeightRequest" Value="48" />
         <Setter Property="MinimumHeightRequest" Value="48" />
         <Setter Property="BackgroundColor" Value="Transparent" />
-        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource TextPrimaryLight}, Dark={StaticResource TextPrimaryDark}}" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
     </Style>
 
-    <!-- ===== Liste des doses ===== -->
+    <Style x:Key="FieldPickerStyle" TargetType="Picker">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
 
-    <Style x:Key="DoseRowStyle" TargetType="Border">
-        <Setter Property="Background" Value="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource FieldBackgroundDark}}" />
-        <Setter Property="Stroke" Value="Transparent" />
-        <Setter Property="StrokeShape" Value="RoundRectangle 12" />
-        <Setter Property="Padding" Value="12,8" />
-        <Setter Property="Margin" Value="0,3" />
+    <Style x:Key="FieldDatePickerStyle" TargetType="DatePicker">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
+
+    <Style x:Key="FieldTimePickerStyle" TargetType="TimePicker">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="HeightRequest" Value="48" />
+        <Setter Property="MinimumHeightRequest" Value="48" />
+        <Setter Property="BackgroundColor" Value="Transparent" />
+        <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource OnSurfaceLight}, Dark={StaticResource OnSurfaceDark}}" />
+    </Style>
+
+    <!-- ================================================================= -->
+    <!-- 6. Listes                                                          -->
+    <!-- ================================================================= -->
+
+    <!-- Une ligne d'historique n'est pas une carte : ni fond, ni cadre, un filet
+         de séparation suffit. Trente cartes empilées ne hiérarchisent rien. -->
+    <Style x:Key="DoseRowStyle" TargetType="Grid">
+        <Setter Property="Padding" Value="0,10" />
+        <Setter Property="ColumnSpacing" Value="12" />
+    </Style>
+
+    <Style x:Key="SeparatorStyle" TargetType="BoxView">
+        <Setter Property="HeightRequest" Value="1" />
+        <Setter Property="Color" Value="{AppThemeBinding Light={StaticResource OutlineVariantLight}, Dark={StaticResource OutlineVariantDark}}" />
     </Style>
 
 </ResourceDictionary>

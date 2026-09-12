@@ -19,7 +19,9 @@ namespace MoleculeEfficienceTracker
 
         protected override string AddSectionTitle => "Ajouter une prise";
         protected override string DoseFieldCaption => "Dose (mg)";
-        protected override string HelperText => "Comprimé sécable : 1,5 mg · 3 mg · 6 mg";
+        protected override string HelperText =>
+            "Comprimé sécable : 1,5 mg · 3 mg · 6 mg.\n" +
+            $"La saturation vient d'un modèle Emax, EC50 {BromazepamCalculator.EC50_MG_PER_L:0.###} mg/L.";
         protected override double MaxPlausibleDose => 30;
 
         protected override IReadOnlyList<double> Presets => new[] { 1.5, 3.0, 6.0 };
@@ -46,9 +48,11 @@ namespace MoleculeEfficienceTracker
         {
             base.UpdateMoleculeSpecificConcentrationInfo(doses, currentTime, concentration);
 
+            // La formule descend dans l'aide du formulaire : « modèle Emax,
+            // EC50 0,05 mg/L » en tête d'écran ne répondait à aucune question.
             double saturation = _saturation.GetEffectPercent(concentration);
-            Panel.HeadlineText = $"Saturation des récepteurs : {saturation:0} %";
-            Panel.HeadlineDetailText = $"Modèle Emax, EC50 {BromazepamCalculator.EC50_MG_PER_L:0.###} mg/L.";
+            Panel.HeadlineText = $"Récepteurs saturés à {saturation:0} %.";
+            Panel.HeadlineDetailText = string.Empty;
 
             DateTime? end = Calculator.PredictEffectEndTime(doses, currentTime);
             Panel.EffectPrediction.Text = end.HasValue && end.Value > currentTime

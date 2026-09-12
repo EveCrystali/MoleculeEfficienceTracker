@@ -2,8 +2,7 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="MoleculeEfficienceTracker.SettingsPage"
-             Title="Réglages"
-             BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}">
+             Title="Réglages">
 
     <ScrollView>
         <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
@@ -21,13 +20,16 @@
                     </Border>
 
                     <Label Text="Sexe" Style="{StaticResource BodyLabelStyle}" />
-                    <Picker x:Name="SexPicker" MinimumHeightRequest="48"
-                            SemanticProperties.Description="Sexe, utilisé pour le coefficient de diffusion de l'alcool">
-                        <Picker.Items>
-                            <x:String>Homme</x:String>
-                            <x:String>Femme</x:String>
-                        </Picker.Items>
-                    </Picker>
+                    <Border Style="{StaticResource FieldBorderStyle}">
+                        <Picker x:Name="SexPicker"
+                                Style="{StaticResource FieldPickerStyle}"
+                                SemanticProperties.Description="Sexe, utilisé pour le coefficient de diffusion de l'alcool">
+                            <Picker.Items>
+                                <x:String>Homme</x:String>
+                                <x:String>Femme</x:String>
+                            </Picker.Items>
+                        </Picker>
+                    </Border>
                 </VerticalStackLayout>
             </Border>
 
@@ -37,8 +39,11 @@
                            SemanticProperties.HeadingLevel="Level2" />
 
                     <Label Text="Heure de coucher visée" Style="{StaticResource BodyLabelStyle}" />
-                    <TimePicker x:Name="BedTimePicker" Format="HH:mm" MinimumHeightRequest="48"
-                                SemanticProperties.Description="Heure de coucher visée" />
+                    <Border Style="{StaticResource FieldBorderStyle}">
+                        <TimePicker x:Name="BedTimePicker" Format="HH:mm"
+                                    Style="{StaticResource FieldTimePickerStyle}"
+                                    SemanticProperties.Description="Heure de coucher visée" />
+                    </Border>
 
                     <Label Text="Caféine tolérée au coucher (mg/L)" Style="{StaticResource BodyLabelStyle}" />
                     <Border Style="{StaticResource FieldBorderStyle}">
@@ -46,7 +51,7 @@
                                Style="{StaticResource FieldEntryStyle}" />
                     </Border>
                     <Label Text="Repère : un Nespresso de 80 mg culmine autour de 1,5 mg/L."
-                           Style="{StaticResource CaptionLabelStyle}" />
+                           Style="{StaticResource HelperLabelStyle}" />
 
                     <Label Text="Doses en accès direct (mg, séparées par ;)" Style="{StaticResource BodyLabelStyle}" />
                     <Border Style="{StaticResource FieldBorderStyle}">
@@ -78,27 +83,41 @@
                     </Border>
 
                     <Label Text="Envoi quotidien, dans un seul sens. Rien ne revient du serveur : il n'y a donc aucun conflit à arbitrer, et un échec est sans conséquence."
-                           Style="{StaticResource CaptionLabelStyle}" />
+                           Style="{StaticResource HelperLabelStyle}" />
 
-                    <Label x:Name="BackupStatusLabel" Style="{StaticResource CaptionLabelStyle}" />
+                    <Label x:Name="BackupStatusLabel" Style="{StaticResource HelperLabelStyle}" />
 
                     <Button Text="Envoyer maintenant" Clicked="OnBackupNowClicked"
                             Style="{StaticResource SecondaryButtonStyle}" />
                 </VerticalStackLayout>
             </Border>
 
-            <Button Text="Enregistrer" Clicked="OnSaveClicked"
-                    Style="{StaticResource PrimaryButtonStyle}" />
-
             <Border Style="{StaticResource CardStyle}">
-                <VerticalStackLayout Spacing="8">
+                <VerticalStackLayout Spacing="12">
                     <Label Text="Données" Style="{StaticResource SectionTitleStyle}"
                            SemanticProperties.HeadingLevel="Level2" />
-                    <Label x:Name="MigrationLabel" Style="{StaticResource CaptionLabelStyle}" />
-                    <Label Text="Cette application n'est pas un dispositif médical. Les concentrations affichées sont des estimations issues de modèles moyens, jamais une mesure."
+
+                    <Label Text="L'import relit un fichier exporté et fusionne son contenu avec ce qui est déjà là. Une prise déjà connue n'est pas ajoutée deux fois : réimporter le même fichier ne change rien."
                            Style="{StaticResource CaptionLabelStyle}" />
+
+                    <Button x:Name="ImportButton" Text="Importer un fichier"
+                            Clicked="OnImportClicked"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+
+                    <Label x:Name="ImportStatusLabel"
+                           Style="{StaticResource HelperLabelStyle}"
+                           IsVisible="False" />
+
+                    <BoxView Style="{StaticResource SeparatorStyle}" />
+
+                    <Label x:Name="MigrationLabel" Style="{StaticResource HelperLabelStyle}" />
+                    <Label Text="Cette application n'est pas un dispositif médical. Les concentrations affichées sont des estimations issues de modèles moyens, jamais une mesure."
+                           Style="{StaticResource HelperLabelStyle}" />
                 </VerticalStackLayout>
             </Border>
+
+            <Button Text="Enregistrer" Clicked="OnSaveClicked"
+                    Style="{StaticResource PrimaryButtonStyle}" />
 
         </VerticalStackLayout>
     </ScrollView>

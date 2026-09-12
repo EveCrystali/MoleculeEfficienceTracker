@@ -26,7 +26,9 @@ namespace MoleculeEfficienceTracker
 
         protected override string AddSectionTitle => "Ajouter une prise";
         protected override string DoseFieldCaption => "Dose (mg)";
-        protected override string HelperText => "Paracétamol 500 ou 1000 mg · ibuprofène 200 ou 400 mg";
+        protected override string HelperText =>
+            "Paracétamol 500 ou 1000 mg · ibuprofène 200 ou 400 mg.\n" +
+            "Les deux effets se combinent par indépendance de Bliss, bornée à 100 %.";
         protected override double MaxPlausibleDose => 4000;
         protected override bool UseConcentrationUnitForDoseAnnotation => false;
 
@@ -103,13 +105,53 @@ namespace MoleculeEfficienceTracker
             return EffectLevel.None;
         }
 
+        /// <summary>L'axe porte un pourcentage : il s'arrête à cent.</summary>
+        protected override double? YAxisMaximumCap => 100;
+
+        protected override string FormatConcentration(double percent) => $"{percent:0} %";
+
+        /// <summary>
+        /// La grandeur affichée est un effet, pas une quantité : annoncer « 42 mg
+        /// encore présents » n'aurait ici aucun sens. La ligne dit donc d'où vient
+        /// l'effet.
+        /// </summary>
+        protected override string? BuildAmountDetail(List<DoseEntry> doses, DateTime currentTime, double amount)
+        {
+            DoseEntry? last = doses.OrderByDescending(d => d.TimeTaken)
+                                   .FirstOrDefault(d => d.TimeTaken <= currentTime);
+
+            if (last is null) return null;
+
+            double hours = (currentTime - last.TimeTaken).TotalHours;
+            string ago = hours < 1
+                ? $"il y a {hours * 60:0} min"
+                : $"il y a {(int)hours} h {(hours - (int)hours) * 60:00}";
+
+            return $"Dernière prise {ago} · {MoleculeKeys.DisplayName(last.MoleculeKey)} {last.DoseMg:0.#} mg";
+        }
+
+        protected override string EmptyChartMessage
+            => "La courbe apparaîtra dès la première prise enregistrée.";
+
         protected override void UpdateMoleculeSpecificConcentrationInfo(
             List<DoseEntry> doses, DateTime currentTime, double percent)
         {
             base.UpdateMoleculeSpecificConcentrationInfo(doses, currentTime, percent);
 
-            Panel.HeadlineText = $"Effet analgésique estimé : {percent:0} %";
-            Panel.HeadlineDetailText = "Combinaison de Bliss des deux molécules, bornée à 100 %.";
+            // La phrase ne répète plus la valeur, écrite en grand juste dessous, et
+            // la mécanique du modèle descend dans l'aide du formulaire.
+            bool para = doses.Any(d => d.MoleculeKey == MoleculeKeys.Paracetamol && IsActive(d, currentTime));
+            bool ibu = doses.Any(d => d.MoleculeKey == MoleculeKeys.Ibuprofen && IsActive(d, currentTime));
+
+            Panel.HeadlineText = (para, ibu) switch
+            {
+                (true, true) => "Paracétamol et ibuprofène agissent ensemble.",
+                (true, false) => "Paracétamol seul en action.",
+                (false, true) => "Ibuprofène seul en action.",
+                _ => "Aucun antalgique en action."
+            };
+
+            Panel.HeadlineDetailText = string.Empty;
 
             DateTime? end = Calculator.PredictEffectEndTime(doses, currentTime);
             Panel.EffectPrediction.Text = end.HasValue && end.Value > currentTime
@@ -117,5 +159,12 @@ namespace MoleculeEfficienceTracker
                 : "Effet actuellement négligeable.";
             Panel.EffectPrediction.IsVisible = true;
         }
+
+        /// <summary>
+        /// Une prise compte tant qu'elle contribue encore à l'effet. Le calculateur
+        /// aiguille lui-même sur la bonne molécule d'après la clé de la prise.
+        /// </summary>
+        private bool IsActive(DoseEntry dose, DateTime at)
+            => Calculator.CalculateSingleDoseConcentration(dose, at) > Calculator.NegligibleEffect;
     }
 }
