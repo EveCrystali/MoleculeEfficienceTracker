@@ -48,6 +48,12 @@
 		</AssemblyAttribute>
 	</ItemGroup>
 
+	<!-- Le glob implicite du SDK ramassait tests/**/*.cs dans l'application. -->
+	<ItemGroup>
+		<Compile Remove="tests/**/*.cs" />
+		<None Remove="tests/**" />
+	</ItemGroup>
+
 	<ItemGroup>
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#1F5FAF" />
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1F5FAF" BaseSize="128,128" />

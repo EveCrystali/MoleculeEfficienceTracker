@@ -19,27 +19,33 @@ public class AlcoholTests
     {
         var calculator = new AlcoholCalculator();
 
-        // Quatre verres pris ensemble s'éliminent quatre fois plus lentement que
-        // quatre verres isolés ne le feraient dans l'ancien modèle, qui appliquait
-        // l'élimination dose par dose puis sommait.
+        // Le volume de diffusion de Widmark pour 72 kg, homme.
+        const double V = 72 * 0.7;
+        const double AbsorptionHours = 0.33;   // bière
+        const double Rate = 0.15;              // g/L·h, taux unique de l'organisme
+
         var four = Enumerable.Range(0, 4)
             .Select(_ => new DoseEntry(Evening, 1.0, 72, MoleculeKeys.Alcohol) { BeverageType = "biere" })
             .ToList();
 
         var one = new List<DoseEntry> { new(Evening, 1.0, 72, MoleculeKeys.Alcohol) { BeverageType = "biere" } };
 
-        double peakFour = four.Count * 10.0 / (72 * 0.7);
-        double atPeak = calculator.CalculateTotalConcentration(four, Evening.AddHours(0.33));
-        Assert.Equal(peakFour, atPeak, 3);
+        // L'élimination court dès la première gorgée : au bout de l'absorption, il
+        // manque déjà Rate × durée d'absorption.
+        double expectedFour = 4 * 10.0 / V - Rate * AbsorptionHours;
+        double atEndOfAbsorption = calculator.CalculateTotalConcentration(four, Evening.AddHours(AbsorptionHours));
+        Assert.Equal(expectedFour, atEndOfAbsorption, 4);
 
-        // Une heure après le pic, il manque exactement 0,15 g/L — le taux unique.
-        double oneHourLater = calculator.CalculateTotalConcentration(four, Evening.AddHours(1.33));
-        Assert.Equal(atPeak - 0.15, oneHourLater, 3);
+        // Une heure plus tard, il manque exactement 0,15 g/L de plus — quatre verres
+        // ne s'éliminent pas quatre fois plus vite, ce que faisait l'ancien modèle
+        // en appliquant l'élimination dose par dose avant de sommer.
+        double oneHourLater = calculator.CalculateTotalConcentration(four, Evening.AddHours(AbsorptionHours + 1));
+        Assert.Equal(atEndOfAbsorption - Rate, oneHourLater, 4);
 
-        // Et pour un seul verre, la même pente.
-        double singlePeak = calculator.CalculateTotalConcentration(one, Evening.AddHours(0.33));
-        double singleLater = calculator.CalculateTotalConcentration(one, Evening.AddHours(1.33));
-        Assert.Equal(singlePeak - 0.15, singleLater, 3);
+        // Et la pente est la même pour un seul verre.
+        double singleAtEnd = calculator.CalculateTotalConcentration(one, Evening.AddHours(AbsorptionHours));
+        double singleHalfHourLater = calculator.CalculateTotalConcentration(one, Evening.AddHours(AbsorptionHours + 0.5));
+        Assert.Equal(singleAtEnd - Rate * 0.5, singleHalfHourLater, 4);
     }
 
     [Fact]
@@ -81,14 +87,21 @@ public class AlcoholTests
         var calculator = new AlcoholCalculator();
         var doses = new List<DoseEntry> { new(Evening, 2.0, 72, MoleculeKeys.Alcohol) };
 
-        DateTime atPeak = Evening.AddHours(0.5);
-        double amount = calculator.CalculateTotalAmount(doses, atPeak);
-        double concentration = calculator.CalculateTotalConcentration(doses, atPeak);
+        const double V = 72 * 0.7;
+        DateTime atEndOfAbsorption = Evening.AddHours(0.5);   // durée par défaut
+
+        double amount = calculator.CalculateTotalAmount(doses, atEndOfAbsorption);
+        double concentration = calculator.CalculateTotalConcentration(doses, atEndOfAbsorption);
 
         // L'ancienne version renvoyait la concentration, si bien que l'écran
         // affichait deux fois la même valeur sous deux unités différentes.
         Assert.NotEqual(amount, concentration, 3);
-        Assert.Equal(2.0, amount, 2);
+
+        // Quantité restante = alcoolémie × volume de diffusion, en unités de 10 g.
+        Assert.Equal(concentration * V / 10.0, amount, 4);
+
+        // Sur deux unités bues, une part est déjà éliminée : il en reste moins.
+        Assert.InRange(amount, 1.5, 2.0);
     }
 }
 

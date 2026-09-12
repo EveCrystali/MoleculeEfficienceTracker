@@ -148,30 +148,29 @@ namespace MoleculeEfficienceTracker.Core.Services
             DateTime notEarlierThan,
             double threshold = DEFAULT_SLEEP_THRESHOLD)
         {
-            double baseline = CalculateTotalConcentration(existingDoses, bedTime);
-            double headroom = threshold - baseline;
+            // L'instant qui décide n'est pas le coucher, c'est le pic de la prise
+            // envisagée — un café bu à l'heure du coucher n'a encore rien libéré à
+            // cet instant précis, et le juger là reviendrait à l'autoriser toujours.
+            // On évalue donc au plus tard des deux : le coucher, ou le pic.
+            double peakDelay = PeakDelayHours;
 
-            if (headroom <= 0) return null;
-
-            // La contribution d'une dose au coucher décroît quand on avance sa
-            // prise : on cherche la prise la plus tardive qui tienne dans la marge.
-            DateTime? best = null;
-            for (int minutes = 0; ; minutes += 5)
+            for (int minutes = 0; minutes <= 24 * 60; minutes += 5)
             {
                 DateTime candidate = bedTime.AddMinutes(-minutes);
                 if (candidate < notEarlierThan) break;
 
-                double hours = PkTime.ElapsedHours(candidate, bedTime);
-                if (ConcentrationAfterHours(plannedDoseMg, weightKg, hours) <= headroom)
-                {
-                    best = candidate;
-                    break;
-                }
+                double hoursToBed = PkTime.ElapsedHours(candidate, bedTime);
+                double evaluationDelay = Math.Max(hoursToBed, peakDelay);
+                DateTime evaluationTime = candidate.AddHours(evaluationDelay);
 
-                if (minutes > 24 * 60) break;
+                double total = CalculateTotalConcentration(existingDoses, evaluationTime)
+                             + ConcentrationAfterHours(plannedDoseMg, weightKg, evaluationDelay);
+
+                if (total <= threshold)
+                    return candidate;
             }
 
-            return best;
+            return null;
         }
 
         public bool IsEffectNegligible(double concentration) => concentration < NEGLIGIBLE_THRESHOLD;
