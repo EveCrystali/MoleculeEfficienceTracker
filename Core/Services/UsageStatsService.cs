@@ -40,7 +40,7 @@ namespace MoleculeEfficienceTracker.Core.Services
         public UsageStatsService(IEnumerable<string> moleculeKeys)
         {
             _persistence = moleculeKeys
-                .Select(MoleculeKeys.Normalize)
+                .Select(k => MoleculeKeys.Normalize(k))
                 .Distinct()
                 .ToDictionary(k => k, k => new DataPersistenceService(k));
         }

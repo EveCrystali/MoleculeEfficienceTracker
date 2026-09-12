@@ -178,7 +178,7 @@ namespace MoleculeEfficienceTracker
                 await AlertService.ShowAlertAsync(
                     "Fichier de données illisible",
                     $"{Calculator.DisplayName} : le fichier n'a pas pu être relu. Une copie a été mise de côté " +
-                    $"({Path.GetFileName(ex.QuarantinePath)}). Rien n'a été effacé ; évitez de saisir une " +
+                    $"({System.IO.Path.GetFileName(ex.QuarantinePath)}). Rien n'a été effacé ; évitez de saisir une " +
                     "nouvelle prise avant de l'avoir récupéré.");
                 return;
             }
@@ -229,7 +229,10 @@ namespace MoleculeEfficienceTracker
                 return;
             }
 
-            DateTime when = Panel.DatePickerControl.Date.Add(Panel.TimePickerControl.Time);
+            // MAUI 10 rend ces deux sélecteurs nullables.
+            DateTime day = Panel.DatePickerControl.Date ?? DateTime.Today;
+            TimeSpan time = Panel.TimePickerControl.Time ?? DateTime.Now.TimeOfDay;
+            DateTime when = day.Add(time);
             await AddDoseAsync(amount, when);
 
             if (sender is Button btn) _ = AnimateButtonAsync(btn);
@@ -646,8 +649,8 @@ namespace MoleculeEfficienceTracker
 
         private static async Task AnimateButtonAsync(Button btn)
         {
-            await btn.ScaleTo(1.06, 70, Easing.CubicOut);
-            await btn.ScaleTo(1.0, 70, Easing.CubicIn);
+            await btn.ScaleToAsync(1.06, 70, Easing.CubicOut);
+            await btn.ScaleToAsync(1.0, 70, Easing.CubicIn);
         }
     }
 }

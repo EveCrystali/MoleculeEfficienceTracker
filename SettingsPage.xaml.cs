@@ -30,6 +30,9 @@ namespace MoleculeEfficienceTracker
             PresetsEntry.Text = string.Join(';', UserPreferences.GetCaffeinePresets().Select(p => p.ToString("0.##", CultureInfo.InvariantCulture)));
             NotificationSwitch.IsToggled = UserPreferences.GetCutoffNotificationEnabled();
 
+            BackupEndpointEntry.Text = OutboundBackupService.GetEndpoint();
+            RefreshBackupStatus();
+
             MigrationReport? report = DataMigrationService.LastReport;
             MigrationLabel.Text = report is null
                 ? "Aucune migration n'a été nécessaire au dernier démarrage."
@@ -43,13 +46,13 @@ namespace MoleculeEfficienceTracker
             // qui bloquait l'enregistrement.
             if (!TryReadNumber(WeightEntry.Text, out double weight) || weight <= 20 || weight > 350)
             {
-                await DisplayAlert("Poids", "Entrez un poids entre 20 et 350 kg.", "OK");
+                await DisplayAlertAsync("Poids", "Entrez un poids entre 20 et 350 kg.", "OK");
                 return;
             }
 
             if (!TryReadNumber(SleepThresholdEntry.Text, out double threshold) || threshold <= 0 || threshold > 20)
             {
-                await DisplayAlert("Seuil de sommeil", "Entrez une concentration entre 0 et 20 mg/L.", "OK");
+                await DisplayAlertAsync("Seuil de sommeil", "Entrez une concentration entre 0 et 20 mg/L.", "OK");
                 return;
             }
 
@@ -61,15 +64,23 @@ namespace MoleculeEfficienceTracker
 
             if (presets.Length == 0)
             {
-                await DisplayAlert("Doses rapides", "Indiquez au moins une dose, par exemple 80;65;35.", "OK");
+                await DisplayAlertAsync("Doses rapides", "Indiquez au moins une dose, par exemple 80;65;35.", "OK");
                 return;
             }
 
             UserPreferences.SetWeightKg(weight);
             UserPreferences.SetSex(SexPicker.SelectedIndex == 1 ? Sex.Female : Sex.Male);
-            UserPreferences.SetBedTime(BedTimePicker.Time);
+            UserPreferences.SetBedTime(BedTimePicker.Time ?? UserPreferences.GetBedTime());
             UserPreferences.SetSleepThreshold(threshold);
             UserPreferences.SetCaffeinePresets(presets);
+
+            string endpoint = (BackupEndpointEntry.Text ?? string.Empty).Trim();
+            if (endpoint.Length > 0 && !Uri.TryCreate(endpoint, UriKind.Absolute, out _))
+            {
+                await DisplayAlertAsync("Sauvegarde", "L'adresse de dépôt n'est pas une URL valide.", "OK");
+                return;
+            }
+            OutboundBackupService.SetEndpoint(endpoint);
 
             bool wantsNotification = NotificationSwitch.IsToggled;
             if (wantsNotification)
@@ -79,14 +90,51 @@ namespace MoleculeEfficienceTracker
                 {
                     wantsNotification = false;
                     NotificationSwitch.IsToggled = false;
-                    await DisplayAlert("Rappel", "Android a refusé les notifications. Le rappel reste désactivé.", "OK");
+                    await DisplayAlertAsync("Rappel", "Android a refusé les notifications. Le rappel reste désactivé.", "OK");
                 }
             }
 
             UserPreferences.SetCutoffNotificationEnabled(wantsNotification);
             if (!wantsNotification) _notifications.Cancel();
 
-            await DisplayAlert("Enregistré", "Les réglages sont pris en compte. Le poids ne modifie pas les prises déjà enregistrées.", "OK");
+            await DisplayAlertAsync("Enregistré", "Les réglages sont pris en compte. Le poids ne modifie pas les prises déjà enregistrées.", "OK");
+        }
+
+        private void RefreshBackupStatus()
+        {
+            if (!OutboundBackupService.IsConfigured)
+            {
+                BackupStatusLabel.Text = "Désactivée.";
+                return;
+            }
+
+            DateTime? last = OutboundBackupService.GetLastRun();
+            BackupStatusLabel.Text = last is null
+                ? "Configurée, aucun envoi réussi pour l'instant."
+                : $"Dernier envoi réussi le {last.Value:dd/MM} à {last.Value:HH\hmm}.";
+        }
+
+        private async void OnBackupNowClicked(object sender, EventArgs e)
+        {
+            string endpoint = (BackupEndpointEntry.Text ?? string.Empty).Trim();
+            if (endpoint.Length == 0)
+            {
+                await DisplayAlertAsync("Sauvegarde", "Indiquez d'abord une adresse de dépôt.", "OK");
+                return;
+            }
+
+            OutboundBackupService.SetEndpoint(endpoint);
+
+            var service = ServiceLocator.GetOptional<OutboundBackupService>() ?? new OutboundBackupService();
+            bool sent = await service.SendAsync();
+
+            RefreshBackupStatus();
+            await DisplayAlertAsync(
+                sent ? "Sauvegarde envoyée" : "Envoi échoué",
+                sent
+                    ? "Les données ont été déposées."
+                    : "Le dépôt n'a pas répondu. Vérifiez l'adresse et l'accès au tailnet.",
+                "OK");
         }
 
         private static bool TryReadNumber(string? raw, out double value)

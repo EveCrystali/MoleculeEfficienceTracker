@@ -33,6 +33,7 @@ namespace MoleculeEfficienceTracker
             builder.Services.AddSingleton<IAlertService, AlertService>();
             builder.Services.AddSingleton<IResidualLoadService, ResidualLoadService>();
             builder.Services.AddSingleton<CaffeineNotificationService>();
+            builder.Services.AddSingleton<OutboundBackupService>();
 
 #if DEBUG
             builder.Logging.AddDebug();

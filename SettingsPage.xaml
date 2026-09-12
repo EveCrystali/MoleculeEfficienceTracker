@@ -63,6 +63,30 @@
                 </VerticalStackLayout>
             </Border>
 
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="12">
+                    <Label Text="Sauvegarde sortante" Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
+
+                    <Label Text="Adresse de dépôt (laisser vide pour désactiver)"
+                           Style="{StaticResource BodyLabelStyle}" />
+                    <Border Style="{StaticResource FieldBorderStyle}">
+                        <Entry x:Name="BackupEndpointEntry" Keyboard="Url"
+                               Placeholder="http://machine.tailnet:8080/depot"
+                               Style="{StaticResource FieldEntryStyle}"
+                               SemanticProperties.Description="Adresse du point de dépôt de la sauvegarde" />
+                    </Border>
+
+                    <Label Text="Envoi quotidien, dans un seul sens. Rien ne revient du serveur : il n'y a donc aucun conflit à arbitrer, et un échec est sans conséquence."
+                           Style="{StaticResource CaptionLabelStyle}" />
+
+                    <Label x:Name="BackupStatusLabel" Style="{StaticResource CaptionLabelStyle}" />
+
+                    <Button Text="Envoyer maintenant" Clicked="OnBackupNowClicked"
+                            Style="{StaticResource SecondaryButtonStyle}" />
+                </VerticalStackLayout>
+            </Border>
+
             <Button Text="Enregistrer" Clicked="OnSaveClicked"
                     Style="{StaticResource PrimaryButtonStyle}" />
 

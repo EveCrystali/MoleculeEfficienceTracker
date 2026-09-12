@@ -30,7 +30,7 @@ namespace MoleculeEfficienceTracker.Core.Services
                     return;
                 }
 
-                await MainThread.InvokeOnMainThreadAsync(() => page.DisplayAlert(title, message, cancel));
+                await MainThread.InvokeOnMainThreadAsync(() => page.DisplayAlertAsync(title, message, cancel));
             }
             catch (Exception ex)
             {
@@ -49,7 +49,7 @@ namespace MoleculeEfficienceTracker.Core.Services
                     return false;
                 }
 
-                return await MainThread.InvokeOnMainThreadAsync(() => page.DisplayAlert(title, message, accept, cancel));
+                return await MainThread.InvokeOnMainThreadAsync(() => page.DisplayAlertAsync(title, message, accept, cancel));
             }
             catch (Exception ex)
             {
