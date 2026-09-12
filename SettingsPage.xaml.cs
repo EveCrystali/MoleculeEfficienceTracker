@@ -111,7 +111,7 @@ namespace MoleculeEfficienceTracker
             DateTime? last = OutboundBackupService.GetLastRun();
             BackupStatusLabel.Text = last is null
                 ? "Configurée, aucun envoi réussi pour l'instant."
-                : $"Dernier envoi réussi le {last.Value:dd/MM} à {last.Value:HH\hmm}.";
+                : $"Dernier envoi réussi le {last.Value:dd/MM} à {last.Value:HH\\hmm}.";
         }
 
         private async void OnBackupNowClicked(object sender, EventArgs e)
