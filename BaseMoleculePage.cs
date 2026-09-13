@@ -72,14 +72,15 @@ namespace MoleculeEfficienceTracker
             Panel.SectionTitle = AddSectionTitle;
             Panel.DoseFieldCaption = DoseFieldCaption;
             Panel.HelperText = HelperText;
-            Panel.SetPresets(Presets, Calculator.DoseUnit);
-            Panel.YAxis.Title = new ChartAxisTitle { Text = Calculator.ConcentrationUnit };
-
-            // Une teinte par molécule, sur la carte de tête et sous la courbe. Les
-            // cinq écrans étaient gris à l'identique : rien ne disait, avant
-            // d'avoir lu le titre, sur lequel on se trouvait.
+            // Une teinte par molécule, sur la carte de tête, sous la courbe et
+            // jusque dans les doses rapides. Les cinq écrans étaient gris à
+            // l'identique : rien ne disait, avant d'avoir lu le titre, sur lequel
+            // on se trouvait.
             Color accent = EffectPalette.ForMolecule(MoleculeKey);
             Panel.SetAccent(accent);
+
+            Panel.SetPresets(Presets, Calculator.DoseUnit, accent);
+            Panel.YAxis.Title = new ChartAxisTitle { Text = Calculator.ConcentrationUnit };
 
             // L'aire dit la charge accumulée, qu'un trait de deux pixels ne montrait
             // pas. Elle s'éteint vers le bas pour ne pas peser sur les graduations.
@@ -135,7 +136,15 @@ namespace MoleculeEfficienceTracker
 
             // La teinte se repose au retour sur l'onglet : elle est calculée pour le
             // thème courant, et celui-ci peut avoir basculé entre-temps.
-            Panel.SetAccent(EffectPalette.ForMolecule(MoleculeKey));
+            Color accent = EffectPalette.ForMolecule(MoleculeKey);
+            Panel.SetAccent(accent);
+            Panel.SetPresets(Presets, Calculator.DoseUnit, accent);
+
+            // La courbe se retrace à l'arrivée sur l'onglet, jamais au
+            // rafraîchissement du quart d'heure : une animation qui se déclenche
+            // seule, sans geste, donne l'impression que l'écran a sauté.
+            Panel.Series.EnableAnimation = true;
+            Panel.PlayEntrance();
 
             try
             {
@@ -160,6 +169,10 @@ namespace MoleculeEfficienceTracker
         {
             base.OnDisappearing();
             StopConcentrationTimer();
+
+            // Les cartes reprennent leur opacité pleine : sans cela, un retour sur
+            // l'onglet pendant que la cascade court laisserait une carte à mi-chemin.
+            Panel.ResetEntrance();
         }
 
         protected virtual Task OnBeforeLoadDataAsync() => Task.CompletedTask;
@@ -352,7 +365,7 @@ namespace MoleculeEfficienceTracker
             // sous un titre de carte qui répétait déjà l'une des deux.
             Panel.ConcentrationOutput.Text = FormatConcentrationValue(concentration);
             Panel.ConcentrationUnitOutput.Text = Calculator.ConcentrationUnit;
-            Panel.SetGauge(GaugeProgress(concentration), EffectPalette.For(ResolveEffectLevel(concentration)));
+            Panel.SetGauge(GaugeProgress(concentration), EffectPalette.For(ResolveEffectLevel(concentration)), animate: true);
             Panel.ConcentrationDetail.Text = BuildAmountDetail(doses, now, amount) ?? string.Empty;
             Panel.ConcentrationDetail.IsVisible = !string.IsNullOrWhiteSpace(Panel.ConcentrationDetail.Text);
             Panel.LastUpdateOutput.Text = $"à {now:HH:mm}";
@@ -764,6 +777,7 @@ namespace MoleculeEfficienceTracker
 
             try
             {
+                Panel.Series.EnableAnimation = false;
                 await UpdateChart();
                 await UpdateDoseAnnotations();
             }

@@ -22,7 +22,7 @@
     -->
 
     <ScrollView>
-        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
+        <VerticalStackLayout x:Name="RootStack" Style="{StaticResource PageRootLayoutStyle}">
 
             <!-- ===== 1. La réponse, avant la courbe ===== -->
             <Border x:Name="HeadlineCard" Style="{StaticResource HeroCardStyle}">
@@ -202,7 +202,7 @@
                                                 XBindingPath="Time"
                                                 YBindingPath="Concentration"
                                                 StrokeWidth="2.5"
-                                                EnableAnimation="False"
+                                                EnableAnimation="True"
                                                 EnableTooltip="True" />
                     </chart:SfCartesianChart>
 
