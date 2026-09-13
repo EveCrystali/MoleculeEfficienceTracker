@@ -1,11 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--
-        Ces trois couleurs pilotent la barre d'état et les accents natifs. Elles
-        portaient encore le violet du modèle .NET, sans aucun rapport avec la
-        palette de l'application.
+        Ces trois couleurs pilotent la barre d'état et les accents natifs — le
+        curseur d'un champ, l'onde d'un appui, la sélection de texte.
+
+        Elles portaient le violet du modèle .NET, sans rapport avec la palette.
+        Elles suivent désormais le bleu de marque, pour que le curseur d'un champ
+        et les doses rapides ne disent pas deux bleus différents.
+
+        colorPrimaryDark reste franchement sombre : c'est le fond de la barre
+        d'état, où Android pose des icônes blanches tant qu'on ne lui déclare pas
+        le contraire dans un thème. Un bleu clair ici rendrait l'heure invisible.
     -->
-    <color name="colorPrimary">#1F5FAF</color>
-    <color name="colorPrimaryDark">#0A305F</color>
-    <color name="colorAccent">#1F5FAF</color>
+    <color name="colorPrimary">#2F73D8</color>
+    <color name="colorPrimaryDark">#1B3A63</color>
+    <color name="colorAccent">#2F73D8</color>
 </resources>

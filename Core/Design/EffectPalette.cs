@@ -31,25 +31,25 @@ namespace MoleculeEfficienceTracker.Core.Design
     public static class EffectPalette
     {
         // Rôles, thème clair — sur surface #FCFCFF
-        private static readonly Color NoneLight = Color.FromArgb("#43474E");      // onSurfaceVariant
+        private static readonly Color NoneLight = Color.FromArgb("#5A6472");      // onSurfaceVariant
         private static readonly Color LightLight = Color.FromArgb("#1F5FAF");     // primary
         private static readonly Color ModerateLight = Color.FromArgb("#8A5300");  // secondary
         private static readonly Color StrongLight = Color.FromArgb("#B3261E");    // error
 
         // Rôles, thème sombre — sur surface #111418
-        private static readonly Color NoneDark = Color.FromArgb("#C3C7CF");
+        private static readonly Color NoneDark = Color.FromArgb("#AFB7C4");
         private static readonly Color LightDark = Color.FromArgb("#A8C7FA");
         private static readonly Color ModerateDark = Color.FromArgb("#FFB95C");
         private static readonly Color StrongDark = Color.FromArgb("#F2B8B5");
 
         // Conteneurs — le fond des puces d'état. Jamais le rôle plein : du texte
         // sombre sur un fond teinté clair, comme le veut Material 3.
-        private static readonly Color NoneContainerLight = Color.FromArgb("#E3E6EA");
+        private static readonly Color NoneContainerLight = Color.FromArgb("#E6EAF1");
         private static readonly Color LightContainerLight = Color.FromArgb("#D6E3FF");
-        private static readonly Color ModerateContainerLight = Color.FromArgb("#FFDDB7");
-        private static readonly Color StrongContainerLight = Color.FromArgb("#F9DEDC");
+        private static readonly Color ModerateContainerLight = Color.FromArgb("#FFE3C2");
+        private static readonly Color StrongContainerLight = Color.FromArgb("#FBE0DE");
 
-        private static readonly Color NoneContainerDark = Color.FromArgb("#323539");
+        private static readonly Color NoneContainerDark = Color.FromArgb("#2F3540");
         private static readonly Color LightContainerDark = Color.FromArgb("#2C4B6F");
         private static readonly Color ModerateContainerDark = Color.FromArgb("#5F3B00");
         private static readonly Color StrongContainerDark = Color.FromArgb("#8C1D18");
@@ -99,8 +99,8 @@ namespace MoleculeEfficienceTracker.Core.Design
         public static Color OnContainer(EffectLevel level) => IsDarkTheme
             ? level switch
             {
-                EffectLevel.Strong => Color.FromArgb("#F9DEDC"),
-                EffectLevel.Moderate => Color.FromArgb("#FFDDB7"),
+                EffectLevel.Strong => Color.FromArgb("#FBE0DE"),
+                EffectLevel.Moderate => Color.FromArgb("#FFE3C2"),
                 EffectLevel.Light => Color.FromArgb("#D6E3FF"),
                 _ => Color.FromArgb("#E2E2E6")
             }
@@ -156,26 +156,95 @@ namespace MoleculeEfficienceTracker.Core.Design
         /// <summary>Couleur de la courbe secondaire (saturation, effet).</summary>
         public static Color SeriesSecondary => IsDarkTheme ? ModerateDark : ModerateLight;
 
-        /// <summary>Le gris des axes et de la grille : outlineVariant.</summary>
+        /// <summary>Le gris de la grille du graphique. Plus pâle que le contour :
+        /// une grille qui se voit autant que la courbe la concurrence. Miroir des
+        /// jetons GridLine* de Resources/Styles/Colors.xaml.</summary>
         public static Color GridLine => IsDarkTheme
-            ? Color.FromArgb("#43474E")
-            : Color.FromArgb("#C3C7CF");
+            ? Color.FromArgb("#333A46")
+            : Color.FromArgb("#E4E9F1");
 
-        /// <summary>Teintes distinctes par molécule, pour la page Aujourd'hui.</summary>
-        public static Color ForMolecule(string moleculeKey) => moleculeKey switch
+
+        // ==================================================================
+        // Teintes de marque
+        // ==================================================================
+
+        // Une teinte vive par molécule, pour les *fonds* : carte de tête,
+        // pastille d'icône, barre de charge.
+        //
+        // Elles ne doublent pas les rôles ci-dessus, elles répondent à un besoin
+        // que les rôles ne peuvent pas servir. Un rôle Material 3 est calculé
+        // pour porter du texte sur blanc : #8A5300 écrit un mot lisible, mais
+        // étalé sur une carte entière il donne un brun de carton. Une surface
+        // colorée demande l'inverse — de la saturation, de la clarté, et du
+        // blanc par-dessus.
+        //
+        // Aucune de ces teintes ne porte d'information : chaque ligne, chaque
+        // carte nomme sa molécule en toutes lettres. Elles situent, elles ne
+        // disent rien. C'est ce qui les autorise à s'écarter de la contrainte
+        // bleu / orange / rouge des niveaux d'effet, laquelle reste entière.
+        //
+        // Miroir exact des jetons Brand* de Resources/Styles/Colors.xaml.
+        public static Color BrandFor(string moleculeKey) => moleculeKey switch
         {
-            Models.MoleculeKeys.Caffeine => IsDarkTheme ? ModerateDark : ModerateLight,
-            Models.MoleculeKeys.Bromazepam => IsDarkTheme ? LightDark : LightLight,
-            Models.MoleculeKeys.Paracetamol => Color.FromArgb(IsDarkTheme ? "#9BB4C9" : "#4A6274"),
-            Models.MoleculeKeys.Ibuprofen => Color.FromArgb(IsDarkTheme ? "#D0BCFF" : "#65558F"),
-            Models.MoleculeKeys.Alcohol => IsDarkTheme ? StrongDark : StrongLight,
-
-            // L'écran anti-douleur porte la clé de l'agrégat, non celle d'une des
-            // deux molécules : sans ce cas, sa carte de tête retombait sur le gris
-            // neutre et restait la seule des cinq à n'avoir aucune teinte.
-            Models.MoleculeKeys.PainRelief => Color.FromArgb(IsDarkTheme ? "#D0BCFF" : "#65558F"),
-
-            _ => Landmark
+            Models.MoleculeKeys.Caffeine => Hex("#E07B2E", "#F2A05A"),
+            Models.MoleculeKeys.Bromazepam => Hex("#2F73D8", "#6BA4F2"),
+            Models.MoleculeKeys.Paracetamol => Hex("#2E7F93", "#6CBDCE"),
+            Models.MoleculeKeys.Ibuprofen => Hex("#7455CF", "#A88FF0"),
+            Models.MoleculeKeys.PainRelief => Hex("#7455CF", "#A88FF0"),
+            Models.MoleculeKeys.Alcohol => Hex("#D1453B", "#EE7C72"),
+            _ => Hex("#2E7F93", "#6CBDCE")
         };
+
+        /// <summary>
+        /// Le glyphe d'une molécule, pour sa pastille. Un caractère, pas une
+        /// image : le convertisseur SVG de MAUI ne sait pas teinter un dessin à
+        /// la volée, et il en faudrait cinq de plus par thème.
+        /// </summary>
+        public static string BrandGlyph(string moleculeKey) => moleculeKey switch
+        {
+            Models.MoleculeKeys.Caffeine => "☕",
+            Models.MoleculeKeys.Bromazepam => "☾",
+            Models.MoleculeKeys.Paracetamol => "✚",
+            Models.MoleculeKeys.Ibuprofen => "✚",
+            Models.MoleculeKeys.PainRelief => "✚",
+            Models.MoleculeKeys.Alcohol => "🍷",
+            _ => "●"
+        };
+
+        /// <summary>
+        /// Le dégradé d'une carte de tête : la teinte pleine en haut à gauche,
+        /// assombrie d'un quart en bas à droite. Un aplat de couleur vive sur
+        /// toute une carte fatigue ; la même couleur qui se creuse tient.
+        /// </summary>
+        public static LinearGradientBrush BrandGradient(Color brand)
+        {
+            bool dark = IsDarkTheme;
+
+            Color top = dark ? Mix(brand, Color.FromArgb("#0B1220"), 0.32f) : brand;
+            Color bottom = dark
+                ? Mix(brand, Color.FromArgb("#0B1220"), 0.58f)
+                : Mix(brand, Color.FromArgb("#1B2430"), 0.26f);
+
+            return new LinearGradientBrush(
+                new GradientStopCollection
+                {
+                    new GradientStop(top, 0f),
+                    new GradientStop(bottom, 1f)
+                },
+                new Point(0, 0),
+                new Point(1, 1));
+        }
+
+        /// <summary>Le texte posé sur une carte de marque : blanc, toujours.</summary>
+        public static Color OnBrand => Colors.White;
+
+        public static Color Mix(Color from, Color to, float t) => Color.FromRgba(
+            from.Red + (to.Red - from.Red) * t,
+            from.Green + (to.Green - from.Green) * t,
+            from.Blue + (to.Blue - from.Blue) * t,
+            from.Alpha + (to.Alpha - from.Alpha) * t);
+
+        private static Color Hex(string light, string dark) =>
+            Color.FromArgb(IsDarkTheme ? dark : light);
     }
 }

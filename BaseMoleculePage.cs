@@ -72,14 +72,14 @@ namespace MoleculeEfficienceTracker
             Panel.SectionTitle = AddSectionTitle;
             Panel.DoseFieldCaption = DoseFieldCaption;
             Panel.HelperText = HelperText;
-            // Une teinte par molécule, sur la carte de tête, sous la courbe et
-            // jusque dans les doses rapides. Les cinq écrans étaient gris à
-            // l'identique : rien ne disait, avant d'avoir lu le titre, sur lequel
-            // on se trouvait.
-            Color accent = EffectPalette.ForMolecule(MoleculeKey);
+            // Une teinte par molécule : carte de tête pleine, doses rapides, aire
+            // sous la courbe. Les cinq écrans étaient gris à l'identique — rien ne
+            // disait, avant d'avoir lu le titre, sur lequel on se trouvait.
+            Color accent = EffectPalette.BrandFor(MoleculeKey);
             Panel.SetAccent(accent);
+            Panel.SetIdentity(Calculator.DisplayName, EffectPalette.BrandGlyph(MoleculeKey));
 
-            Panel.SetPresets(Presets, Calculator.DoseUnit, accent);
+            Panel.SetPresets(Presets, Calculator.DoseUnit);
             Panel.YAxis.Title = new ChartAxisTitle { Text = Calculator.ConcentrationUnit };
 
             // L'aire dit la charge accumulée, qu'un trait de deux pixels ne montrait
@@ -136,9 +136,10 @@ namespace MoleculeEfficienceTracker
 
             // La teinte se repose au retour sur l'onglet : elle est calculée pour le
             // thème courant, et celui-ci peut avoir basculé entre-temps.
-            Color accent = EffectPalette.ForMolecule(MoleculeKey);
+            Color accent = EffectPalette.BrandFor(MoleculeKey);
             Panel.SetAccent(accent);
-            Panel.SetPresets(Presets, Calculator.DoseUnit, accent);
+            Panel.SetIdentity(Calculator.DisplayName, EffectPalette.BrandGlyph(MoleculeKey));
+            Panel.SetPresets(Presets, Calculator.DoseUnit);
 
             // La courbe se retrace à l'arrivée sur l'onglet, jamais au
             // rafraîchissement du quart d'heure : une animation qui se déclenche
@@ -365,12 +366,66 @@ namespace MoleculeEfficienceTracker
             // sous un titre de carte qui répétait déjà l'une des deux.
             Panel.ConcentrationOutput.Text = FormatConcentrationValue(concentration);
             Panel.ConcentrationUnitOutput.Text = Calculator.ConcentrationUnit;
-            Panel.SetGauge(GaugeProgress(concentration), EffectPalette.For(ResolveEffectLevel(concentration)), animate: true);
+            Panel.SetGauge(GaugeProgress(concentration), animate: true);
             Panel.ConcentrationDetail.Text = BuildAmountDetail(doses, now, amount) ?? string.Empty;
             Panel.ConcentrationDetail.IsVisible = !string.IsNullOrWhiteSpace(Panel.ConcentrationDetail.Text);
             Panel.LastUpdateOutput.Text = $"à {now:HH:mm}";
 
+            UpdateDayTiles(doses, now);
+
             UpdateMoleculeSpecificConcentrationInfo(doses, now, concentration);
+        }
+
+        /// <summary>
+        /// Les deux vignettes du haut : ce qui a été pris depuis minuit, et le
+        /// temps écoulé depuis la dernière prise.
+        ///
+        /// Les deux chiffres existaient déjà, noyés dans une ligne de détail en
+        /// gris de quatorze points sous la grande valeur. Les sortir en vignettes
+        /// ne change pas l'information, il change ce qu'on en voit : un total de
+        /// la journée se lit d'un coup d'œil ou ne se lit pas.
+        ///
+        /// « Depuis » compte en minutes sous l'heure et en heures au-delà, jamais
+        /// en décimales d'heure : « il y a 0,4 h » n'est pas une durée qu'on lit,
+        /// c'est une durée qu'on convertit.
+        /// </summary>
+        protected virtual void UpdateDayTiles(List<DoseEntry> doses, DateTime now)
+        {
+            DateTime midnight = now.Date;
+
+            double today = doses.Where(d => d.TimeTaken >= midnight && d.TimeTaken <= now)
+                                .Sum(d => d.DoseMg);
+            int count = doses.Count(d => d.TimeTaken >= midnight && d.TimeTaken <= now);
+
+            string todayValue = today > 0 ? $"{today:0.##}" : "0";
+            string todayCaption = count switch
+            {
+                0 => $"{Calculator.DoseUnit} · rien depuis minuit",
+                1 => $"{Calculator.DoseUnit} · 1 prise",
+                _ => $"{Calculator.DoseUnit} · {count} prises"
+            };
+
+            DoseEntry? last = doses.Where(d => d.TimeTaken <= now)
+                                   .OrderByDescending(d => d.TimeTaken)
+                                   .FirstOrDefault();
+
+            string lastValue = "—";
+            string lastCaption = "aucune prise";
+
+            if (last is not null)
+            {
+                TimeSpan since = now - last.TimeTaken;
+
+                lastValue = since.TotalMinutes < 60
+                    ? $"{since.TotalMinutes:0} min"
+                    : since.TotalHours < 48
+                        ? $"{(int)since.TotalHours} h"
+                        : $"{(int)since.TotalDays} j";
+
+                lastCaption = $"{last.AmountDisplay} à {last.TimeTaken:HH:mm}";
+            }
+
+            Panel.SetTiles(todayValue, todayCaption, lastValue, lastCaption);
         }
 
         /// <summary>
