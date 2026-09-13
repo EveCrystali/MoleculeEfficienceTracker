@@ -111,30 +111,72 @@ namespace MoleculeEfficienceTracker.Controls
             => HistoryTitleLabel.Text = count > 0 ? $"Prises récentes · {count}" : "Prises récentes";
 
         /// <summary>
-        /// La teinte de la molécule, en dégradé sur la carte de tête.
+        /// La carte de tête prend la teinte pleine de sa molécule, et son texte
+        /// passe au blanc.
         ///
-        /// Les cinq écrans étaient gris à l'identique : rien ne disait, avant
-        /// d'avoir lu le titre, sur lequel on se trouvait. La couleur ne porte
-        /// aucune information que le texte ne porte déjà — elle situe, elle
-        /// n'informe pas.
+        /// La version précédente diluait cette teinte à un quart d'opacité : sur
+        /// un fond déjà pâle, il n'en restait qu'un voile, et les cinq écrans se
+        /// ressemblaient en gris. Une couleur qui situe doit se voir ; une couleur
+        /// qu'on devine ne sert à rien.
+        ///
+        /// Elle ne porte aucune information que le texte ne porte déjà. Le nom de
+        /// la molécule est écrit à côté du glyphe, le niveau d'effet est écrit
+        /// dans la puce : la couleur ne fait que dire où l'on se trouve.
         /// </summary>
-        public void SetAccent(Color accent)
+        public void SetAccent(Color brand)
         {
-            bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+            _brand = brand;
 
-            HeadlineCard.Background = new LinearGradientBrush(
-                new GradientStopCollection
-                {
-                    new GradientStop(accent.WithAlpha(dark ? 0.22f : 0.26f), 0f),
-                    new GradientStop(accent.WithAlpha(dark ? 0.05f : 0.07f), 1f)
-                },
-                new Point(0, 0),
-                new Point(1, 1));
+            HeadlineCard.Background = EffectPalette.BrandGradient(brand);
+
+            Color on = EffectPalette.OnBrand;
+
+            HeadlineLabel.TextColor = on;
+            MoleculeNameLabel.TextColor = on.WithAlpha(0.88f);
+            LastUpdateLabel.TextColor = on.WithAlpha(0.72f);
+            ConcentrationLabel.TextColor = on;
+            ConcentrationUnitLabel.TextColor = on.WithAlpha(0.78f);
+            ConcentrationDetailLabel.TextColor = on.WithAlpha(0.90f);
+            EffectPredictionLabel.TextColor = on.WithAlpha(0.74f);
+            HeadlineDetailLabel.TextColor = on.WithAlpha(0.86f);
+
+            // La pastille : du blanc à peine posé sur la teinte, non une seconde
+            // couleur. Deux couleurs vives dans un carré de trente-six pixels se
+            // battent.
+            MoleculeBadge.Background = new SolidColorBrush(on.WithAlpha(0.22f));
+
+            RefreshGaugeColors();
+        }
+
+        /// <summary>Le glyphe et le nom, en tête de la carte de marque.</summary>
+        public void SetIdentity(string name, string glyph)
+        {
+            MoleculeNameLabel.Text = name;
+            MoleculeGlyphLabel.Text = glyph;
         }
 
         /// <summary>
-        /// L'anneau : fraction remplie et couleur du niveau. Un nombre seul ne dit
-        /// pas s'il est grand.
+        /// Les deux vignettes : ce qui a été pris aujourd'hui, et quand remonte la
+        /// dernière prise. Une vignette vide affiche un tiret plutôt que de
+        /// disparaître — une mosaïque à trous se lit comme une mosaïque cassée.
+        /// </summary>
+        public void SetTiles(string todayValue, string todayCaption,
+                             string lastValue, string lastCaption)
+        {
+            TodayValueLabel.Text = string.IsNullOrWhiteSpace(todayValue) ? "—" : todayValue;
+            TodayCaptionLabel.Text = todayCaption ?? string.Empty;
+            LastDoseValueLabel.Text = string.IsNullOrWhiteSpace(lastValue) ? "—" : lastValue;
+            LastDoseCaptionLabel.Text = lastCaption ?? string.Empty;
+        }
+
+        /// <summary>
+        /// L'anneau : fraction remplie, sur la carte de marque.
+        ///
+        /// Il est blanc, et non de la couleur du niveau. Sur un fond orange plein,
+        /// un arc orange ne se voit pas, et un arc rouge sur ce même orange ment
+        /// sur la teinte. Le blanc se lit sur les cinq teintes sans exception ; le
+        /// niveau, lui, est porté par la puce à côté, en toutes lettres et dans sa
+        /// couleur exacte sur fond blanc.
         ///
         /// Il se remplit en six cent cinquante millisecondes plutôt que de sauter à
         /// sa valeur — c'est la course qui fait comprendre l'échelle, l'arc figé ne
@@ -142,13 +184,9 @@ namespace MoleculeEfficienceTracker.Controls
         /// après une saisie : la rejouer au battement du minuteur ferait de la
         /// jauge un tic nerveux.
         /// </summary>
-        public void SetGauge(double progress, Color color, bool animate = false)
+        public void SetGauge(double progress, bool animate = false)
         {
-            bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
-
-            _gauge.ProgressColor = color;
-            _gauge.StartColor = GaugeDrawable.Blend(color, dark ? Colors.Black : Colors.White, 0.55f);
-            _gauge.TrackColor = Color.FromArgb(dark ? "#2A2E35" : "#DDE3EC");
+            RefreshGaugeColors();
 
             double from = _gauge.Progress;
             double to = Math.Clamp(progress, 0, 1);
@@ -170,6 +208,17 @@ namespace MoleculeEfficienceTracker.Controls
             .Commit(this, GaugeAnimation, 16, 650, Easing.CubicOut);
         }
 
+        private Color _brand = Colors.SlateGray;
+
+        private void RefreshGaugeColors()
+        {
+            Color on = EffectPalette.OnBrand;
+
+            _gauge.TrackColor = on.WithAlpha(0.22f);
+            _gauge.ProgressColor = on;
+            _gauge.StartColor = on.WithAlpha(0.55f);
+        }
+
         private const string GaugeAnimation = "jauge";
 
         /// <summary>L'entrée en cascade des cartes, à l'arrivée sur l'écran.</summary>
@@ -188,8 +237,14 @@ namespace MoleculeEfficienceTracker.Controls
         public void SetStatus(EffectLevel level, string text)
         {
             EffectStatusLabel.Text = $"{EffectPalette.Glyph(level)}  {text}";
-            EffectStatusLabel.TextColor = EffectPalette.OnContainer(level);
-            StatusChip.Background = new SolidColorBrush(EffectPalette.Container(level));
+
+            // Fond blanc, texte dans la couleur du niveau : l'inverse de la puce
+            // Material 3 ordinaire, et pour une raison. Un conteneur teinté clair
+            // — un beige sur de l'orange, un rose sur du rouge — disparaît sur une
+            // carte de marque. Le blanc tient sur les cinq teintes, et la couleur
+            // du niveau y reste exacte plutôt que d'être diluée.
+            EffectStatusLabel.TextColor = EffectPalette.For(level);
+            StatusChip.Background = new SolidColorBrush(Colors.White);
             StatusChip.IsVisible = true;
 
             SemanticProperties.SetDescription(StatusChip, text);
@@ -215,7 +270,7 @@ namespace MoleculeEfficienceTracker.Controls
         /// 104 px en dur dans une pile horizontale sans repli : trois d'entre eux,
         /// leurs espaces et les marges réclamaient 396 px sur un écran de 360.
         /// </summary>
-        public void SetPresets(IEnumerable<double> presets, string unit, Color accent)
+        public void SetPresets(IEnumerable<double> presets, string unit)
         {
             PresetsHost.Clear();
             PresetsHost.ColumnDefinitions.Clear();
@@ -234,11 +289,18 @@ namespace MoleculeEfficienceTracker.Controls
             for (int r = 0; r < rows; r++)
                 PresetsHost.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
-            // La teinte suit la dose : la plus forte est la plus saturée. La
-            // couleur redit ce que le chiffre dit déjà — elle ne fait que le dire
-            // plus vite.
+            // La teinte suit la dose : la plus forte est la plus pleine. La couleur
+            // redit ce que le chiffre dit déjà — elle ne fait que le dire plus
+            // vite, et elle donne à la carte de saisie les seuls aplats colorés
+            // qu'elle possède.
+            //
+            // Le plus gros bouton est peint de la teinte pleine, texte blanc ; les
+            // autres en dégradent vers le blanc. Un jeu d'opacités sur fond blanc
+            // donnait trois pastels difficiles à départager ; un mélange vers le
+            // blanc garde la saturation et creuse l'écart.
             double largest = list.Max();
             bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+            Color pale = dark ? Color.FromArgb("#20242D") : Colors.White;
 
             for (int i = 0; i < list.Count; i++)
             {
@@ -250,10 +312,16 @@ namespace MoleculeEfficienceTracker.Controls
                 if (Application.Current?.Resources.TryGetValue("PresetButtonStyle", out object? style) == true)
                     button.Style = (Style)style;
 
-                button.BackgroundColor = accent.WithAlpha((float)((dark ? 0.14 : 0.12) + 0.18 * ratio));
-                button.BorderColor = accent.WithAlpha((float)(0.25 + 0.35 * ratio));
-                button.BorderWidth = 1.5;
-                button.TextColor = dark ? Colors.White : Color.FromArgb("#1A1C1E");
+                // 1,0 pour la dose la plus forte, 0,30 pour la plus faible.
+                float toward = (float)(1.0 - 0.70 * ratio);
+                button.BackgroundColor = EffectPalette.Mix(_brand, pale, toward);
+                button.BorderWidth = 0;
+
+                // Le texte bascule au blanc quand le fond passe à mi-teinte : au
+                // même endroit où le contraste du texte sombre décroche.
+                button.TextColor = ratio > 0.62
+                    ? Colors.White
+                    : (dark ? Colors.White : Color.FromArgb("#1B2430"));
 
                 double captured = preset;
                 button.Clicked += (_, _) => PresetSelected?.Invoke(this, captured);

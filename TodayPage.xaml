@@ -12,78 +12,90 @@
         les données en disent quatre endormies depuis des mois. Il répond désormais
         à la question du matin — puis-je prendre un café ? — avant de compter quoi
         que ce soit.
+
+        Sa forme suit celle d'un tableau de bord et non celle d'une liste : une
+        carte de tête colorée, deux vignettes de demi-largeur, puis les sections.
+        Quatre cartes de la même largeur et du même poids se lisaient comme un
+        formulaire, quelle que soit la qualité de leur contenu.
     -->
 
     <ContentPage.Resources>
         <DataTemplate x:Key="LoadRowTemplate">
-            <VerticalStackLayout Spacing="8" Padding="0,10">
-                <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
-                    <!-- Le filet coloré identifie la molécule ; le nom la nomme. La
-                         couleur ne porte jamais l'information seule. -->
-                    <BoxView Grid.Column="0" WidthRequest="4" CornerRadius="2"
-                             Color="{Binding Accent}" />
+            <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12" Padding="0,10">
 
-                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                        <Label Text="{Binding Name}" Style="{StaticResource BodyLabelStyle}" />
-                        <Label Text="{Binding Detail}" Style="{StaticResource HelperLabelStyle}" />
-                    </VerticalStackLayout>
+                <!-- La pastille identifie la molécule d'un coup d'œil. Le nom la
+                     nomme juste à côté : la couleur ne porte jamais seule. -->
+                <Border Grid.Column="0" Style="{StaticResource BadgeStyle}"
+                        Background="{Binding AccentBrush}">
+                    <Label Text="{Binding Glyph}" Style="{StaticResource BadgeGlyphStyle}" />
+                </Border>
 
-                    <VerticalStackLayout Grid.Column="2" Spacing="2"
-                                         HorizontalOptions="End" VerticalOptions="Center">
-                        <Label Text="{Binding ValueDisplay}"
-                               Style="{StaticResource BodyLabelStyle}"
-                               FontFamily="OpenSansSemibold"
-                               HorizontalTextAlignment="End" />
-                        <Label Text="{Binding LevelDisplay}"
-                               TextColor="{Binding LevelColor}"
-                               FontSize="12"
-                               HorizontalTextAlignment="End" />
-                    </VerticalStackLayout>
-                </Grid>
+                <VerticalStackLayout Grid.Column="1" Spacing="8">
 
-                <!--
-                    La jauge de charge, rapportée au seuil d'effet fort.
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                        <VerticalStackLayout Grid.Column="0" Spacing="1" VerticalOptions="Center">
+                            <Label Text="{Binding Name}"
+                                   FontFamily="SansBold" FontSize="15" />
+                            <Label Text="{Binding Detail}" Style="{StaticResource HelperLabelStyle}" />
+                        </VerticalStackLayout>
 
-                    Cinq lignes de chiffres se ressemblaient toutes : « 1,54 mg/L »
-                    et « 0,047 mg/L » ne se comparent pas de tête, et rien ne disait
-                    laquelle des cinq pèse. La barre le dit d'un coup d'œil, sans
-                    exiger qu'on connaisse l'échelle de chaque molécule.
+                        <VerticalStackLayout Grid.Column="1" Spacing="1"
+                                             HorizontalOptions="End" VerticalOptions="Center">
+                            <Label Text="{Binding ValueDisplay}"
+                                   FontFamily="SansHeavy" FontSize="17"
+                                   HorizontalTextAlignment="End" />
+                            <Label Text="{Binding LevelDisplay}"
+                                   TextColor="{Binding LevelColor}"
+                                   FontFamily="SansBold"
+                                   FontSize="12"
+                                   HorizontalTextAlignment="End" />
+                        </VerticalStackLayout>
+                    </Grid>
 
-                    Deux colonnes plutôt qu'une largeur fixe : un ProgressBar ne
-                    prend pas la teinte de la molécule sur Android, et une largeur en
-                    pixels ne saurait pas ce que mesure l'écran.
-                -->
-                <Grid HeightRequest="6" Margin="16,0,0,0">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="{Binding FilledWidth}" />
-                        <ColumnDefinition Width="{Binding EmptyWidth}" />
-                    </Grid.ColumnDefinitions>
+                    <!--
+                        La jauge de charge, rapportée au seuil d'effet fort.
 
-                    <BoxView Grid.Column="0" CornerRadius="3"
-                             Color="{Binding LevelColor}" />
-                    <BoxView Grid.Column="1" CornerRadius="3"
-                             Color="{Binding Accent}" Opacity="0.14" />
-                </Grid>
-            </VerticalStackLayout>
+                        Cinq lignes de chiffres se ressemblaient toutes : « 1,54 mg/L »
+                        et « 0,047 mg/L » ne se comparent pas de tête, et rien ne disait
+                        laquelle des cinq pèse. La barre le dit d'un coup d'œil, sans
+                        exiger qu'on connaisse l'échelle de chaque molécule.
+
+                        Deux colonnes en étoile plutôt qu'une largeur fixe : un
+                        ProgressBar ne prend pas la teinte de la molécule sur Android,
+                        et une largeur en pixels ne saurait pas ce que mesure l'écran.
+                    -->
+                    <Grid HeightRequest="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{Binding FilledWidth}" />
+                            <ColumnDefinition Width="{Binding EmptyWidth}" />
+                        </Grid.ColumnDefinitions>
+
+                        <BoxView Grid.Column="0" CornerRadius="4" Color="{Binding Accent}" />
+                        <BoxView Grid.Column="1" CornerRadius="4"
+                                 Color="{Binding Accent}" Opacity="0.16" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Grid>
         </DataTemplate>
 
         <DataTemplate x:Key="StatRowTemplate">
-            <Grid ColumnDefinitions="4,*,Auto,Auto" ColumnSpacing="10" Padding="0,8">
-                <BoxView Grid.Column="0" WidthRequest="4" CornerRadius="2"
-                         Color="{Binding Accent}" />
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10" Padding="0,9">
+                <BoxView Grid.Column="0" WidthRequest="4" HeightRequest="30" CornerRadius="2"
+                         Color="{Binding Accent}" VerticalOptions="Center" />
 
-                <VerticalStackLayout Grid.Column="1" Spacing="2">
-                    <Label Text="{Binding MoleculeName}" Style="{StaticResource BodyLabelStyle}" />
+                <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                    <Label Text="{Binding MoleculeName}"
+                           FontFamily="SansBold" FontSize="15" />
                     <Label Text="{Binding Detail}" Style="{StaticResource HelperLabelStyle}" />
                 </VerticalStackLayout>
 
                 <Label Grid.Column="2" Text="{Binding AverageDisplay}"
-                       Style="{StaticResource BodyLabelStyle}"
-                       FontFamily="OpenSansSemibold"
+                       FontFamily="SansHeavy" FontSize="16"
                        VerticalTextAlignment="Center" />
 
                 <Label Grid.Column="3" Text="{Binding VariationDisplay}"
                        TextColor="{Binding VariationColor}"
+                       FontFamily="SansBold"
                        FontSize="12" VerticalTextAlignment="Center" />
             </Grid>
         </DataTemplate>
@@ -95,6 +107,23 @@
             <!-- ===== 1. La question du matin ===== -->
             <Border x:Name="HeroCard" Style="{StaticResource HeroCardStyle}">
                 <VerticalStackLayout Spacing="16">
+
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Border x:Name="HeroBadge" Grid.Column="0" Style="{StaticResource BadgeStyle}">
+                            <Label Text="☕" Style="{StaticResource BadgeGlyphStyle}" />
+                        </Border>
+
+                        <Label x:Name="HeroTitleLabel" Grid.Column="1"
+                               Text="Café"
+                               FontFamily="SansBold" FontSize="15"
+                               VerticalTextAlignment="Center" />
+
+                        <Label x:Name="HeroUpdatedLabel" Grid.Column="2"
+                               FontSize="12"
+                               VerticalTextAlignment="Center"
+                               HorizontalTextAlignment="End" />
+                    </Grid>
+
                     <Label x:Name="CaffeineHeadlineLabel"
                            Style="{StaticResource HeadlineAnswerStyle}"
                            MaxLines="3"
@@ -103,24 +132,82 @@
                     <Label x:Name="CaffeineDetailLabel"
                            Style="{StaticResource CaptionLabelStyle}" />
 
+                    <!-- Le bouton s'inverse sur la carte colorée : fond blanc,
+                         texte dans la teinte. Un bouton bleu sur une carte orange
+                         serait la troisième couleur d'une carte qui n'en veut
+                         qu'une. -->
                     <Button x:Name="QuickAddButton"
                             Style="{StaticResource PrimaryButtonStyle}"
                             Pressed="OnQuickAddPressed"
                             Released="OnQuickAddReleased"
                             Clicked="OnQuickAddClicked" />
-
-                    <Label x:Name="HeroUpdatedLabel"
-                           Style="{StaticResource HelperLabelStyle}"
-                           FontSize="11"
-                           HorizontalTextAlignment="End" />
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ===== 2. Ce qui circule encore ===== -->
+            <!-- ===== 2. Les deux chiffres du moment ===== -->
+            <Grid ColumnDefinitions="*,*" ColumnSpacing="12">
+
+                <Border Grid.Column="0" Style="{StaticResource TileCardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Caféine à bord" Style="{StaticResource TileTitleStyle}" />
+                        <Label x:Name="BloodValueLabel"
+                               Style="{StaticResource MetricValueStyle}"
+                               Text="—" />
+                        <Label x:Name="BloodCaptionLabel"
+                               Style="{StaticResource HelperLabelStyle}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource TileCardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Depuis minuit" Style="{StaticResource TileTitleStyle}" />
+                        <Label x:Name="TodayCountLabel"
+                               Style="{StaticResource MetricValueStyle}"
+                               Text="—" />
+                        <Label x:Name="TodayCountCaptionLabel"
+                               Style="{StaticResource HelperLabelStyle}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
+            <!-- ===== 3. La semaine, en barres ===== -->
+            <!-- Sept barres, un chiffre, une légende. C'est la forme la plus dense
+                 de l'écran : elle dit en un coup d'œil ce qu'une moyenne masque —
+                 un lundi à quatre cafés et un dimanche à zéro font la même moyenne
+                 qu'une semaine régulière à deux. -->
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="14">
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <VerticalStackLayout Grid.Column="0" Spacing="2">
+                            <Label Text="Sept derniers jours"
+                                   Style="{StaticResource TileTitleStyle}"
+                                   SemanticProperties.HeadingLevel="Level2" />
+                            <Label x:Name="WeekTotalLabel"
+                                   Style="{StaticResource MetricValueStyle}"
+                                   Text="—" />
+                            <Label x:Name="WeekCaptionLabel"
+                                   Style="{StaticResource HelperLabelStyle}" />
+                        </VerticalStackLayout>
+
+                        <!-- Les barres sont construites en code : leur hauteur
+                             dépend des données, et une liaison ne saurait pas que
+                             la plus haute doit valoir toute la boîte. -->
+                        <Grid x:Name="WeekChart" Grid.Column="1"
+                              ColumnSpacing="7"
+                              HeightRequest="96"
+                              WidthRequest="168"
+                              VerticalOptions="End" />
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== 4. Ce qui circule encore ===== -->
             <Border Style="{StaticResource CardStyle}">
                 <VerticalStackLayout Spacing="4">
                     <Label Text="Présent dans l'organisme"
                            Style="{StaticResource SectionTitleStyle}"
+                           Margin="0,0,0,4"
                            SemanticProperties.HeadingLevel="Level2" />
 
                     <Label x:Name="LoadsEmptyLabel"
@@ -133,7 +220,7 @@
                 </VerticalStackLayout>
             </Border>
 
-            <!-- ===== 3. Les moyennes, sous un sélecteur ===== -->
+            <!-- ===== 5. Les moyennes, sous un sélecteur ===== -->
             <Border Style="{StaticResource CardStyle}">
                 <VerticalStackLayout Spacing="8">
                     <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
@@ -163,8 +250,6 @@
 
                     <CollectionView x:Name="StatsCollection"
                                     ItemTemplate="{StaticResource StatRowTemplate}" />
-
-
                 </VerticalStackLayout>
             </Border>
 

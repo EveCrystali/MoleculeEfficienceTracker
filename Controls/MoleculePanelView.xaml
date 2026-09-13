@@ -11,10 +11,16 @@
         puce qui nomme. Puis l'ajout, la courbe, l'historique, les données. Six
         cartes de poids égal ne hiérarchisaient rien.
 
-        La peau, ensuite. Les cartes sont de verre — translucides sur le dégradé de
-        page, filet clair sur l'arête, ombre large. La carte de tête prend en plus
-        la teinte de sa molécule, posée en code : c'est ce qui distingue Café
-        d'Alcool avant même d'avoir lu le titre.
+        La peau, ensuite. Les cartes sont blanches et opaques, posées sur un fond
+        dégradé, séparées de lui par une ombre basse plutôt que par un trait. La
+        carte de tête, elle, prend la teinte pleine de sa molécule et passe son
+        texte au blanc : c'est ce qui distingue Café d'Alcool avant même d'avoir lu
+        le titre, et ce qui donne à l'écran sa couleur.
+
+        La mosaïque, enfin. Sous la carte de tête, deux vignettes de demi-largeur
+        portent les deux chiffres du jour. Une colonne de cartes toutes de la même
+        largeur et du même poids se lit comme un formulaire ; deux vignettes côte à
+        côte se lisent comme un tableau de bord.
 
         Les volets repliables sont faits à la main, un bouton qui bascule une
         visibilité, plutôt qu'avec le contrôle Expander de la bibliothèque
@@ -26,21 +32,42 @@
 
             <!-- ===== 1. La réponse, avant la courbe ===== -->
             <Border x:Name="HeadlineCard" Style="{StaticResource HeroCardStyle}">
-                <VerticalStackLayout Spacing="18">
+                <VerticalStackLayout Spacing="16">
+
+                    <!-- La ligne d'identité : pastille, nom, heure de calcul. Elle
+                         n'existait pas — l'écran s'ouvrait sur une phrase sans
+                         jamais dire de quelle molécule il parlait, et l'heure
+                         traînait en bas de carte en gris sur gris. -->
+                    <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                        <Border x:Name="MoleculeBadge" Grid.Column="0"
+                                Style="{StaticResource BadgeStyle}">
+                            <Label x:Name="MoleculeGlyphLabel"
+                                   Style="{StaticResource BadgeGlyphStyle}" />
+                        </Border>
+
+                        <Label x:Name="MoleculeNameLabel" Grid.Column="1"
+                               FontFamily="SansBold" FontSize="15"
+                               VerticalTextAlignment="Center" />
+
+                        <Label x:Name="LastUpdateLabel" Grid.Column="2"
+                               FontSize="12"
+                               VerticalTextAlignment="Center"
+                               HorizontalTextAlignment="End" />
+                    </Grid>
 
                     <Label x:Name="HeadlineLabel"
                            Style="{StaticResource HeadlineAnswerStyle}"
                            MaxLines="3"
                            LineBreakMode="WordWrap" />
 
-                    <Grid ColumnDefinitions="120,*" ColumnSpacing="18">
+                    <Grid ColumnDefinitions="124,*" ColumnSpacing="16">
 
                         <!-- La jauge et sa valeur occupent la même cellule : le
                              nombre se lit au centre de l'anneau, comme un cadran. -->
-                        <Grid Grid.Column="0" WidthRequest="120" HeightRequest="120"
+                        <Grid Grid.Column="0" WidthRequest="124" HeightRequest="124"
                               HorizontalOptions="Start" VerticalOptions="Center">
                             <GraphicsView x:Name="LevelGauge"
-                                          WidthRequest="120" HeightRequest="120"
+                                          WidthRequest="124" HeightRequest="124"
                                           InputTransparent="True" />
                             <VerticalStackLayout VerticalOptions="Center"
                                                  HorizontalOptions="Center"
@@ -58,16 +85,17 @@
                             <!-- La puce d'état porte ensemble le glyphe, le mot et la
                                  couleur. Aucun des trois ne suffit seul : la couleur
                                  est inaccessible en deutéranopie, le glyphe est muet
-                                 pour un lecteur d'écran. -->
+                                 pour un lecteur d'écran.
+
+                                 Sur une carte colorée, elle s'inverse : fond blanc,
+                                 texte dans la couleur du niveau. Un fond teinté clair
+                                 posé sur de l'orange plein ne se lirait plus, et la
+                                 couleur du niveau, elle, doit rester exacte. -->
                             <Border x:Name="StatusChip"
                                     HorizontalOptions="Start"
-                                    StrokeThickness="0"
-                                    StrokeShape="RoundRectangle 15"
-                                    Padding="12,7">
+                                    Style="{StaticResource ChipStyle}">
                                 <Label x:Name="EffectStatusLabel"
-                                       FontFamily="OpenSansSemibold"
-                                       FontSize="12"
-                                       VerticalTextAlignment="Center" />
+                                       Style="{StaticResource ChipLabelStyle}" />
                             </Border>
 
                             <Label x:Name="ConcentrationDetailLabel"
@@ -80,13 +108,38 @@
 
                     <Label x:Name="HeadlineDetailLabel"
                            Style="{StaticResource CaptionLabelStyle}" />
-
-                    <Label x:Name="LastUpdateLabel"
-                           Style="{StaticResource HelperLabelStyle}"
-                           FontSize="11"
-                           HorizontalTextAlignment="End" />
                 </VerticalStackLayout>
             </Border>
+
+            <!-- ===== 1 bis. Les deux chiffres du jour ===== -->
+            <!-- Ils étaient noyés dans la phrase de détail de la carte de tête,
+                 en gris de quatorze points. Une vignette chacun, un chiffre par
+                 vignette : c'est la seule forme qui les rende lisibles d'un
+                 coup d'œil. -->
+            <Grid x:Name="TileRow" ColumnDefinitions="*,*" ColumnSpacing="12">
+
+                <Border Grid.Column="0" Style="{StaticResource TileCardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Aujourd'hui" Style="{StaticResource TileTitleStyle}" />
+                        <Label x:Name="TodayValueLabel"
+                               Style="{StaticResource MetricValueStyle}"
+                               Text="—" />
+                        <Label x:Name="TodayCaptionLabel"
+                               Style="{StaticResource HelperLabelStyle}" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <Border Grid.Column="1" Style="{StaticResource TileCardStyle}">
+                    <VerticalStackLayout Spacing="4">
+                        <Label Text="Dernière prise" Style="{StaticResource TileTitleStyle}" />
+                        <Label x:Name="LastDoseValueLabel"
+                               Style="{StaticResource MetricValueStyle}"
+                               Text="—" />
+                        <Label x:Name="LastDoseCaptionLabel"
+                               Style="{StaticResource HelperLabelStyle}" />
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
 
             <!-- ===== 2. Saisie ===== -->
             <Border Style="{StaticResource CardStyle}">
@@ -235,22 +288,36 @@
                             <DataTemplate>
                                 <VerticalStackLayout>
                                     <Grid Style="{StaticResource DoseRowStyle}"
-                                          ColumnDefinitions="*,Auto,Auto">
-                                        <VerticalStackLayout Grid.Column="0" Spacing="2" VerticalOptions="Center">
-                                            <Label Text="{Binding TimeTaken, StringFormat='{0:ddd dd/MM · HH:mm}'}"
-                                                   Style="{StaticResource BodyLabelStyle}" />
+                                          ColumnDefinitions="Auto,*,Auto,Auto">
+
+                                        <!-- L'heure en pastille, à gauche : c'est
+                                             elle qu'on cherche en parcourant la
+                                             liste, pas le jour. -->
+                                        <Border Grid.Column="0"
+                                                BackgroundColor="{AppThemeBinding Light={StaticResource SurfaceContainerLight}, Dark={StaticResource SurfaceContainerDark}}"
+                                                StrokeShape="RoundRectangle 12"
+                                                Padding="10,6"
+                                                VerticalOptions="Center">
+                                            <Label Text="{Binding TimeTaken, StringFormat='{0:HH:mm}'}"
+                                                   FontFamily="SansBold"
+                                                   FontSize="13" />
+                                        </Border>
+
+                                        <VerticalStackLayout Grid.Column="1" Spacing="1" VerticalOptions="Center">
+                                            <Label Text="{Binding TimeTaken, StringFormat='{0:dddd d MMMM}'}"
+                                                   Style="{StaticResource CaptionLabelStyle}" />
                                             <Label Text="{Binding BeverageType}"
                                                    Style="{StaticResource HelperLabelStyle}"
                                                    IsVisible="{Binding BeverageType, Converter={StaticResource IsNotEmptyConverter}}" />
                                         </VerticalStackLayout>
 
-                                        <Label Grid.Column="1"
+                                        <Label Grid.Column="2"
                                                Text="{Binding AmountDisplay}"
-                                               Style="{StaticResource BodyLabelStyle}"
-                                               FontFamily="OpenSansSemibold"
+                                               FontFamily="SansHeavy"
+                                               FontSize="16"
                                                VerticalTextAlignment="Center" />
 
-                                        <Button Grid.Column="2"
+                                        <Button Grid.Column="3"
                                                 Text="✕"
                                                 Style="{StaticResource DeleteButtonStyle}"
                                                 CommandParameter="{Binding Id}"

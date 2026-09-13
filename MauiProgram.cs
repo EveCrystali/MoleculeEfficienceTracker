@@ -23,6 +23,17 @@ namespace MoleculeEfficienceTracker
                 .UseLocalNotification()
                 .ConfigureFonts(fonts =>
                 {
+                    // Nunito, une grotesque aux terminaisons arrondies. Le choix
+                    // n'est pas décoratif : une police à angles vifs, réglée sur
+                    // une seule graisse intermédiaire, donne à une application de
+                    // suivi l'air d'un tableur. Quatre graisses ouvrent l'écart
+                    // entre un chiffre qui pèse et la légende qui l'accompagne.
+                    fonts.AddFont("Nunito-Regular.ttf", "Sans");
+                    fonts.AddFont("Nunito-SemiBold.ttf", "SansMedium");
+                    fonts.AddFont("Nunito-Bold.ttf", "SansBold");
+                    fonts.AddFont("Nunito-ExtraBold.ttf", "SansHeavy");
+
+                    // Conservées le temps que plus aucun style ne les nomme.
                     fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
                     fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
                 });
