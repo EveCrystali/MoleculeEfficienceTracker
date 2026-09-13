@@ -25,7 +25,6 @@ namespace MoleculeEfficienceTracker
         public ObservableRangeCollection<ChartDataPoint> ChartData { get; }
 
         private IDispatcherTimer? _timer;
-        private DateTime? _lastDayLabelled;
         private bool _wired;
 
         /// <summary>Le corps partagé de la page, déclaré dans le XAML de la page.</summary>
@@ -54,8 +53,6 @@ namespace MoleculeEfficienceTracker
 
         protected virtual string HelperText => string.Empty;
 
-        public bool HasDoses => Doses.Count > 0;
-
         protected BaseMoleculePage(string moleculeKey)
         {
             MoleculeKey = MoleculeKeys.Normalize(moleculeKey);
@@ -76,8 +73,26 @@ namespace MoleculeEfficienceTracker
             Panel.DoseFieldCaption = DoseFieldCaption;
             Panel.HelperText = HelperText;
             Panel.SetPresets(Presets, Calculator.DoseUnit);
-            Panel.Series.Fill = new SolidColorBrush(EffectPalette.Series);
             Panel.YAxis.Title = new ChartAxisTitle { Text = Calculator.ConcentrationUnit };
+
+            // Une teinte par molécule, sur la carte de tête et sous la courbe. Les
+            // cinq écrans étaient gris à l'identique : rien ne disait, avant
+            // d'avoir lu le titre, sur lequel on se trouvait.
+            Color accent = EffectPalette.ForMolecule(MoleculeKey);
+            Panel.SetAccent(accent);
+
+            // L'aire dit la charge accumulée, qu'un trait de deux pixels ne montrait
+            // pas. Elle s'éteint vers le bas pour ne pas peser sur les graduations.
+            Panel.Series.Fill = new LinearGradientBrush(
+                new GradientStopCollection
+                {
+                    new GradientStop(accent.WithAlpha(0.42f), 0f),
+                    new GradientStop(accent.WithAlpha(0.02f), 1f)
+                },
+                new Point(0, 0),
+                new Point(0, 1));
+
+            Panel.Series.Stroke = new SolidColorBrush(accent);
 
             if (Thresholds.Count > 0)
                 Panel.SetThresholdLegend(Thresholds.Select(t => (t.Label, t.Level)));
@@ -86,10 +101,10 @@ namespace MoleculeEfficienceTracker
             {
                 Panel.AddDoseButton.Clicked += OnAddDoseClicked;
                 Panel.ExportDataButton.Clicked += OnExportDataClicked;
+                Panel.ImportDataButton.Clicked += OnImportDataClicked;
                 Panel.ClearDataButton.Clicked += OnClearAllDataClicked;
                 Panel.DoseDeleteRequested += OnDoseDeleteRequested;
                 Panel.PresetSelected += OnPresetSelected;
-                Panel.XAxis.LabelCreated += ChartXAxis_LabelCreated;
                 _wired = true;
             }
 
@@ -117,6 +132,10 @@ namespace MoleculeEfficienceTracker
 
             ResetPickersToNow();
             StartConcentrationTimer();
+
+            // La teinte se repose au retour sur l'onglet : elle est calculée pour le
+            // thème courant, et celui-ci peut avoir basculé entre-temps.
+            Panel.SetAccent(EffectPalette.ForMolecule(MoleculeKey));
 
             try
             {
@@ -281,6 +300,7 @@ namespace MoleculeEfficienceTracker
             Doses.Insert(0, dose);
             SortDoses();
             Panel.DoseInput.Text = string.Empty;
+            Panel.CollapseDetailForm();
 
             await SaveDataAsync();
             await OnAfterDoseChangedAsync();
@@ -327,12 +347,54 @@ namespace MoleculeEfficienceTracker
             double concentration = Calculator.CalculateTotalConcentration(doses, now);
             double amount = Calculator.CalculateTotalAmount(doses, now);
 
-            Panel.ConcentrationOutput.Text =
-                $"{amount:0.##} {Calculator.DoseUnit} · {concentration:0.###} {Calculator.ConcentrationUnit}";
-            Panel.LastUpdateOutput.Text = $"Calculé à {now:HH:mm}";
+            // Une seule grande valeur, et une ligne pour la commenter. Les deux
+            // tenaient auparavant dans le même libellé, séparées d'un point médian,
+            // sous un titre de carte qui répétait déjà l'une des deux.
+            Panel.ConcentrationOutput.Text = FormatConcentrationValue(concentration);
+            Panel.ConcentrationUnitOutput.Text = Calculator.ConcentrationUnit;
+            Panel.SetGauge(GaugeProgress(concentration), EffectPalette.For(ResolveEffectLevel(concentration)));
+            Panel.ConcentrationDetail.Text = BuildAmountDetail(doses, now, amount) ?? string.Empty;
+            Panel.ConcentrationDetail.IsVisible = !string.IsNullOrWhiteSpace(Panel.ConcentrationDetail.Text);
+            Panel.LastUpdateOutput.Text = $"à {now:HH:mm}";
 
             UpdateMoleculeSpecificConcentrationInfo(doses, now, concentration);
         }
+
+        /// <summary>
+        /// La grande valeur, sans son unité — celle-ci s'écrit dessous, deux fois
+        /// plus petite, au centre de l'anneau.
+        ///
+        /// Le nombre de décimales suit l'ordre de grandeur : deux au-dessus de 1,
+        /// trois en dessous. Un format fixe à deux décimales écraserait les
+        /// 0,047 mg/L du bromazépam sur 0,05, et trois décimales encombreraient les
+        /// 1,54 mg/L de la caféine.
+        /// </summary>
+        protected virtual string FormatConcentrationValue(double concentration)
+            => concentration >= 1 ? $"{concentration:0.##}" : $"{concentration:0.###}";
+
+        /// <summary>
+        /// Fraction remplie de l'anneau : la valeur rapportée au seuil le plus
+        /// fort, qui borne l'échelle utile de la molécule.
+        /// </summary>
+        protected virtual double GaugeProgress(double concentration)
+        {
+            if (Thresholds.Count == 0 || Thresholds[0].Value <= 0) return 0;
+            return Math.Clamp(concentration / Thresholds[0].Value, 0, 1);
+        }
+
+        /// <summary>
+        /// La ligne sous la grande valeur. L'écran anti-douleur la redéfinit : sa
+        /// « quantité » est un pourcentage d'effet, et l'annoncer en milligrammes
+        /// n'aurait aucun sens.
+        /// </summary>
+        protected virtual string? BuildAmountDetail(List<DoseEntry> doses, DateTime currentTime, double amount)
+            => amount > 0 ? $"{amount:0.##} {Calculator.DoseUnit} encore présents" : null;
+
+        /// <summary>
+        /// Le mot de la puce d'état. L'écran alcool le redéfinit : on n'y parle pas
+        /// d'« effet net » mais d'ivresse.
+        /// </summary>
+        protected virtual string DescribeEffect(EffectLevel level) => EffectPalette.Label(level);
 
         /// <summary>
         /// Libellé d'état. Redéfinissable, mais la polarité est imposée ici : le
@@ -344,10 +406,7 @@ namespace MoleculeEfficienceTracker
             List<DoseEntry> doses, DateTime currentTime, double concentration)
         {
             EffectLevel level = ResolveEffectLevel(concentration);
-
-            Panel.EffectStatus.Text = EffectPalette.Describe(level);
-            Panel.EffectStatus.TextColor = EffectPalette.For(level);
-            Panel.EffectStatus.IsVisible = true;
+            Panel.SetStatus(level, DescribeEffect(level));
         }
 
         protected virtual EffectLevel ResolveEffectLevel(double concentration)
@@ -368,13 +427,18 @@ namespace MoleculeEfficienceTracker
             DateTime from = now.Add(GraphDataStartOffset);
             DateTime to = now.Add(GraphDataEndOffset);
 
+            // Un cadre, une grille, quatre seuils et un repère « Maintenant »
+            // dessinés au-dessus d'une série vide : c'est ce que montrait l'écran
+            // sans données. Une phrase suffit.
             if (Doses.Count == 0)
             {
                 ChartData.Clear();
-                Panel.XAxis.Minimum = from;
-                Panel.XAxis.Maximum = to;
+                chart.Annotations.Clear();
+                Panel.ShowChart(false);
                 return;
             }
+
+            Panel.ShowChart(true);
 
             List<DoseEntry> copy = Doses.ToList();
             int points = GraphDataNumberOfPoints;
@@ -397,6 +461,14 @@ namespace MoleculeEfficienceTracker
             Panel.XAxis.Maximum = to;
             Panel.XAxis.IntervalType = DateTimeIntervalType.Auto;
 
+            // Les graduations répétaient quatre fois « 01/09 00:00 » : le format
+            // dépendait d'un état retenu d'un rendu à l'autre, jamais remis à zéro.
+            // Il se déduit maintenant de l'étendue affichée, sans mémoire.
+            Panel.XAxis.LabelStyle.LabelFormat =
+                (to - from).TotalHours > 36 ? "dd/MM HH:mm" : "HH:mm";
+
+            ApplyYAxisBounds(data);
+
             // Le cadrage initial n'est posé qu'une fois. Il était recalculé à chaque
             // rafraîchissement, ce qui effaçait toutes les cinq minutes le zoom que
             // l'utilisateur venait de régler.
@@ -405,6 +477,71 @@ namespace MoleculeEfficienceTracker
                 ApplyInitialZoom(from, to, now);
                 _initialZoomApplied = true;
             }
+        }
+
+        /// <summary>
+        /// Plafond de l'axe des ordonnées, quand la grandeur en a un. L'écran
+        /// anti-douleur le fixe à 100 : il trace un pourcentage.
+        /// </summary>
+        protected virtual double? YAxisMaximumCap => null;
+
+        private double _lastYAxisMaximum = double.NaN;
+
+        /// <summary>
+        /// Borne l'axe des ordonnées sur ce qu'il y a à montrer — les données et
+        /// les seuils — au lieu du 0 à 1 par défaut.
+        ///
+        /// Sans cela, les quatre seuils du bromazépam, tous sous 0,05, s'écrasaient
+        /// contre le zéro d'un axe qui montait à 1, pendant que ceux de la caféine,
+        /// à 8 et 3, sortaient simplement du cadre.
+        ///
+        /// La valeur n'est écrite que lorsqu'elle change : réécrire une borne à
+        /// chaque rafraîchissement entre en conflit avec le geste de l'utilisateur.
+        /// </summary>
+        private void ApplyYAxisBounds(List<ChartDataPoint> data)
+        {
+            double dataMax = data.Count > 0 ? data.Max(p => p.Concentration) : 0;
+
+            // Sur les données, non sur les seuils. Le seuil « fort » de la caféine
+            // vaut 8 mg/L quand une journée ordinaire culmine à 3 : l'inclure
+            // réservait les deux tiers de la hauteur à une ligne jamais atteinte,
+            // et écrasait la courbe dans le tiers restant. Les seuils hors cadre ne
+            // se dessinent pas — la légende les nomme, cela suffit.
+            double top = dataMax * 1.25;
+
+            // Un plancher, tout de même : une journée presque vide ne doit pas
+            // produire un axe gradué au millième.
+            if (Thresholds.Count > 0)
+                top = Math.Max(top, Thresholds[Thresholds.Count - 1].Value * 2.5);
+
+            if (top <= 0) top = 1;
+
+            top = NiceCeiling(top);
+
+            if (YAxisMaximumCap is double cap)
+                top = Math.Min(top, cap);
+
+            if (Math.Abs(top - _lastYAxisMaximum) < double.Epsilon) return;
+
+            Panel.YAxis.Minimum = 0;
+            Panel.YAxis.Maximum = top;
+            _lastYAxisMaximum = top;
+        }
+
+        /// <summary>Arrondi supérieur à 1, 2 ou 5 fois une puissance de dix.</summary>
+        private static double NiceCeiling(double value)
+        {
+            if (value <= 0) return 1;
+
+            double magnitude = Math.Pow(10, Math.Floor(Math.Log10(value)));
+            double normalized = value / magnitude;
+
+            double step = normalized <= 1 ? 1
+                        : normalized <= 2 ? 2
+                        : normalized <= 5 ? 5
+                        : 10;
+
+            return step * magnitude;
         }
 
         private bool _initialZoomApplied;
@@ -435,8 +572,11 @@ namespace MoleculeEfficienceTracker
             SfCartesianChart chart = Panel.Chart;
             chart.Annotations.Clear();
 
-            foreach ((double value, string label, EffectLevel level) in Thresholds)
-                chart.Annotations.Add(BuildThresholdAnnotation(value, label, level));
+            // Rien à annoter tant qu'il n'y a rien à tracer : la courbe est masquée.
+            if (Doses.Count == 0) return;
+
+            foreach ((double value, _, EffectLevel level) in Thresholds)
+                chart.Annotations.Add(BuildThresholdAnnotation(value, level));
 
             DateTime now = DateTime.Now;
             chart.Annotations.Add(new VerticalLineAnnotation
@@ -447,16 +587,11 @@ namespace MoleculeEfficienceTracker
                 // toxicité rouge : le repère et le danger partageaient leur couleur.
                 Stroke = new SolidColorBrush(EffectPalette.Landmark),
                 StrokeWidth = 1.5,
-                StrokeDashArray = Dashes(new double[] { 4, 3 }),
-                Text = "Maintenant",
-                LabelStyle = new ChartAnnotationLabelStyle
-                {
-                    TextColor = EffectPalette.Landmark,
-                    FontSize = 11,
-                    HorizontalTextAlignment = ChartLabelAlignment.Start,
-                    VerticalTextAlignment = ChartLabelAlignment.End,
-                    Margin = new Thickness(8, 0, 0, 0)
-                }
+                StrokeDashArray = Dashes(new double[] { 4, 3 })
+                // Sans texte. « Maintenant » s'écrivait à la verticale, en travers
+                // de la grille : Syncfusion pivote le libellé d'une annotation
+                // verticale pour le faire tenir. La ligne se comprend seule —
+                // l'axe des abscisses porte les heures.
             });
 
             await AddDoseMarkersAsync(chart);
@@ -467,12 +602,13 @@ namespace MoleculeEfficienceTracker
             DateTime? min = Panel.XAxis.Minimum;
             DateTime? max = Panel.XAxis.Maximum;
 
-            List<DoseEntry> visible = Doses
+            List<DoseEntry> inRange = Doses
                 .Where(d => (!min.HasValue || d.TimeTaken >= min.Value) &&
                             (!max.HasValue || d.TimeTaken <= max.Value))
                 .OrderByDescending(d => d.TimeTaken)
-                .Take(30)
                 .ToList();
+
+            List<DoseEntry> visible = ThinMarkers(inRange, min, max);
 
             if (visible.Count == 0) return;
 
@@ -510,6 +646,45 @@ namespace MoleculeEfficienceTracker
         }
 
 
+        private const int MaxDoseMarkers = 10;
+
+        /// <summary>
+        /// Ne garde que les prises assez espacées pour être nommées sans se
+        /// recouvrir.
+        ///
+        /// Trente étiquettes textuelles se disputaient trois cents pixels de haut,
+        /// et deux prises rapprochées d'une demi-heure écrivaient l'une sur l'autre.
+        /// L'écart minimal se déduit de l'étendue affichée ; les prises récentes
+        /// sont servies les premières, ce sont elles qu'on regarde.
+        /// </summary>
+        private static List<DoseEntry> ThinMarkers(List<DoseEntry> descending, DateTime? min, DateTime? max)
+        {
+            if (descending.Count <= 1) return descending;
+
+            TimeSpan span = min.HasValue && max.HasValue
+                ? max.Value - min.Value
+                : TimeSpan.FromHours(24);
+
+            long gapTicks = Math.Max(span.Ticks / 14, TimeSpan.FromMinutes(20).Ticks);
+            var minimumGap = TimeSpan.FromTicks(gapTicks);
+
+            var kept = new List<DoseEntry>();
+            DateTime? last = null;
+
+            foreach (DoseEntry dose in descending)
+            {
+                if (last is null || last.Value - dose.TimeTaken >= minimumGap)
+                {
+                    kept.Add(dose);
+                    last = dose.TimeTaken;
+                }
+
+                if (kept.Count >= MaxDoseMarkers) break;
+            }
+
+            return kept;
+        }
+
         /// <summary>
         /// Construit un motif de trait sans dépendre d'un constructeur par
         /// collection, dont la présence varie selon les versions de MAUI.
@@ -521,23 +696,22 @@ namespace MoleculeEfficienceTracker
             return collection;
         }
 
-        private static HorizontalLineAnnotation BuildThresholdAnnotation(double value, string label, EffectLevel level)
+        /// <summary>
+        /// Une ligne de seuil, sans texte.
+        ///
+        /// Les quatre libellés étaient ancrés à la même abscisse et centrés sur leur
+        /// ligne : sur le bromazépam, dont les seuils vont de 0,005 à 0,047, ils se
+        /// retrouvaient confinés dans une bande de dix pixels et s'y empilaient en
+        /// une tache. La légende sous le graphique porte déjà le nom, la couleur et
+        /// le motif de trait de chaque niveau — elle suffit.
+        /// </summary>
+        private static HorizontalLineAnnotation BuildThresholdAnnotation(double value, EffectLevel level)
         {
             var annotation = new HorizontalLineAnnotation
             {
                 Y1 = value,
                 Stroke = new SolidColorBrush(EffectPalette.For(level)),
-                StrokeWidth = 2,
-                Text = label,
-                LabelStyle = new ChartAnnotationLabelStyle
-                {
-                    FontSize = 11,
-                    TextColor = EffectPalette.For(level),
-                    CornerRadius = 3,
-                    HorizontalTextAlignment = ChartLabelAlignment.Start,
-                    VerticalTextAlignment = ChartLabelAlignment.Center,
-                    Margin = new Thickness(6, 0, 0, 0)
-                }
+                StrokeWidth = 2
             };
 
             // Le motif de trait double la couleur : les quatre seuils se
@@ -638,6 +812,30 @@ namespace MoleculeEfficienceTracker
             }
         }
 
+        /// <summary>
+        /// Relit un fichier de prises et le fusionne avec ce qui est déjà là.
+        ///
+        /// L'application savait exporter depuis l'origine, jamais relire : un
+        /// fichier sorti d'ici n'avait nulle part où revenir.
+        /// </summary>
+        protected async void OnImportDataClicked(object? sender, EventArgs e)
+        {
+            try
+            {
+                ImportReport? report = await new DataImportService().PickAndImportAsync();
+                if (report is null) return;
+
+                await LoadDataAsyncInternal();
+                await UpdateAllDisplays();
+
+                await AlertService.ShowAlertAsync("Import terminé", report.ToString());
+            }
+            catch (Exception ex)
+            {
+                await AlertService.ShowAlertAsync("Import impossible", ex.Message);
+            }
+        }
+
         protected async void OnClearAllDataClicked(object? sender, EventArgs e)
         {
             bool confirm = await AlertService.ShowConfirmAsync(
@@ -657,24 +855,16 @@ namespace MoleculeEfficienceTracker
 
         // ===== Divers =====
 
-        protected void ChartXAxis_LabelCreated(object? sender, ChartAxisLabelEventArgs e)
-        {
-            if (!DateTime.TryParse(e.Label, CultureInfo.CurrentCulture, DateTimeStyles.None, out DateTime labelDate) &&
-                !DateTime.TryParseExact(e.Label, "dd/MM HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out labelDate) &&
-                !DateTime.TryParseExact(e.Label, "HH:mm", CultureInfo.InvariantCulture, DateTimeStyles.None, out labelDate))
-                return;
-
-            bool newDay = _lastDayLabelled is null || labelDate.Date != _lastDayLabelled.Value.Date;
-            e.Label = newDay ? labelDate.ToString("dd/MM HH:mm") : labelDate.ToString("HH:mm");
-            _lastDayLabelled = labelDate;
-        }
-
         protected void UpdateEmptyState()
         {
             bool empty = Doses.Count == 0;
+
+            // Sans prise, ni courbe ni historique : deux cartes vides suivies de
+            // deux écrans de blanc ne documentaient rien.
+            Panel.ShowHistory(!empty);
             Panel.EmptyIndicator.IsVisible = empty;
             Panel.DosesView.IsVisible = !empty;
-            OnPropertyChanged(nameof(HasDoses));
+            Panel.SetHistoryCount(Doses.Count);
         }
 
         private static async Task AnimateButtonAsync(Button btn)

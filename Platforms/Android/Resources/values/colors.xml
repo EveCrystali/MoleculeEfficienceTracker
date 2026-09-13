@@ -1,6 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#512BD4</color>
-    <color name="colorPrimaryDark">#2B0B98</color>
-    <color name="colorAccent">#2B0B98</color>
+    <!--
+        Ces trois couleurs pilotent la barre d'état et les accents natifs. Elles
+        portaient encore le violet du modèle .NET, sans aucun rapport avec la
+        palette de l'application.
+    -->
+    <color name="colorPrimary">#1F5FAF</color>
+    <color name="colorPrimaryDark">#0A305F</color>
+    <color name="colorAccent">#1F5FAF</color>
 </resources>

@@ -7,8 +7,7 @@
     xmlns:local="clr-namespace:MoleculeEfficienceTracker"
     xmlns:controls="clr-namespace:MoleculeEfficienceTracker.Controls"
     xmlns:services="clr-namespace:MoleculeEfficienceTracker.Core.Services"
-    Title="Douleur"
-    BackgroundColor="{AppThemeBinding Light={StaticResource PageBackgroundLight}, Dark={StaticResource PageBackgroundDark}}">
+    Title="Douleur">
 
     <controls:MoleculePanelView x:Name="PanelView" />
 </local:BaseMoleculePage>

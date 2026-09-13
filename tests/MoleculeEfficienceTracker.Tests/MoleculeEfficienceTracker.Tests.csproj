@@ -28,6 +28,7 @@
     <Compile Include="../../Core/Services/IbuprofeneCalculator.cs" Link="Core/IbuprofeneCalculator.cs" />
     <Compile Include="../../Core/Services/CombinedPainReliefCalculator.cs" Link="Core/CombinedPainReliefCalculator.cs" />
     <Compile Include="../../Core/Services/AlcoholCalculator.cs" Link="Core/AlcoholCalculator.cs" />
+    <Compile Include="../../Core/Services/DoseDocument.cs" Link="Core/DoseDocument.cs" />
   </ItemGroup>
 
   <ItemGroup>

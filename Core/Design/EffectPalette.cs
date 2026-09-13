@@ -5,41 +5,59 @@ using MoleculeEfficienceTracker.Core.Services;
 namespace MoleculeEfficienceTracker.Core.Design
 {
     /// <summary>
-    /// Palette des niveaux d'effet.
+    /// Palette des niveaux d'effet, côté C#.
     ///
-    /// Deux règles la gouvernent, et elles corrigent le même défaut.
+    /// Elle ne définit plus ses propres teintes : elle branche chaque niveau sur un
+    /// rôle Material 3, les mêmes valeurs que Resources/Styles/Colors.xaml. Les deux
+    /// fichiers avaient divergé — le XAML disait #1F6FB2 là où le C# disait #1F5FAF,
+    /// sur le même écran.
     ///
-    /// D'abord, aucun vert porteur de sens : la lecture rouge/vert est inaccessible
-    /// en deutéranopie. L'échelle monte du gris au bleu, puis à l'orange, puis au
+    ///   Négligeable → onSurfaceVariant · Léger → primary
+    ///   Net         → secondary        · Fort  → error
+    ///
+    /// Deux règles gouvernent le choix de ces rôles, et elles corrigent le même
+    /// défaut.
+    ///
+    /// Aucun vert ne porte de sens : la lecture rouge/vert est inaccessible en
+    /// deutéranopie. L'échelle monte du gris au bleu, puis à l'orange, puis au
     /// rouge — un axe que l'œil distingue quelle que soit la vision des couleurs.
     ///
-    /// Ensuite, la couleur ne porte jamais seule. Chaque niveau a son motif de
-    /// trait, du pointillé serré au trait plein : plus l'effet est fort, plus la
-    /// ligne est continue. L'ancienne version traçait quatre seuils au même trait,
-    /// distingués par la seule teinte — et sur deux pages, ces teintes étaient
-    /// orange, jaune-vert et vert.
-    ///
-    /// Le sens est enfin le même partout : l'écran caféine peignait « effet fort »
-    /// en vert et « effet négligeable » en rouge, exactement à l'envers des écrans
-    /// bromazépam et anti-douleur.
+    /// La couleur ne porte jamais seule. Chaque niveau a son motif de trait, du
+    /// pointillé serré au trait plein : plus l'effet est fort, plus la ligne est
+    /// continue. L'ancienne version traçait quatre seuils au même trait, distingués
+    /// par la seule teinte — et sur deux pages, ces teintes étaient orange,
+    /// jaune-vert et vert.
     /// </summary>
     public static class EffectPalette
     {
-        // Clair, sur fond #F7F9FC
-        private static readonly Color NoneLight = Color.FromArgb("#5B6B7C");
-        private static readonly Color LightLight = Color.FromArgb("#1F6FB2");
-        private static readonly Color ModerateLight = Color.FromArgb("#B86A00");
-        private static readonly Color StrongLight = Color.FromArgb("#C0392B");
+        // Rôles, thème clair — sur surface #FCFCFF
+        private static readonly Color NoneLight = Color.FromArgb("#43474E");      // onSurfaceVariant
+        private static readonly Color LightLight = Color.FromArgb("#1F5FAF");     // primary
+        private static readonly Color ModerateLight = Color.FromArgb("#8A5300");  // secondary
+        private static readonly Color StrongLight = Color.FromArgb("#B3261E");    // error
 
-        // Sombre, sur fond #12171D
-        private static readonly Color NoneDark = Color.FromArgb("#93A1B0");
-        private static readonly Color LightDark = Color.FromArgb("#5AA9E6");
-        private static readonly Color ModerateDark = Color.FromArgb("#E8A33D");
-        private static readonly Color StrongDark = Color.FromArgb("#F07167");
+        // Rôles, thème sombre — sur surface #111418
+        private static readonly Color NoneDark = Color.FromArgb("#C3C7CF");
+        private static readonly Color LightDark = Color.FromArgb("#A8C7FA");
+        private static readonly Color ModerateDark = Color.FromArgb("#FFB95C");
+        private static readonly Color StrongDark = Color.FromArgb("#F2B8B5");
+
+        // Conteneurs — le fond des puces d'état. Jamais le rôle plein : du texte
+        // sombre sur un fond teinté clair, comme le veut Material 3.
+        private static readonly Color NoneContainerLight = Color.FromArgb("#E3E6EA");
+        private static readonly Color LightContainerLight = Color.FromArgb("#D6E3FF");
+        private static readonly Color ModerateContainerLight = Color.FromArgb("#FFDDB7");
+        private static readonly Color StrongContainerLight = Color.FromArgb("#F9DEDC");
+
+        private static readonly Color NoneContainerDark = Color.FromArgb("#323539");
+        private static readonly Color LightContainerDark = Color.FromArgb("#2C4B6F");
+        private static readonly Color ModerateContainerDark = Color.FromArgb("#5F3B00");
+        private static readonly Color StrongContainerDark = Color.FromArgb("#8C1D18");
 
         private static bool IsDarkTheme =>
             Application.Current?.RequestedTheme == AppTheme.Dark;
 
+        /// <summary>Couleur du niveau : le rôle plein, pour un trait ou un texte.</summary>
         public static Color For(EffectLevel level) => IsDarkTheme
             ? level switch
             {
@@ -54,6 +72,44 @@ namespace MoleculeEfficienceTracker.Core.Design
                 EffectLevel.Moderate => ModerateLight,
                 EffectLevel.Light => LightLight,
                 _ => NoneLight
+            };
+
+        /// <summary>Fond de la puce d'état : le conteneur du même rôle.</summary>
+        public static Color Container(EffectLevel level) => IsDarkTheme
+            ? level switch
+            {
+                EffectLevel.Strong => StrongContainerDark,
+                EffectLevel.Moderate => ModerateContainerDark,
+                EffectLevel.Light => LightContainerDark,
+                _ => NoneContainerDark
+            }
+            : level switch
+            {
+                EffectLevel.Strong => StrongContainerLight,
+                EffectLevel.Moderate => ModerateContainerLight,
+                EffectLevel.Light => LightContainerLight,
+                _ => NoneContainerLight
+            };
+
+        /// <summary>
+        /// Texte posé sur le conteneur. Au thème clair, le rôle « on-container »
+        /// est bien plus sombre que le rôle plein : c'est ce qui rend la puce
+        /// lisible au lieu de la laisser vibrer.
+        /// </summary>
+        public static Color OnContainer(EffectLevel level) => IsDarkTheme
+            ? level switch
+            {
+                EffectLevel.Strong => Color.FromArgb("#F9DEDC"),
+                EffectLevel.Moderate => Color.FromArgb("#FFDDB7"),
+                EffectLevel.Light => Color.FromArgb("#D6E3FF"),
+                _ => Color.FromArgb("#E2E2E6")
+            }
+            : level switch
+            {
+                EffectLevel.Strong => Color.FromArgb("#410E0B"),
+                EffectLevel.Moderate => Color.FromArgb("#2C1600"),
+                EffectLevel.Light => Color.FromArgb("#001C38"),
+                _ => Color.FromArgb("#1A1C1E")
             };
 
         /// <summary>
@@ -92,28 +148,33 @@ namespace MoleculeEfficienceTracker.Core.Design
         /// <summary>Couleur neutre d'un repère temporel. Jamais rouge : le rouge
         /// est réservé au dépassement, et la ligne « Maintenant » le partageait
         /// avec le seuil de toxicité sur le même graphique.</summary>
-        public static Color Landmark => IsDarkTheme
-            ? Color.FromArgb("#93A1B0")
-            : Color.FromArgb("#5B6B7C");
+        public static Color Landmark => IsDarkTheme ? NoneDark : NoneLight;
 
         /// <summary>Couleur de la courbe de concentration.</summary>
-        public static Color Series => IsDarkTheme
-            ? Color.FromArgb("#5AA9E6")
-            : Color.FromArgb("#1F5FAF");
+        public static Color Series => IsDarkTheme ? LightDark : LightLight;
 
         /// <summary>Couleur de la courbe secondaire (saturation, effet).</summary>
-        public static Color SeriesSecondary => IsDarkTheme
-            ? Color.FromArgb("#E8A33D")
-            : Color.FromArgb("#B86A00");
+        public static Color SeriesSecondary => IsDarkTheme ? ModerateDark : ModerateLight;
 
-        /// <summary>Teintes distinctes par molécule, pour la page de synthèse.</summary>
+        /// <summary>Le gris des axes et de la grille : outlineVariant.</summary>
+        public static Color GridLine => IsDarkTheme
+            ? Color.FromArgb("#43474E")
+            : Color.FromArgb("#C3C7CF");
+
+        /// <summary>Teintes distinctes par molécule, pour la page Aujourd'hui.</summary>
         public static Color ForMolecule(string moleculeKey) => moleculeKey switch
         {
-            Models.MoleculeKeys.Caffeine => Color.FromArgb(IsDarkTheme ? "#E8A33D" : "#B86A00"),
-            Models.MoleculeKeys.Bromazepam => Color.FromArgb(IsDarkTheme ? "#5AA9E6" : "#1F5FAF"),
+            Models.MoleculeKeys.Caffeine => IsDarkTheme ? ModerateDark : ModerateLight,
+            Models.MoleculeKeys.Bromazepam => IsDarkTheme ? LightDark : LightLight,
             Models.MoleculeKeys.Paracetamol => Color.FromArgb(IsDarkTheme ? "#9BB4C9" : "#4A6274"),
-            Models.MoleculeKeys.Ibuprofen => Color.FromArgb(IsDarkTheme ? "#B79CE8" : "#6A4FA3"),
-            Models.MoleculeKeys.Alcohol => Color.FromArgb(IsDarkTheme ? "#F07167" : "#C0392B"),
+            Models.MoleculeKeys.Ibuprofen => Color.FromArgb(IsDarkTheme ? "#D0BCFF" : "#65558F"),
+            Models.MoleculeKeys.Alcohol => IsDarkTheme ? StrongDark : StrongLight,
+
+            // L'écran anti-douleur porte la clé de l'agrégat, non celle d'une des
+            // deux molécules : sans ce cas, sa carte de tête retombait sur le gris
+            // neutre et restait la seule des cinq à n'avoir aucune teinte.
+            Models.MoleculeKeys.PainRelief => Color.FromArgb(IsDarkTheme ? "#D0BCFF" : "#65558F"),
+
             _ => Landmark
         };
     }

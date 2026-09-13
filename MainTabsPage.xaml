@@ -3,21 +3,40 @@
     x:Class="MoleculeEfficienceTracker.MainTabsPage"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:MoleculeEfficienceTracker">
+    xmlns:android="clr-namespace:Microsoft.Maui.Controls.PlatformConfiguration.AndroidSpecific;assembly=Microsoft.Maui.Controls"
+    xmlns:local="clr-namespace:MoleculeEfficienceTracker"
+    android:TabbedPage.ToolbarPlacement="Bottom"
+    Title="Aujourd'hui">
 
     <!--
-        Les onglets portent un mot, plus seulement un emoji. Un lecteur d'écran
-        annonçait jusqu'ici « tasse à thé », « cerveau », « pansement adhésif ».
-        L'onglet Paramètres déclarait en outre IconImageSource="⚙️", c'est-à-dire
-        un fichier image nommé littéralement ⚙️, qui n'a jamais existé.
+        Barre de navigation en bas, cinq destinations, une icône chacune.
 
-        La caféine passe en tête : c'est l'usage quotidien.
+        Il y en avait six, en haut, sur une largeur de téléphone : les libellés se
+        coupaient au milieu des mots — BROMA / Z., DOULE / UR, RÉGLA / GES — et les
+        onglets touchaient la barre d'état, faute de barre de titre. Material 3
+        plafonne une barre de navigation à cinq destinations, demande des libellés
+        courts et interdit la troncature.
+
+        Réglages sort donc des onglets : c'est une action de la barre de titre, ce
+        qui donne au passage à l'application la barre qui lui manquait.
+
+        L'ordre suit l'usage réel. Les données disent que quatre molécules sur cinq
+        dorment — le bromazépam s'est arrêté il y a 198 jours, l'alcool 204,
+        l'anti-douleur 130 — et que seul le café vit. Aujourd'hui ouvre, le café
+        suit.
     -->
 
-    <local:CaffeinePage Title="Café" />
-    <local:BromazepamPage Title="Bromaz." />
-    <local:PainReliefPage Title="Douleur" />
-    <local:AlcoholPage Title="Alcool" />
-    <local:ChargePage Title="Charge" />
-    <local:SettingsPage Title="Réglages" />
+    <TabbedPage.ToolbarItems>
+        <ToolbarItem Text="Réglages"
+                     IconImageSource="icon_settings.png"
+                     Order="Primary"
+                     Priority="0"
+                     Clicked="OnSettingsClicked" />
+    </TabbedPage.ToolbarItems>
+
+    <local:TodayPage Title="Aujourd'hui" IconImageSource="tab_today.png" />
+    <local:CaffeinePage Title="Café" IconImageSource="tab_coffee.png" />
+    <local:BromazepamPage Title="Bromaz." IconImageSource="tab_pill.png" />
+    <local:PainReliefPage Title="Douleur" IconImageSource="tab_relief.png" />
+    <local:AlcoholPage Title="Alcool" IconImageSource="tab_glass.png" />
 </TabbedPage>

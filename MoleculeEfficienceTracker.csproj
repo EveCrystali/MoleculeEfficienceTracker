@@ -10,6 +10,12 @@
 		<OutputType>Exe</OutputType>
 		<RootNamespace>MoleculeEfficienceTracker</RootNamespace>
 		<UseMaui>true</UseMaui>
+
+		<!-- Style natif Material 3 pour Entry, Editor, Picker, DatePicker,
+		     TimePicker, Slider et RadioButton sur Android. Il ne prend effet que
+		     depuis la suppression de Resources/Styles/Styles.xaml : les styles et
+		     jetons du modèle Visual Studio l'écrasaient. -->
+		<UseMaterial3>true</UseMaterial3>
 		<SingleProject>true</SingleProject>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
@@ -58,7 +64,10 @@
 		<MauiIcon Include="Resources\AppIcon\appicon.svg" ForegroundFile="Resources\AppIcon\appiconfg.svg" Color="#1F5FAF" />
 		<MauiSplashScreen Include="Resources\Splash\splash.svg" Color="#1F5FAF" BaseSize="128,128" />
 
-		<MauiImage Include="Resources\Images\*" />
+		<!-- Les icônes d'onglet sont des SVG monochromes de 24 px : chemins pleins,
+		     sans trait ni style CSS, le sous-ensemble que le convertisseur de MAUI
+		     sait lire. La barre basse les teinte elle-même. -->
+		<MauiImage Include="Resources\Images\*" BaseSize="24,24" />
 
 		<!-- Restreint aux vraies polices : le glob d'origine embarquait aussi
 		     FluentUI.cs, un fichier source de 526 Ko, comme s'il s'agissait d'une

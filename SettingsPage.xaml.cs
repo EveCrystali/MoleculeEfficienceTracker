@@ -137,6 +137,38 @@ namespace MoleculeEfficienceTracker
                 "OK");
         }
 
+        /// <summary>
+        /// Relit un fichier de prises.
+        ///
+        /// C'est la porte de retour qui manquait : l'application savait exporter
+        /// depuis l'origine, jamais relire, et un changement d'identifiant de paquet
+        /// — Android y voit alors une autre application, avec un autre répertoire de
+        /// données — laisse l'historique intact mais hors de portée.
+        /// </summary>
+        private async void OnImportClicked(object sender, EventArgs e)
+        {
+            try
+            {
+                ImportButton.IsEnabled = false;
+
+                ImportReport? report = await new DataImportService().PickAndImportAsync();
+                if (report is null) return;
+
+                ImportStatusLabel.Text = report.ToString();
+                ImportStatusLabel.IsVisible = true;
+
+                await DisplayAlertAsync("Import terminé", report.ToString(), "OK");
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlertAsync("Import impossible", ex.Message, "OK");
+            }
+            finally
+            {
+                ImportButton.IsEnabled = true;
+            }
+        }
+
         private static bool TryReadNumber(string? raw, out double value)
             => double.TryParse((raw ?? string.Empty).Trim().Replace(',', '.'),
                                NumberStyles.Float, CultureInfo.InvariantCulture, out value);

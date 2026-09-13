@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="MoleculeEfficienceTracker.TodayPage"
+             Title="Aujourd'hui">
+
+    <!--
+        L'écran d'ouverture.
+
+        Il s'appelait Charge et montrait trois cartes de moyennes, vides, suivies
+        de deux écrans de blanc. Il donnait le même poids à cinq molécules quand
+        les données en disent quatre endormies depuis des mois. Il répond désormais
+        à la question du matin — puis-je prendre un café ? — avant de compter quoi
+        que ce soit.
+    -->
+
+    <ContentPage.Resources>
+        <DataTemplate x:Key="LoadRowTemplate">
+            <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12" Padding="0,10">
+                <!-- Le filet coloré identifie la molécule ; le nom la nomme. La
+                     couleur ne porte jamais l'information seule. -->
+                <BoxView Grid.Column="0" WidthRequest="4" CornerRadius="2"
+                         Color="{Binding Accent}" />
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                    <Label Text="{Binding Name}" Style="{StaticResource BodyLabelStyle}" />
+                    <Label Text="{Binding Detail}" Style="{StaticResource HelperLabelStyle}" />
+                </VerticalStackLayout>
+
+                <VerticalStackLayout Grid.Column="2" Spacing="2"
+                                     HorizontalOptions="End" VerticalOptions="Center">
+                    <Label Text="{Binding ValueDisplay}"
+                           Style="{StaticResource BodyLabelStyle}"
+                           FontFamily="OpenSansSemibold"
+                           HorizontalTextAlignment="End" />
+                    <Label Text="{Binding LevelDisplay}"
+                           TextColor="{Binding LevelColor}"
+                           FontSize="12"
+                           HorizontalTextAlignment="End" />
+                </VerticalStackLayout>
+            </Grid>
+        </DataTemplate>
+
+        <DataTemplate x:Key="StatRowTemplate">
+            <Grid ColumnDefinitions="4,*,Auto,Auto" ColumnSpacing="10" Padding="0,8">
+                <BoxView Grid.Column="0" WidthRequest="4" CornerRadius="2"
+                         Color="{Binding Accent}" />
+
+                <VerticalStackLayout Grid.Column="1" Spacing="2">
+                    <Label Text="{Binding MoleculeName}" Style="{StaticResource BodyLabelStyle}" />
+                    <Label Text="{Binding Detail}" Style="{StaticResource HelperLabelStyle}" />
+                </VerticalStackLayout>
+
+                <Label Grid.Column="2" Text="{Binding AverageDisplay}"
+                       Style="{StaticResource BodyLabelStyle}"
+                       FontFamily="OpenSansSemibold"
+                       VerticalTextAlignment="Center" />
+
+                <Label Grid.Column="3" Text="{Binding VariationDisplay}"
+                       TextColor="{Binding VariationColor}"
+                       FontSize="12" VerticalTextAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+    </ContentPage.Resources>
+
+    <ScrollView>
+        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
+
+            <!-- ===== 1. La question du matin ===== -->
+            <Border x:Name="HeroCard" Style="{StaticResource HeroCardStyle}">
+                <VerticalStackLayout Spacing="16">
+                    <Label x:Name="CaffeineHeadlineLabel"
+                           Style="{StaticResource HeadlineAnswerStyle}"
+                           MaxLines="3"
+                           LineBreakMode="WordWrap" />
+
+                    <Label x:Name="CaffeineDetailLabel"
+                           Style="{StaticResource CaptionLabelStyle}" />
+
+                    <Button x:Name="QuickAddButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Clicked="OnQuickAddClicked" />
+
+                    <Label x:Name="HeroUpdatedLabel"
+                           Style="{StaticResource HelperLabelStyle}"
+                           FontSize="11"
+                           HorizontalTextAlignment="End" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== 2. Ce qui circule encore ===== -->
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="4">
+                    <Label Text="Présent dans l'organisme"
+                           Style="{StaticResource SectionTitleStyle}"
+                           SemanticProperties.HeadingLevel="Level2" />
+
+                    <Label x:Name="LoadsEmptyLabel"
+                           Text="Rien en circulation."
+                           Style="{StaticResource EmptyLabelStyle}"
+                           IsVisible="False" />
+
+                    <CollectionView x:Name="LoadsCollection"
+                                    ItemTemplate="{StaticResource LoadRowTemplate}" />
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- ===== 3. Les moyennes, sous un sélecteur ===== -->
+            <Border Style="{StaticResource CardStyle}">
+                <VerticalStackLayout Spacing="8">
+                    <Grid ColumnDefinitions="*,Auto" ColumnSpacing="12">
+                        <Label Grid.Column="0" Text="Moyennes"
+                               Style="{StaticResource SectionTitleStyle}"
+                               VerticalTextAlignment="Center"
+                               SemanticProperties.HeadingLevel="Level2" />
+
+                        <!-- Trois cartes empilées portaient les trois périodes, dont
+                             deux toujours repliées sur du vide. Un sélecteur suffit. -->
+                        <Picker Grid.Column="1" x:Name="PeriodPicker"
+                                WidthRequest="150"
+                                SelectedIndexChanged="OnPeriodChanged"
+                                SemanticProperties.Description="Période des moyennes">
+                            <Picker.Items>
+                                <x:String>24 heures</x:String>
+                                <x:String>7 jours</x:String>
+                                <x:String>30 jours</x:String>
+                            </Picker.Items>
+                        </Picker>
+                    </Grid>
+
+                    <Label x:Name="StatsEmptyLabel"
+                           Text="Aucune prise sur la période."
+                           Style="{StaticResource EmptyLabelStyle}"
+                           IsVisible="False" />
+
+                    <CollectionView x:Name="StatsCollection"
+                                    ItemTemplate="{StaticResource StatRowTemplate}" />
+
+
+                </VerticalStackLayout>
+            </Border>
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

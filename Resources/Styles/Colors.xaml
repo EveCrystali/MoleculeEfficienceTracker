@@ -1,84 +1,165 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <?xaml-comp compile="true" ?>
-<ResourceDictionary 
+<ResourceDictionary
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Voir aussi Platforms\Android\Resources\values\colors.xml -->
-
     <!--
-        Vingt-six valeurs hexadécimales vivaient auparavant dans les pages, hors de
-        tout dictionnaire, et quatre violets « de marque » coexistaient sans lien.
-        Tout passe désormais par les jetons ci-dessous.
+        Rôles de couleur Material 3, la convention du système sur lequel cette
+        application tourne. La version précédente inventait sa propre nomenclature
+        — quatre violets « de marque » sans lien, vingt-six valeurs hexadécimales
+        écrites dans les pages — et la moitié des jetons ne servait plus.
 
-        Contrainte de lecture : rouge, orange et bleu seulement. Aucun vert ne porte
-        de sens, la lecture rouge/vert étant inaccessible en deutéranopie.
+        Chaque rôle porte un couple clair / sombre, et les styles s'y branchent par
+        AppThemeBinding. Un seul endroit décide de la couleur.
+
+        Contrainte de lecture : bleu, orange, rouge. Aucun vert ne porte de sens,
+        la lecture rouge/vert étant inaccessible en deutéranopie. La teinte source
+        est #1F5FAF ; la palette secondaire a été tournée vers l'orange plutôt que
+        vers le vert que produirait l'harmonisation par défaut.
+
+        Voir aussi Platforms\Android\Resources\values\colors.xml.
     -->
 
-    <!-- Marque -->
-    <Color x:Key="Primary">#1F5FAF</Color>
-    <Color x:Key="PrimaryDark">#5A9BE6</Color>
-    <Color x:Key="PrimaryDarkText">#FFFFFF</Color>
-    <Color x:Key="Secondary">#B86A00</Color>
-    <Color x:Key="SecondaryDarkText">#FFFFFF</Color>
-    <Color x:Key="Tertiary">#C0392B</Color>
+    <!-- ===== Primaire — l'action, le niveau « léger » ===== -->
+    <Color x:Key="PrimaryLight">#1F5FAF</Color>
+    <Color x:Key="PrimaryDark">#A8C7FA</Color>
+    <Color x:Key="OnPrimaryLight">#FFFFFF</Color>
+    <Color x:Key="OnPrimaryDark">#0A305F</Color>
+    <Color x:Key="PrimaryContainerLight">#D6E3FF</Color>
+    <Color x:Key="PrimaryContainerDark">#2C4B6F</Color>
+    <Color x:Key="OnPrimaryContainerLight">#001C38</Color>
+    <Color x:Key="OnPrimaryContainerDark">#D6E3FF</Color>
 
-    <Color x:Key="White">White</Color>
-    <Color x:Key="Black">Black</Color>
-    <Color x:Key="OffBlack">#12171D</Color>
-    <Color x:Key="MidnightBlue">#0E1A2B</Color>
+    <!-- ===== Secondaire — l'orange, le niveau « net » ===== -->
+    <Color x:Key="SecondaryLight">#8A5300</Color>
+    <Color x:Key="SecondaryDark">#FFB95C</Color>
+    <Color x:Key="OnSecondaryLight">#FFFFFF</Color>
+    <Color x:Key="OnSecondaryDark">#4A2800</Color>
+    <Color x:Key="SecondaryContainerLight">#FFDDB7</Color>
+    <Color x:Key="SecondaryContainerDark">#5F3B00</Color>
+    <Color x:Key="OnSecondaryContainerLight">#2C1600</Color>
+    <Color x:Key="OnSecondaryContainerDark">#FFDDB7</Color>
 
-    <Color x:Key="Gray100">#E6EAEF</Color>
-    <Color x:Key="Gray200">#CDD5DE</Color>
-    <Color x:Key="Gray300">#AEB9C6</Color>
-    <Color x:Key="Gray400">#8B98A6</Color>
-    <Color x:Key="Gray500">#5B6B7C</Color>
-    <Color x:Key="Gray600">#3D4A58</Color>
-    <Color x:Key="Gray900">#1B222B</Color>
-    <Color x:Key="Gray950">#12171D</Color>
+    <!-- ===== Erreur — le rouge, le niveau « fort » ===== -->
+    <Color x:Key="ErrorLight">#B3261E</Color>
+    <Color x:Key="ErrorDark">#F2B8B5</Color>
+    <Color x:Key="OnErrorLight">#FFFFFF</Color>
+    <Color x:Key="OnErrorDark">#601410</Color>
+    <Color x:Key="ErrorContainerLight">#F9DEDC</Color>
+    <Color x:Key="ErrorContainerDark">#8C1D18</Color>
+    <Color x:Key="OnErrorContainerLight">#410E0B</Color>
+    <Color x:Key="OnErrorContainerDark">#F9DEDC</Color>
 
-    <!-- Surfaces -->
-    <Color x:Key="PageBackgroundLight">#F7F9FC</Color>
-    <Color x:Key="PageBackgroundDark">#12171D</Color>
-    <Color x:Key="CardBackgroundLight">#FFFFFF</Color>
-    <Color x:Key="CardBackgroundDark">#1B222B</Color>
-    <Color x:Key="CardStrokeLight">#E1E7EF</Color>
-    <Color x:Key="CardStrokeDark">#2C3743</Color>
-    <Color x:Key="FieldBackgroundLight">#EDF3FA</Color>
-    <Color x:Key="FieldBackgroundDark">#232C37</Color>
+    <!--
+        ===== Surfaces =====
 
-    <!-- Texte -->
-    <Color x:Key="TextPrimaryLight">#12171D</Color>
-    <Color x:Key="TextPrimaryDark">#EEF2F7</Color>
-    <Color x:Key="TextSecondaryLight">#5B6B7C</Color>
-    <Color x:Key="TextSecondaryDark">#9BA8B6</Color>
+        Material 3 remplace l'ombre par l'élévation tonale : une carte ne se
+        détache pas par une bordure ni par une ombre portée, mais par une surface
+        un peu plus teintée que le fond. C'est ce qui faisait ressembler chaque
+        écran à un formulaire — un contour gris de 1 px autour de tout.
+    -->
+    <Color x:Key="SurfaceLight">#FCFCFF</Color>
+    <Color x:Key="SurfaceDark">#111418</Color>
+    <Color x:Key="SurfaceContainerLowLight">#F5F5F9</Color>
+    <Color x:Key="SurfaceContainerLowDark">#191C20</Color>
+    <Color x:Key="SurfaceContainerLight">#EFF1F5</Color>
+    <Color x:Key="SurfaceContainerDark">#1D2024</Color>
+    <Color x:Key="SurfaceContainerHighLight">#E9ECF0</Color>
+    <Color x:Key="SurfaceContainerHighDark">#282A2E</Color>
+    <Color x:Key="SurfaceContainerHighestLight">#E3E6EA</Color>
+    <Color x:Key="SurfaceContainerHighestDark">#323539</Color>
 
-    <!-- Niveaux d'effet — miroir XAML de Core/Design/EffectPalette.cs -->
-    <Color x:Key="EffectNoneLight">#5B6B7C</Color>
-    <Color x:Key="EffectNoneDark">#93A1B0</Color>
-    <Color x:Key="EffectLightLight">#1F6FB2</Color>
-    <Color x:Key="EffectLightDark">#5AA9E6</Color>
-    <Color x:Key="EffectModerateLight">#B86A00</Color>
-    <Color x:Key="EffectModerateDark">#E8A33D</Color>
-    <Color x:Key="EffectStrongLight">#C0392B</Color>
-    <Color x:Key="EffectStrongDark">#F07167</Color>
+    <Color x:Key="OnSurfaceLight">#1A1C1E</Color>
+    <Color x:Key="OnSurfaceDark">#E2E2E6</Color>
+    <Color x:Key="OnSurfaceVariantLight">#43474E</Color>
+    <Color x:Key="OnSurfaceVariantDark">#C3C7CF</Color>
 
-    <!-- Grille et axes -->
-    <Color x:Key="GridLineLight">#E1E7EF</Color>
-    <Color x:Key="GridLineDark">#2C3743</Color>
+    <Color x:Key="OutlineLight">#73777F</Color>
+    <Color x:Key="OutlineDark">#8D9199</Color>
+    <Color x:Key="OutlineVariantLight">#C3C7CF</Color>
+    <Color x:Key="OutlineVariantDark">#43474E</Color>
 
-    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
-    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Secondary}"/>
-    <SolidColorBrush x:Key="TertiaryBrush" Color="{StaticResource Tertiary}"/>
-    <SolidColorBrush x:Key="WhiteBrush" Color="{StaticResource White}"/>
-    <SolidColorBrush x:Key="BlackBrush" Color="{StaticResource Black}"/>
+    <!--
+        ===== Niveaux d'effet =====
 
-    <SolidColorBrush x:Key="Gray100Brush" Color="{StaticResource Gray100}"/>
-    <SolidColorBrush x:Key="Gray200Brush" Color="{StaticResource Gray200}"/>
-    <SolidColorBrush x:Key="Gray300Brush" Color="{StaticResource Gray300}"/>
-    <SolidColorBrush x:Key="Gray400Brush" Color="{StaticResource Gray400}"/>
-    <SolidColorBrush x:Key="Gray500Brush" Color="{StaticResource Gray500}"/>
-    <SolidColorBrush x:Key="Gray600Brush" Color="{StaticResource Gray600}"/>
-    <SolidColorBrush x:Key="Gray900Brush" Color="{StaticResource Gray900}"/>
-    <SolidColorBrush x:Key="Gray950Brush" Color="{StaticResource Gray950}"/>
+        Ils n'ont plus de palette propre : ils se branchent sur les rôles, si bien
+        qu'une retouche de la palette les suit. Miroir exact de
+        Core/Design/EffectPalette.cs — les deux fichiers doivent dire la même chose.
+
+        Négligeable → onSurfaceVariant · Léger → primary
+        Net         → secondary        · Fort  → error
+    -->
+    <Color x:Key="EffectNoneLight">#43474E</Color>
+    <Color x:Key="EffectNoneDark">#C3C7CF</Color>
+    <Color x:Key="EffectLightLight">#1F5FAF</Color>
+    <Color x:Key="EffectLightDark">#A8C7FA</Color>
+    <Color x:Key="EffectModerateLight">#8A5300</Color>
+    <Color x:Key="EffectModerateDark">#FFB95C</Color>
+    <Color x:Key="EffectStrongLight">#B3261E</Color>
+    <Color x:Key="EffectStrongDark">#F2B8B5</Color>
+
+    <!-- Fonds des puces d'état : le conteneur du rôle, jamais le rôle plein. -->
+    <Color x:Key="EffectNoneContainerLight">#E3E6EA</Color>
+    <Color x:Key="EffectNoneContainerDark">#323539</Color>
+    <Color x:Key="EffectLightContainerLight">#D6E3FF</Color>
+    <Color x:Key="EffectLightContainerDark">#2C4B6F</Color>
+    <Color x:Key="EffectModerateContainerLight">#FFDDB7</Color>
+    <Color x:Key="EffectModerateContainerDark">#5F3B00</Color>
+    <Color x:Key="EffectStrongContainerLight">#F9DEDC</Color>
+    <Color x:Key="EffectStrongContainerDark">#8C1D18</Color>
+
+    <!-- Grille du graphique : la même valeur que outlineVariant. -->
+    <Color x:Key="GridLineLight">#C3C7CF</Color>
+    <Color x:Key="GridLineDark">#43474E</Color>
+
+    <!--
+        ===== Verre =====
+
+        Une carte de verre n'est pas une carte floutée : ni RenderEffect ni
+        BLUR_BEHIND ne sont exposés par MAUI pour une vue quelconque sur Android.
+        Elle se fabrique de trois ingrédients, et c'est ainsi qu'elle se fabrique
+        partout ailleurs en production.
+
+        Une surface translucide, d'abord, posée sur un fond qui a quelque chose à
+        laisser voir — d'où le dégradé de page ci-dessous. Un filet clair ensuite,
+        sur l'arête, qui imite la tranche éclairée du verre. Une ombre souple
+        enfin, large et peu opaque, qui décolle la carte du fond.
+
+        Ôte l'un des trois et l'illusion tombe : sans dégradé derrière, la
+        translucidité ne se voit pas ; sans filet, la carte redevient un
+        rectangle gris ; sans ombre, elle reste collée au fond.
+    -->
+    <Color x:Key="GlassFillLight">#D9FFFFFF</Color>
+    <Color x:Key="GlassFillDark">#1AFFFFFF</Color>
+    <Color x:Key="GlassFillStrongLight">#F2FFFFFF</Color>
+    <Color x:Key="GlassFillStrongDark">#26FFFFFF</Color>
+    <Color x:Key="GlassStrokeLight">#B3FFFFFF</Color>
+    <Color x:Key="GlassStrokeDark">#26FFFFFF</Color>
+    <Color x:Key="GlassShadowLight">#334A6B99</Color>
+    <Color x:Key="GlassShadowDark">#66000000</Color>
+
+    <!--
+        ===== Fond de page =====
+
+        Trois arrêts, très peu saturés : le verre a besoin d'un fond qui varie pour
+        se lire comme du verre. Un aplat uni rendrait la translucidité invisible.
+    -->
+    <LinearGradientBrush x:Key="PageGradientLight" StartPoint="0,0" EndPoint="0.6,1">
+        <GradientStop Color="#E6EFFC" Offset="0.0" />
+        <GradientStop Color="#F5F3FB" Offset="0.45" />
+        <GradientStop Color="#FDF4F1" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <LinearGradientBrush x:Key="PageGradientDark" StartPoint="0,0" EndPoint="0.6,1">
+        <GradientStop Color="#0A1018" Offset="0.0" />
+        <GradientStop Color="#12131E" Offset="0.45" />
+        <GradientStop Color="#1A1219" Offset="1.0" />
+    </LinearGradientBrush>
+
+    <!-- Pinceaux, pour les propriétés qui n'acceptent pas une Color. -->
+    <SolidColorBrush x:Key="PrimaryBrushLight" Color="{StaticResource PrimaryLight}" />
+    <SolidColorBrush x:Key="PrimaryBrushDark" Color="{StaticResource PrimaryDark}" />
+    <SolidColorBrush x:Key="TransparentBrush" Color="Transparent" />
+
 </ResourceDictionary>

@@ -47,45 +47,18 @@ namespace MoleculeEfficienceTracker
         }
 
         /// <summary>
-        /// La phrase en tête d'écran.
-        ///
-        /// C'est elle qui porte la décision. La courbe reste dessous : elle
-        /// documente, elle ne tranche pas — et à sept heures du matin, personne ne
-        /// lit une courbe.
+        /// La phrase en tête d'écran vient de <see cref="CaffeineAdvisor"/> : l'écran
+        /// Aujourd'hui la redemande mot pour mot, et une règle recopiée à deux
+        /// endroits finit toujours par diverger.
         /// </summary>
         protected override void UpdateMoleculeSpecificConcentrationInfo(
             List<DoseEntry> doses, DateTime currentTime, double concentration)
         {
             base.UpdateMoleculeSpecificConcentrationInfo(doses, currentTime, concentration);
 
-            DateTime bedTime = CaffeineNotificationService.NextBedTime(currentTime);
-            double threshold = UserPreferences.GetSleepThreshold();
-            double weight = UserPreferences.GetWeightKg();
-            double preset = Presets.Count > 0 ? Presets[0] : CaffeineCalculator.MG_PER_UNIT;
-
-            double atBedTime = Calculator.CalculateTotalConcentration(doses, bedTime);
-
-            DateTime? cutoff = Calculator.LatestIntakeTimeBefore(
-                doses, bedTime, preset, weight, currentTime, threshold);
-
-            if (cutoff is null)
-            {
-                Panel.HeadlineText = $"Le café déjà bu suffit à dépasser {threshold:0.#} mg/L à {bedTime:HH\\hmm}.";
-                Panel.HeadlineDetailText =
-                    $"Estimation au coucher : {atBedTime:0.##} mg/L. Un café de plus repousserait l'endormissement.";
-            }
-            else if (cutoff.Value <= currentTime.AddMinutes(1))
-            {
-                Panel.HeadlineText = $"C'est le moment ou jamais pour un {preset:0} mg.";
-                Panel.HeadlineDetailText =
-                    $"Au-delà de maintenant, il resterait plus de {threshold:0.#} mg/L à {bedTime:HH\\hmm}.";
-            }
-            else
-            {
-                Panel.HeadlineText = $"Dernier {preset:0} mg avant {cutoff.Value:HH\\hmm} pour dormir à {bedTime:HH\\hmm}.";
-                Panel.HeadlineDetailText =
-                    $"Sans autre café, il resterait {atBedTime:0.##} mg/L au coucher — seuil retenu {threshold:0.#} mg/L.";
-            }
+            CaffeineAdvisor.Advice advice = CaffeineAdvisor.Build(Calculator, doses, currentTime);
+            Panel.HeadlineText = advice.Headline;
+            Panel.HeadlineDetailText = advice.Detail;
 
             DateTime? end = Calculator.PredictEffectEndTime(doses, currentTime);
             Panel.EffectPrediction.Text = end.HasValue && end.Value > currentTime

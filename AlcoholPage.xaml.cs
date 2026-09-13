@@ -119,25 +119,71 @@ namespace MoleculeEfficienceTracker
         protected override EffectLevel ResolveEffectLevel(double bac)
             => Calculator.GetEffectLevelFromBAC(bac);
 
+        /// <summary>
+        /// On ne parle pas d'« effet net » d'une alcoolémie : la puce d'état
+        /// affichait « Effet net » pour une valeur au-dessus de la limite légale de
+        /// conduite, ce qui ne disait rien de ce qu'il fallait comprendre.
+        /// </summary>
+        protected override string DescribeEffect(EffectLevel level) => level switch
+        {
+            EffectLevel.Strong => "Ivresse forte",
+            EffectLevel.Moderate => "Au-dessus de 0,5 g/L",
+            EffectLevel.Light => "Ivresse légère",
+            _ => "Négligeable"
+        };
+
+        protected override string? BuildAmountDetail(List<DoseEntry> doses, DateTime currentTime, double amount)
+            => amount > 0 ? $"{amount:0.##} u encore en circulation" : null;
+
+
         protected override void UpdateMoleculeSpecificConcentrationInfo(
             List<DoseEntry> doses, DateTime currentTime, double bac)
         {
             base.UpdateMoleculeSpecificConcentrationInfo(doses, currentTime, bac);
 
-            Panel.HeadlineText = $"Alcoolémie estimée : {bac:0.00} g/L";
-
+            // La phrase ne répète plus la valeur : celle-ci s'écrit juste dessous,
+            // en grand. Elle répond à la seule question que l'écran pose vraiment.
             DateTime? sober = Calculator.PredictSoberTime(doses, currentTime);
+
             if (bac >= AlcoholCalculator.BAC_MODERATE_THRESHOLD)
-                Panel.HeadlineDetailText = "Au-dessus de la limite légale de conduite.";
+            {
+                Panel.HeadlineText = "Au-dessus de la limite légale de conduite.";
+                Panel.HeadlineDetailText = sober.HasValue && sober.Value > currentTime
+                    ? $"Retour sous {AlcoholCalculator.BAC_MODERATE_THRESHOLD:0.0} g/L estimé vers {LegalTime(doses, currentTime):HH\\hmm}."
+                    : "Estimation, jamais une autorisation.";
+            }
             else if (bac > 0)
-                Panel.HeadlineDetailText = "Sous la limite légale — estimation, jamais une autorisation.";
+            {
+                Panel.HeadlineText = "Sous la limite légale.";
+                Panel.HeadlineDetailText = "Une estimation ne vaut aucune autorisation de conduire.";
+            }
             else
+            {
+                Panel.HeadlineText = "Aucun alcool en circulation.";
                 Panel.HeadlineDetailText = string.Empty;
+            }
 
             Panel.EffectPrediction.Text = sober.HasValue && sober.Value > currentTime
                 ? $"Sous {AlcoholCalculator.BAC_LIGHT_THRESHOLD:0.0} g/L vers {sober.Value:HH\\hmm}."
                 : "Sous le seuil léger.";
             Panel.EffectPrediction.IsVisible = true;
+        }
+
+        /// <summary>
+        /// Heure estimée du retour sous la limite légale. Recherche au quart d'heure
+        /// : l'élimination est d'ordre zéro, la courbe est une droite, un pas fin
+        /// n'apporterait qu'une fausse précision.
+        /// </summary>
+        private DateTime LegalTime(List<DoseEntry> doses, DateTime from)
+        {
+            for (int minutes = 0; minutes <= 24 * 60; minutes += 15)
+            {
+                DateTime candidate = from.AddMinutes(minutes);
+                if (Calculator.CalculateTotalConcentration(doses, candidate) < AlcoholCalculator.BAC_MODERATE_THRESHOLD)
+                    return candidate;
+            }
+
+            return from.AddDays(1);
         }
 
         protected override Task OnAfterDoseChangedAsync()

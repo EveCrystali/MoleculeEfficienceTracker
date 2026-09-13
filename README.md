@@ -14,9 +14,31 @@ instant donné.
 ## État
 
 Reprise et modernisation complètes, septembre 2026. La version précédente datait
-d'août 2025 et tournait sur .NET 9, sorti de support depuis mai 2026.
+d'août 2025 et tournait sur .NET 9, sorti de support depuis mai 2026. Une seconde
+passe a refondu l'interface sur Material 3.
 
-Ce qui a changé, et pourquoi :
+### L'interface
+
+- **Material 3, pour de bon.** La propriété `UseMaterial3` applique le style natif
+  aux champs sur Android, mais elle restait sans effet tant que `Styles.xaml` —
+  les 451 lignes du modèle Visual Studio — posait une couleur explicite sur chaque
+  contrôle. Ce fichier a disparu ; les jetons de couleur sont des rôles Material 3
+  et la typographie suit son échelle.
+- **Cinq onglets en bas, avec des icônes.** Il y en avait six en haut, aux libellés
+  coupés au milieu des mots. Réglages devient une action de la barre de titre —
+  barre que l'application n'avait pas.
+- **Une hiérarchie par écran** : la réponse, puis l'ajout, puis la courbe. Le
+  formulaire détaillé se replie, les doses en accès direct partagent la largeur
+  sur une grille au lieu de déborder l'écran de 36 px.
+- **Graphiques lisibles** : axe borné sur les données et les seuils, plus de texte
+  empilé sur les lignes de seuil, marqueurs de prise éclaircis, état vide.
+- **Charge devient Aujourd'hui** : la phrase-réponse du café et un bouton
+  d'enregistrement, puis ce qui circule encore, puis les moyennes sous un
+  sélecteur de période.
+- **Import.** L'export existait seul depuis l'origine ; un fichier exporté n'avait
+  nulle part où revenir.
+
+### Le fond
 
 - **Les données ne s'effacent plus en silence.** Une lecture qui échoue met le
   fichier de côté et remonte l'erreur au lieu de rendre une liste vide que la
@@ -103,13 +125,13 @@ version précédente avant d'installer la nouvelle.
 ```
 Core/
   Models/      DoseEntry, MoleculeKeys, UserProfile, ChartDataPoint, ResidualLoadSnapshot
-  Services/    calculateurs, persistance, migration, statistiques, notifications
+  Services/    calculateurs, persistance, migration, import, statistiques, notifications
   Design/      EffectPalette — la palette et les motifs de trait
   Extensions/  ObservableRangeCollection
 Controls/      MoleculePanelView — le corps commun à toutes les pages molécules
 Converters/
 Platforms/     Android (raccourci d'écran d'accueil inclus), Windows
-Resources/     styles, polices, icônes
+Resources/     jetons Material 3, styles, polices, icônes
 tests/         couche de calcul, sans dépendance à la plateforme
 ```
 
@@ -122,8 +144,19 @@ porte la vue commune. Les trois écrans molécules partageaient auparavant jusqu
 Un fichier JSON par molécule dans le répertoire de données de l'application. Une
 migration versionnée s'exécute au premier lancement : elle sauvegarde, réunifie les
 clés, reconstruit les fuseaux horaires absents, arrondit les flottants et écarte
-les double-saisies. L'export et l'import partagent enfin la même convention de
-nommage — un fichier exporté n'était pas relisible par l'application.
+les double-saisies.
+
+L'import lit trois formes — un tableau de prises tel que l'exporte un écran, le
+document complet de la sauvegarde sortante, ou un objet associant une clé de
+molécule à un tableau — indifféremment en camelCase ou en PascalCase, et fusionne
+sans doublon : l'identifiant d'abord, puis le triplet molécule, minute et quantité
+pour les fichiers dont l'export a régénéré les identifiants. Réimporter le même
+fichier n'ajoute rien.
+
+Une précaution qui a son histoire : changer l'`ApplicationId` fait d'un build une
+autre application aux yeux d'Android, avec un autre répertoire de données.
+L'ancienne installation garde les siennes, intactes et invisibles. Exportez avant
+de désinstaller.
 
 ## Licence
 
