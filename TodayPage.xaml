@@ -16,29 +16,55 @@
 
     <ContentPage.Resources>
         <DataTemplate x:Key="LoadRowTemplate">
-            <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12" Padding="0,10">
-                <!-- Le filet coloré identifie la molécule ; le nom la nomme. La
-                     couleur ne porte jamais l'information seule. -->
-                <BoxView Grid.Column="0" WidthRequest="4" CornerRadius="2"
-                         Color="{Binding Accent}" />
+            <VerticalStackLayout Spacing="8" Padding="0,10">
+                <Grid ColumnDefinitions="4,*,Auto" ColumnSpacing="12">
+                    <!-- Le filet coloré identifie la molécule ; le nom la nomme. La
+                         couleur ne porte jamais l'information seule. -->
+                    <BoxView Grid.Column="0" WidthRequest="4" CornerRadius="2"
+                             Color="{Binding Accent}" />
 
-                <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
-                    <Label Text="{Binding Name}" Style="{StaticResource BodyLabelStyle}" />
-                    <Label Text="{Binding Detail}" Style="{StaticResource HelperLabelStyle}" />
-                </VerticalStackLayout>
+                    <VerticalStackLayout Grid.Column="1" Spacing="2" VerticalOptions="Center">
+                        <Label Text="{Binding Name}" Style="{StaticResource BodyLabelStyle}" />
+                        <Label Text="{Binding Detail}" Style="{StaticResource HelperLabelStyle}" />
+                    </VerticalStackLayout>
 
-                <VerticalStackLayout Grid.Column="2" Spacing="2"
-                                     HorizontalOptions="End" VerticalOptions="Center">
-                    <Label Text="{Binding ValueDisplay}"
-                           Style="{StaticResource BodyLabelStyle}"
-                           FontFamily="OpenSansSemibold"
-                           HorizontalTextAlignment="End" />
-                    <Label Text="{Binding LevelDisplay}"
-                           TextColor="{Binding LevelColor}"
-                           FontSize="12"
-                           HorizontalTextAlignment="End" />
-                </VerticalStackLayout>
-            </Grid>
+                    <VerticalStackLayout Grid.Column="2" Spacing="2"
+                                         HorizontalOptions="End" VerticalOptions="Center">
+                        <Label Text="{Binding ValueDisplay}"
+                               Style="{StaticResource BodyLabelStyle}"
+                               FontFamily="OpenSansSemibold"
+                               HorizontalTextAlignment="End" />
+                        <Label Text="{Binding LevelDisplay}"
+                               TextColor="{Binding LevelColor}"
+                               FontSize="12"
+                               HorizontalTextAlignment="End" />
+                    </VerticalStackLayout>
+                </Grid>
+
+                <!--
+                    La jauge de charge, rapportée au seuil d'effet fort.
+
+                    Cinq lignes de chiffres se ressemblaient toutes : « 1,54 mg/L »
+                    et « 0,047 mg/L » ne se comparent pas de tête, et rien ne disait
+                    laquelle des cinq pèse. La barre le dit d'un coup d'œil, sans
+                    exiger qu'on connaisse l'échelle de chaque molécule.
+
+                    Deux colonnes plutôt qu'une largeur fixe : un ProgressBar ne
+                    prend pas la teinte de la molécule sur Android, et une largeur en
+                    pixels ne saurait pas ce que mesure l'écran.
+                -->
+                <Grid HeightRequest="6" Margin="16,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="{Binding FilledWidth}" />
+                        <ColumnDefinition Width="{Binding EmptyWidth}" />
+                    </Grid.ColumnDefinitions>
+
+                    <BoxView Grid.Column="0" CornerRadius="3"
+                             Color="{Binding LevelColor}" />
+                    <BoxView Grid.Column="1" CornerRadius="3"
+                             Color="{Binding Accent}" Opacity="0.14" />
+                </Grid>
+            </VerticalStackLayout>
         </DataTemplate>
 
         <DataTemplate x:Key="StatRowTemplate">
@@ -64,7 +90,7 @@
     </ContentPage.Resources>
 
     <ScrollView>
-        <VerticalStackLayout Style="{StaticResource PageRootLayoutStyle}">
+        <VerticalStackLayout x:Name="RootStack" Style="{StaticResource PageRootLayoutStyle}">
 
             <!-- ===== 1. La question du matin ===== -->
             <Border x:Name="HeroCard" Style="{StaticResource HeroCardStyle}">
@@ -79,6 +105,8 @@
 
                     <Button x:Name="QuickAddButton"
                             Style="{StaticResource PrimaryButtonStyle}"
+                            Pressed="OnQuickAddPressed"
+                            Released="OnQuickAddReleased"
                             Clicked="OnQuickAddClicked" />
 
                     <Label x:Name="HeroUpdatedLabel"
