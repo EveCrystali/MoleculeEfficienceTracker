@@ -1,5 +1,6 @@
 using System.Globalization;
 using Microsoft.Maui.Graphics;
+using MoleculeEfficienceTracker.Controls;
 using MoleculeEfficienceTracker.Core.Design;
 using MoleculeEfficienceTracker.Core.Models;
 using MoleculeEfficienceTracker.Core.Services;
@@ -49,8 +50,8 @@ namespace MoleculeEfficienceTracker
             HeroCard.Background = new LinearGradientBrush(
                 new GradientStopCollection
                 {
-                    new GradientStop(accent.WithAlpha(dark ? 0.22f : 0.26f), 0f),
-                    new GradientStop(accent.WithAlpha(dark ? 0.05f : 0.07f), 1f)
+                    new GradientStop(accent.WithAlpha(dark ? 0.26f : 0.32f), 0f),
+                    new GradientStop(accent.WithAlpha(dark ? 0.06f : 0.09f), 1f)
                 },
                 new Point(0, 0),
                 new Point(1, 1));
@@ -59,8 +60,31 @@ namespace MoleculeEfficienceTracker
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+
+            // La teinte est calculée pour le thème courant : il a pu basculer
+            // pendant que l'écran dormait en arrière-plan.
+            ApplyAccent();
+            Entrance.Play(RootStack);
+
             await RefreshAsync();
         }
+
+        protected override void OnDisappearing()
+        {
+            base.OnDisappearing();
+
+            // Sans cela, revenir sur l'onglet pendant que la cascade court laisserait
+            // une carte figée à mi-course, transparente et décalée vers le bas.
+            Entrance.Reset(RootStack);
+        }
+
+        // Le retour d'appui : le bouton s'enfonce sous le doigt. Android le fait
+        // nativement sur ses propres boutons ; un Button MAUI stylé ne le fait plus.
+        private void OnQuickAddPressed(object? sender, EventArgs e)
+            => _ = QuickAddButton.ScaleToAsync(0.96, 70, Easing.CubicOut);
+
+        private void OnQuickAddReleased(object? sender, EventArgs e)
+            => _ = QuickAddButton.ScaleToAsync(1.0, 110, Easing.CubicOut);
 
         private async Task RefreshAsync()
         {
@@ -220,6 +244,30 @@ namespace MoleculeEfficienceTracker
 
             public string ValueDisplay => string.Format(
                 CultureInfo.CurrentCulture, "{0:0.##} {1}", _load.Concentration, _load.ConcentrationUnit);
+
+            /// <summary>
+            /// La part remplie de la barre, rapportée au seuil d'effet fort.
+            ///
+            /// Deux colonnes en étoile plutôt qu'une largeur en pixels : la ligne ne
+            /// sait pas ce que mesure l'écran, et une barre calculée en dur y serait
+            /// juste sur un téléphone et fausse sur tous les autres. Le plancher à
+            /// 2 % laisse un trait visible pour une molécule tout juste perceptible ;
+            /// sans lui, la barre disparaîtrait et la ligne semblerait cassée.
+            /// </summary>
+            public GridLength FilledWidth => new(Ratio, GridUnitType.Star);
+
+            public GridLength EmptyWidth => new(1 - Ratio, GridUnitType.Star);
+
+            private double Ratio
+            {
+                get
+                {
+                    double strong = CurrentLoadService.Thresholds(_load.Key).Strong;
+                    if (strong <= 0) return 0.02;
+
+                    return Math.Clamp(_load.Concentration / strong, 0.02, 1.0);
+                }
+            }
 
             public string Detail
             {

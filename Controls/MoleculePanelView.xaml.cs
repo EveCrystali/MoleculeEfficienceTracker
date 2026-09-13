@@ -135,17 +135,47 @@ namespace MoleculeEfficienceTracker.Controls
         /// <summary>
         /// L'anneau : fraction remplie et couleur du niveau. Un nombre seul ne dit
         /// pas s'il est grand.
+        ///
+        /// Il se remplit en six cent cinquante millisecondes plutôt que de sauter à
+        /// sa valeur — c'est la course qui fait comprendre l'échelle, l'arc figé ne
+        /// montre qu'une forme. L'animation ne joue qu'à l'arrivée sur l'écran et
+        /// après une saisie : la rejouer au battement du minuteur ferait de la
+        /// jauge un tic nerveux.
         /// </summary>
-        public void SetGauge(double progress, Color color)
+        public void SetGauge(double progress, Color color, bool animate = false)
         {
             bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
 
-            _gauge.Progress = progress;
             _gauge.ProgressColor = color;
+            _gauge.StartColor = GaugeDrawable.Blend(color, dark ? Colors.Black : Colors.White, 0.55f);
             _gauge.TrackColor = Color.FromArgb(dark ? "#2A2E35" : "#DDE3EC");
 
-            LevelGauge.Invalidate();
+            double from = _gauge.Progress;
+            double to = Math.Clamp(progress, 0, 1);
+
+            if (!animate || Math.Abs(to - from) < 0.004)
+            {
+                _gauge.Progress = to;
+                LevelGauge.Invalidate();
+                return;
+            }
+
+            this.AbortAnimation(GaugeAnimation);
+
+            new Animation(v =>
+            {
+                _gauge.Progress = v;
+                LevelGauge.Invalidate();
+            }, from, to)
+            .Commit(this, GaugeAnimation, 16, 650, Easing.CubicOut);
         }
+
+        private const string GaugeAnimation = "jauge";
+
+        /// <summary>L'entrée en cascade des cartes, à l'arrivée sur l'écran.</summary>
+        public void PlayEntrance() => Entrance.Play(RootStack);
+
+        public void ResetEntrance() => Entrance.Reset(RootStack);
 
         /// <summary>
         /// La puce d'état : fond teinté, texte du même rôle, glyphe compris.
@@ -185,7 +215,7 @@ namespace MoleculeEfficienceTracker.Controls
         /// 104 px en dur dans une pile horizontale sans repli : trois d'entre eux,
         /// leurs espaces et les marges réclamaient 396 px sur un écran de 360.
         /// </summary>
-        public void SetPresets(IEnumerable<double> presets, string unit)
+        public void SetPresets(IEnumerable<double> presets, string unit, Color accent)
         {
             PresetsHost.Clear();
             PresetsHost.ColumnDefinitions.Clear();
@@ -204,17 +234,34 @@ namespace MoleculeEfficienceTracker.Controls
             for (int r = 0; r < rows; r++)
                 PresetsHost.RowDefinitions.Add(new RowDefinition(GridLength.Auto));
 
+            // La teinte suit la dose : la plus forte est la plus saturée. La
+            // couleur redit ce que le chiffre dit déjà — elle ne fait que le dire
+            // plus vite.
+            double largest = list.Max();
+            bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+
             for (int i = 0; i < list.Count; i++)
             {
                 double preset = list[i];
+                double ratio = largest > 0 ? Math.Clamp(preset / largest, 0.25, 1.0) : 1.0;
 
                 var button = new Button { Text = $"{preset:0.##} {unit}" };
 
                 if (Application.Current?.Resources.TryGetValue("PresetButtonStyle", out object? style) == true)
                     button.Style = (Style)style;
 
+                button.BackgroundColor = accent.WithAlpha((float)((dark ? 0.14 : 0.12) + 0.18 * ratio));
+                button.BorderColor = accent.WithAlpha((float)(0.25 + 0.35 * ratio));
+                button.BorderWidth = 1.5;
+                button.TextColor = dark ? Colors.White : Color.FromArgb("#1A1C1E");
+
                 double captured = preset;
                 button.Clicked += (_, _) => PresetSelected?.Invoke(this, captured);
+
+                // Un appui qui ne répond pas donne l'impression d'un bouton mort.
+                button.Pressed += (_, _) => _ = button.ScaleToAsync(0.95, 70, Easing.CubicOut);
+                button.Released += (_, _) => _ = button.ScaleToAsync(1.0, 110, Easing.CubicOut);
+
                 SemanticProperties.SetDescription(button, $"Enregistrer {preset:0.##} {unit} maintenant");
 
                 Grid.SetColumn(button, i % columns);
